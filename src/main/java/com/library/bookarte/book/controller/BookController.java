@@ -6,10 +6,7 @@ import com.library.bookarte.global.response.GlobalResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,6 +20,14 @@ public class BookController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(GlobalResponseDto.success(HttpStatus.CREATED,result));
+    }
+
+    @GetMapping("/view/{bookId}")
+    public ResponseEntity<GlobalResponseDto> findBookById(@PathVariable("bookId") Long bookId){
+        BookDto result = bookService.findBookById(bookId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
 

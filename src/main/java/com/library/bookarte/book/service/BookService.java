@@ -3,6 +3,7 @@ package com.library.bookarte.book.service;
 import com.library.bookarte.book.dto.BookDto;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.repository.BookRepository;
+import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,23 @@ public class BookService {
                 .build();
 
         bookRepository.save(book);
+
+        return bookDto;
+    }
+
+    @Transactional
+    public BookDto findBookById(Long bookId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+
+        BookDto bookDto = BookDto.builder()
+                .bookTitle(book.getBookTitle())
+                .bookAuthor(book.getBookAuthor())
+                .bookContents(book.getBookContents())
+                .bookCallNumber(book.getBookCallNumber())
+                .bookIsbn(book.getBookIsbn())
+                .bookThumbnail(book.getBookThumbnail())
+                .build();
 
         return bookDto;
     }
