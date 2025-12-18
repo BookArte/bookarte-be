@@ -5,13 +5,13 @@ import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
-@Transactional(rollbackOn = CustomException.class)
+@Transactional(rollbackFor = CustomException.class)
 public class BookService {
 
     private final BookRepository bookRepository;
@@ -35,7 +35,7 @@ public class BookService {
         return bookDto;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public BookDto findBookById(Long bookId) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
