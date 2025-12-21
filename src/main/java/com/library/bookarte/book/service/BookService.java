@@ -70,4 +70,11 @@ public class BookService {
 
         return bookId;
     }
+
+    public void deleteBook(Long bookId) {
+        Book deleteTargetBook = bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+
+        bookRepository.delete(deleteTargetBook);
+    }
 }

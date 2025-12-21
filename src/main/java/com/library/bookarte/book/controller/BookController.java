@@ -30,7 +30,7 @@ public class BookController {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
-    @PatchMapping("/{bookId}/update")
+    @PatchMapping("/{bookId}")
     public ResponseEntity<GlobalResponseDto> updateBook(@PathVariable("bookId") Long bookId,
                                                         @RequestBody BookDto bookDto) {
         Long result = bookService.updateBook(bookId, bookDto);
@@ -39,11 +39,15 @@ public class BookController {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    @DeleteMapping("/{bookId}")
+    public ResponseEntity<GlobalResponseDto> deleteBook(@PathVariable("bookId") Long bookId){
 
+        bookService.deleteBook(bookId);
 
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK,null));
 
-
-
+    }
 
 
 }
