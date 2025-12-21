@@ -57,4 +57,23 @@ public class Book extends BaseEntity {
     //표지사진 book_thumbnail
     @Column(nullable = false)
     private String bookThumbnail;
+
+    public void updateBook(String bookTitle,
+                           String bookAuthor,
+                           String publisherName,
+                           LocalDate publicationDate,
+                           String bookIsbn,
+                           String bookContents,
+                           String bookCallNumber,
+                           String bookThumbnail){
+
+        this.bookTitle = bookTitle;
+        this.bookAuthor = bookAuthor;
+        this.publisherName = publisherName;
+        this.publicationDate = publicationDate;
+        this.bookIsbn = bookIsbn;
+        this.bookContents = bookContents;
+        this.bookCallNumber = bookCallNumber;
+        this.bookThumbnail = bookThumbnail;
+    }
 }

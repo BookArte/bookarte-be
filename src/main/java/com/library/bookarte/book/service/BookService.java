@@ -16,6 +16,7 @@ public class BookService {
 
     private final BookRepository bookRepository;
 
+    /*도서 등록 api*/
     public BookDto registerBook(BookDto bookDto){
 
         Book book = Book.builder()
@@ -35,6 +36,7 @@ public class BookService {
         return bookDto;
     }
 
+    /*도서 상세 조회 api*/
     @Transactional(readOnly = true)
     public BookDto findBookById(Long bookId) {
         Book book = bookRepository.findById(bookId)
@@ -50,5 +52,22 @@ public class BookService {
                 .build();
 
         return bookDto;
+    }
+
+    public Long updateBook(Long bookId,BookDto bookDto){
+
+        Book updateTargetBook = bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+
+        updateTargetBook.updateBook(bookDto.getBookTitle(),
+                bookDto.getBookAuthor(),
+                bookDto.getPublisherName(),
+                bookDto.getPublicationDate(),
+                bookDto.getBookIsbn(),
+                bookDto.getBookContents(),
+                bookDto.getBookCallNumber(),
+                bookDto.getBookThumbnail());
+
+        return bookId;
     }
 }

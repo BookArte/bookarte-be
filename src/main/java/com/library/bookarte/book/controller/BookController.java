@@ -30,6 +30,19 @@ public class BookController {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    @PatchMapping("/{bookId}/update")
+    public ResponseEntity<GlobalResponseDto> updateBook(@PathVariable("bookId") Long bookId,
+                                                        @RequestBody BookDto bookDto) {
+        Long result = bookService.updateBook(bookId, bookDto);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+
+
+
+
 
 
 
