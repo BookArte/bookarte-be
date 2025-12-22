@@ -6,8 +6,11 @@ import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -15,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final int defaultSize = 5;
+
 
     /*도서 등록 api*/
     public BookDto registerBook(BookDto bookDto){
@@ -77,4 +82,13 @@ public class BookService {
 
         bookRepository.delete(deleteTargetBook);
     }
+
+    public Page<Book> findAllBooks(Pageable pageable){
+        int page = pageable.getPageNumber() - 1;
+
+        Page<Book> books = bookRepository.findAll(PageRequest.of(page, defaultSize, Sort.Direction.DESC, "id"));
+
+        return books;
+    }
+
 }

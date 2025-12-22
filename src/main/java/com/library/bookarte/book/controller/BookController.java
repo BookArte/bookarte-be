@@ -1,9 +1,13 @@
 package com.library.bookarte.book.controller;
 
 import com.library.bookarte.book.dto.BookDto;
+import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.service.BookService;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class BookController {
     private final BookService bookService;
 
+    //도서 등록
     @PostMapping("/register")
     public ResponseEntity<GlobalResponseDto> registerBook(@RequestBody BookDto bookDto){
         BookDto result = bookService.registerBook(bookDto);
@@ -22,6 +27,7 @@ public class BookController {
                 .body(GlobalResponseDto.success(HttpStatus.CREATED,result));
     }
 
+    //도서 상제 조회
     @GetMapping("/view/{bookId}")
     public ResponseEntity<GlobalResponseDto> findBookById(@PathVariable("bookId") Long bookId){
         BookDto result = bookService.findBookById(bookId);
@@ -30,6 +36,7 @@ public class BookController {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    //도서 정보 수정
     @PatchMapping("/{bookId}")
     public ResponseEntity<GlobalResponseDto> updateBook(@PathVariable("bookId") Long bookId,
                                                         @RequestBody BookDto bookDto) {
@@ -39,6 +46,7 @@ public class BookController {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    //도서 삭제
     @DeleteMapping("/{bookId}")
     public ResponseEntity<GlobalResponseDto> deleteBook(@PathVariable("bookId") Long bookId){
 
@@ -49,5 +57,13 @@ public class BookController {
 
     }
 
+    //도서 리스트 조회
+    @GetMapping("/list")
+    public ResponseEntity<GlobalResponseDto> listBook(@PageableDefault(page = 1) Pageable pageable){
+        Page<Book> result = bookService.findAllBooks(pageable);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK,result));
+    }
 
 }
