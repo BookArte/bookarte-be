@@ -1,6 +1,7 @@
 package com.library.bookarte.book.controller;
 
-import com.library.bookarte.book.dto.BookDto;
+import com.library.bookarte.book.dto.BookReqDto;
+import com.library.bookarte.book.dto.BookResDto;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.service.BookService;
 import com.library.bookarte.global.response.GlobalResponseDto;
@@ -20,8 +21,8 @@ public class BookController {
 
     //도서 등록
     @PostMapping("/register")
-    public ResponseEntity<GlobalResponseDto> registerBook(@RequestBody BookDto bookDto){
-        BookDto result = bookService.registerBook(bookDto);
+    public ResponseEntity<GlobalResponseDto> registerBook(@RequestBody BookReqDto bookReqDto){
+        BookResDto result = bookService.registerBook(bookReqDto);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(GlobalResponseDto.success(HttpStatus.CREATED,result));
@@ -30,7 +31,7 @@ public class BookController {
     //도서 상제 조회
     @GetMapping("/view/{bookId}")
     public ResponseEntity<GlobalResponseDto> findBookById(@PathVariable("bookId") Long bookId){
-        BookDto result = bookService.findBookById(bookId);
+        BookResDto result = bookService.findBookById(bookId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
@@ -39,8 +40,8 @@ public class BookController {
     //도서 정보 수정
     @PatchMapping("/{bookId}")
     public ResponseEntity<GlobalResponseDto> updateBook(@PathVariable("bookId") Long bookId,
-                                                        @RequestBody BookDto bookDto) {
-        Long result = bookService.updateBook(bookId, bookDto);
+                                                        @RequestBody BookReqDto bookReqDto) {
+        Long result = bookService.updateBook(bookId, bookReqDto);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));

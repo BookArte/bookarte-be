@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BookDto {
+public class BookReqDto {
 
     private String bookTitle;
 

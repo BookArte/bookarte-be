@@ -1,6 +1,7 @@
 package com.library.bookarte.book.service;
 
-import com.library.bookarte.book.dto.BookDto;
+import com.library.bookarte.book.dto.BookReqDto;
+import com.library.bookarte.book.dto.BookResDto;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.global.exception.CustomErrorCode;
@@ -22,32 +23,24 @@ public class BookService {
 
 
     /*도서 등록 api*/
-    public BookDto registerBook(BookDto bookDto){
+    public BookResDto registerBook(BookReqDto bookReqDto){
 
         Book book = Book.builder()
-                .bookTitle(bookDto.getBookTitle())
-                .bookAuthor(bookDto.getBookAuthor())
-                .publisherName(bookDto.getPublisherName())
-                .publicationDate(bookDto.getPublicationDate())
-                .bookIsbn(bookDto.getBookIsbn())
-                .bookContents(bookDto.getBookContents())
+                .bookTitle(bookReqDto.getBookTitle())
+                .bookAuthor(bookReqDto.getBookAuthor())
+                .publisherName(bookReqDto.getPublisherName())
+                .publicationDate(bookReqDto.getPublicationDate())
+                .bookIsbn(bookReqDto.getBookIsbn())
+                .bookContents(bookReqDto.getBookContents())
                 .bookBorrowYn('Y')
-                .bookCallNumber(bookDto.getBookCallNumber())
-                .bookThumbnail(bookDto.getBookThumbnail())
+                .bookCallNumber(bookReqDto.getBookCallNumber())
+                .bookThumbnail(bookReqDto.getBookThumbnail())
                 .build();
 
         bookRepository.save(book);
 
-        return bookDto;
-    }
-
-    /*도서 상세 조회 api*/
-    @Transactional(readOnly = true)
-    public BookDto findBookById(Long bookId) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
-
-        BookDto bookDto = BookDto.builder()
+        return BookResDto.builder()
+                .bookId(book.getBookId())
                 .bookTitle(book.getBookTitle())
                 .bookAuthor(book.getBookAuthor())
                 .bookContents(book.getBookContents())
@@ -55,23 +48,38 @@ public class BookService {
                 .bookIsbn(book.getBookIsbn())
                 .bookThumbnail(book.getBookThumbnail())
                 .build();
-
-        return bookDto;
     }
 
-    public Long updateBook(Long bookId,BookDto bookDto){
+    /*도서 상세 조회 api*/
+    @Transactional(readOnly = true)
+    public BookResDto findBookById(Long bookId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+
+        return BookResDto.builder()
+                .bookId(book.getBookId())
+                .bookTitle(book.getBookTitle())
+                .bookAuthor(book.getBookAuthor())
+                .bookContents(book.getBookContents())
+                .bookCallNumber(book.getBookCallNumber())
+                .bookIsbn(book.getBookIsbn())
+                .bookThumbnail(book.getBookThumbnail())
+                .build();
+    }
+
+    public Long updateBook(Long bookId,BookReqDto bookReqDto){
 
         Book updateTargetBook = bookRepository.findById(bookId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
 
-        updateTargetBook.updateBook(bookDto.getBookTitle(),
-                bookDto.getBookAuthor(),
-                bookDto.getPublisherName(),
-                bookDto.getPublicationDate(),
-                bookDto.getBookIsbn(),
-                bookDto.getBookContents(),
-                bookDto.getBookCallNumber(),
-                bookDto.getBookThumbnail());
+        updateTargetBook.updateBook(bookReqDto.getBookTitle(),
+                bookReqDto.getBookAuthor(),
+                bookReqDto.getPublisherName(),
+                bookReqDto.getPublicationDate(),
+                bookReqDto.getBookIsbn(),
+                bookReqDto.getBookContents(),
+                bookReqDto.getBookCallNumber(),
+                bookReqDto.getBookThumbnail());
 
         return bookId;
     }
@@ -86,9 +94,7 @@ public class BookService {
     public Page<Book> findAllBooks(Pageable pageable){
         int page = pageable.getPageNumber() - 1;
 
-        Page<Book> books = bookRepository.findAll(PageRequest.of(page, defaultSize, Sort.Direction.DESC, "id"));
-
-        return books;
+        return bookRepository.findAll(PageRequest.of(page, defaultSize, Sort.Direction.DESC, "bookId"));
     }
 
 }
