@@ -1,5 +1,6 @@
 package com.library.bookarte.book.entity;
 
+import com.library.bookarte.book.dto.BookResDto;
 import com.library.bookarte.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,7 @@ public class Book extends BaseEntity {
     //도서일련번호
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long bookId;
 
     //도서명, book_title
     @Column(nullable = false)
@@ -75,5 +76,17 @@ public class Book extends BaseEntity {
         this.bookContents = bookContents;
         this.bookCallNumber = bookCallNumber;
         this.bookThumbnail = bookThumbnail;
+    }
+
+    public BookResDto toBookResDto(){
+        return  BookResDto.builder()
+                .bookId(this.bookId)
+                .bookTitle(this.bookTitle)
+                .bookAuthor(this.bookAuthor)
+                .bookContents(this.bookContents)
+                .bookCallNumber(this.bookCallNumber)
+                .bookIsbn(this.bookIsbn)
+                .bookThumbnail(this.bookThumbnail)
+                .build();
     }
 }
