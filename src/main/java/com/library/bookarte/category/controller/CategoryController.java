@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/category")
@@ -49,5 +51,13 @@ public class CategoryController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, null));
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<GlobalResponseDto<List<CategoryResDto>>> findAllCategory(){
+        List<CategoryResDto> result = categoryService.findAllCategory();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 }
