@@ -67,6 +67,7 @@ public class BookService {
                 .build();
     }
 
+    /*도서 수정 조회 api*/
     public Long updateBook(Long bookId,BookReqDto bookReqDto){
 
         Book updateTargetBook = bookRepository.findById(bookId)
@@ -84,6 +85,7 @@ public class BookService {
         return bookId;
     }
 
+    /*도서 삭제 조회 api*/
     public void deleteBook(Long bookId) {
         Book deleteTargetBook = bookRepository.findById(bookId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
@@ -91,6 +93,7 @@ public class BookService {
         bookRepository.delete(deleteTargetBook);
     }
 
+    /*도서 전체 조회 api*/
     public Page<BookResDto> findAllBooks(Pageable pageable){
         int page = pageable.getPageNumber() - 1;
 
