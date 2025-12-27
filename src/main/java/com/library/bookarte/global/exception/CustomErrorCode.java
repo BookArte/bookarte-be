@@ -8,8 +8,10 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum CustomErrorCode {
 
-    DATA_INTEGRITY_VIOLATION(HttpStatus.BAD_REQUEST, "데이터 무결성 오류가 발생했습니다.");
+    DATA_INTEGRITY_VIOLATION(HttpStatus.BAD_REQUEST, "데이터 무결성 오류가 발생했습니다."),
 
+    //book
+    BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 책은 존재하지않습니다");
     private final HttpStatus httpStatus;
     private final String message;
 }
