@@ -30,4 +30,8 @@ public class Category {
                 .categoryName(this.categoryName)
                 .build();
     }
+
+    public void updateCategory(String categoryName){
+        this.categoryName = categoryName;
+    }
 }

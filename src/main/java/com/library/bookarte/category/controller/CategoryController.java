@@ -33,5 +33,15 @@ public class CategoryController {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    @PatchMapping("/{categoryId}")
+    public ResponseEntity<GlobalResponseDto<Long>> updateCategory(@PathVariable Long categoryId,
+                                                                  @RequestBody CategoryReqDto categoryReqDto){
+
+        Long result = categoryService.updateCategory(categoryId, categoryReqDto);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
 
 }

@@ -34,5 +34,14 @@ public class CategoryService {
         return category.toCategoryResDto();
     }
 
+    public Long updateCategory(Long categoryId, CategoryReqDto categoryReqDto) {
+        Category updateTargetCategory = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.CATEGORY_NOT_FOUND));
+
+        updateTargetCategory.updateCategory(categoryReqDto.getCategoryName());
+
+        return updateTargetCategory.getCategoryId();
+    }
+
 
 }
