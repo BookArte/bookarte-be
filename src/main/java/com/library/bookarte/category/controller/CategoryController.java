@@ -35,7 +35,7 @@ public class CategoryController {
 
     @PatchMapping("/{categoryId}")
     public ResponseEntity<GlobalResponseDto<Long>> updateCategory(@PathVariable Long categoryId,
-                                                                  @RequestBody CategoryReqDto categoryReqDto){
+                                                                  @RequestBody CategoryReqDto categoryReqDto) {
 
         Long result = categoryService.updateCategory(categoryId, categoryReqDto);
 
@@ -43,5 +43,11 @@ public class CategoryController {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    @DeleteMapping("/{categoryId}")
+    public ResponseEntity<GlobalResponseDto<?>> deleteCategory(@PathVariable Long categoryId) {
+        categoryService.deleteCategory(categoryId);
 
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, null));
+    }
 }

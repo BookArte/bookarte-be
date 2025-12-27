@@ -43,5 +43,12 @@ public class CategoryService {
         return updateTargetCategory.getCategoryId();
     }
 
+    public void deleteCategory(Long categoryId) {
+        Category deleteTargetCategory = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.CATEGORY_NOT_FOUND));
+
+        categoryRepository.delete(deleteTargetCategory);
+    }
+
 
 }
