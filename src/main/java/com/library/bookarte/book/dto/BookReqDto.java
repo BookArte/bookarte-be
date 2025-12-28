@@ -29,5 +29,7 @@ public class BookReqDto {
 
     private String bookCallNumber;
 
+    private String bookCategory;
+
 
 }

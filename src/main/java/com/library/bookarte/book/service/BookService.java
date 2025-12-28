@@ -3,7 +3,11 @@ package com.library.bookarte.book.service;
 import com.library.bookarte.book.dto.BookReqDto;
 import com.library.bookarte.book.dto.BookResDto;
 import com.library.bookarte.book.entity.Book;
+import com.library.bookarte.book.entity.BookCategory;
+import com.library.bookarte.book.repository.BookCategoryRepository;
 import com.library.bookarte.book.repository.BookRepository;
+import com.library.bookarte.category.entity.Category;
+import com.library.bookarte.category.service.CategoryService;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +23,16 @@ import java.util.List;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final BookCategoryRepository bookCategoryRepository;
+    private final CategoryService categoryService;
+
     private final int defaultSize = 5;
 
 
     /*도서 등록 api*/
     public BookResDto registerBook(BookReqDto bookReqDto){
+
+        Category category = categoryService.findByCategoryName(bookReqDto.getBookCategory());
 
         Book book = Book.builder()
                 .bookTitle(bookReqDto.getBookTitle())
@@ -39,6 +48,13 @@ public class BookService {
 
         bookRepository.save(book);
 
+        BookCategory bookCategory = BookCategory.builder()
+                .book(book)
+                .category(category)
+                .build();
+
+        bookCategoryRepository.save(bookCategory);
+
         return BookResDto.builder()
                 .bookId(book.getBookId())
                 .bookTitle(book.getBookTitle())
@@ -47,6 +63,7 @@ public class BookService {
                 .bookCallNumber(book.getBookCallNumber())
                 .bookIsbn(book.getBookIsbn())
                 .bookThumbnail(book.getBookThumbnail())
+                .bookCategoryName(category.getCategoryName())
                 .build();
     }
 

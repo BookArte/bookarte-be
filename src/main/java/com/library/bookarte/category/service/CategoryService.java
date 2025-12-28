@@ -59,4 +59,9 @@ public class CategoryService {
                 .map(Category::toCategoryResDto)
                 .toList();
     }
+
+
+    public Category findByCategoryName(String categoryName){
+        return categoryRepository.findByCategoryName(categoryName);
+    }
 }
