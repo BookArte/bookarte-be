@@ -88,10 +88,13 @@ public class Book extends BaseEntity {
                 .bookId(this.bookId)
                 .bookTitle(this.bookTitle)
                 .bookAuthor(this.bookAuthor)
+                .publisherName(this.publisherName)
+                .publicationDate(this.publicationDate)
                 .bookContents(this.bookContents)
                 .bookCallNumber(this.bookCallNumber)
                 .bookIsbn(this.bookIsbn)
                 .bookThumbnail(this.bookThumbnail)
+                .bookCategoryName(this.bookCategory.getCategory().getCategoryName())
                 .build();
     }
 }

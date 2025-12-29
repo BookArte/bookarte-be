@@ -23,7 +23,7 @@ public class BookCategory {
     @JoinColumn(name = "book_id")
     private Book book;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 

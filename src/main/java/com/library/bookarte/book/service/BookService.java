@@ -59,11 +59,12 @@ public class BookService {
                 .bookId(book.getBookId())
                 .bookTitle(book.getBookTitle())
                 .bookAuthor(book.getBookAuthor())
+                .publisherName(book.getPublisherName())
+                .publicationDate(book.getPublicationDate())
+                .bookIsbn(book.getBookIsbn())
                 .bookContents(book.getBookContents())
                 .bookCallNumber(book.getBookCallNumber())
-                .bookIsbn(book.getBookIsbn())
-                .bookThumbnail(book.getBookThumbnail())
-                .bookCategoryName(category.getCategoryName())
+                .bookCategoryName(bookCategory.getCategory().getCategoryName())
                 .build();
     }
 
@@ -73,15 +74,7 @@ public class BookService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
 
-        return BookResDto.builder()
-                .bookId(book.getBookId())
-                .bookTitle(book.getBookTitle())
-                .bookAuthor(book.getBookAuthor())
-                .bookContents(book.getBookContents())
-                .bookCallNumber(book.getBookCallNumber())
-                .bookIsbn(book.getBookIsbn())
-                .bookThumbnail(book.getBookThumbnail())
-                .build();
+        return book.toBookResDto();
     }
 
     /*도서 수정 조회 api*/
@@ -123,5 +116,6 @@ public class BookService {
         return new PageImpl<>(bookResDtoList, pageable, books.getTotalElements());
 
     }
+
 
 }
