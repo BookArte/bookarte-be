@@ -117,5 +117,16 @@ public class BookService {
 
     }
 
+    /*도서 카테고리 별 조회*/
+    public Page<BookResDto> findBooksWithCategory(String bookCategoryName, Pageable pageable) {
+        int page = pageable.getPageNumber() - 1;
+
+        System.out.println(bookCategoryName);
+        Category category = categoryService.findByCategoryName(bookCategoryName);
+        System.out.println(category.getCategoryId());
+
+        return bookRepository.findBookResDtosByCategoryId(category.getCategoryId(),
+                PageRequest.of(page,defaultSize,Sort.Direction.DESC,"bookId"));
+    }
 
 }
