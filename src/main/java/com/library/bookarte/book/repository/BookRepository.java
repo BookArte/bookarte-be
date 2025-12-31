@@ -21,7 +21,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             b.bookContents,
             b.bookThumbnail,
             b.bookCallNumber,
-            c.bookCategoryName
+            c.categoryName
         )
         from Book b
         join b.category c
