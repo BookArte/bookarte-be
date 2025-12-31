@@ -3,9 +3,12 @@ package com.library.bookarte.auth.jwt;
 import com.library.bookarte.auth.dto.response.TokenResponse;
 import com.library.bookarte.member.entity.Member;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 
 @Component
@@ -14,32 +17,46 @@ public class JwtProvider {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    @Value("${jwt.expiration}")
-    private long expirationMs;
+    @Value("${jwt.access-expiration}")
+    private long accessExpirationMs;
 
-    public TokenResponse createToken(Member member) {
+    @Value("${jwt.refresh-expiration}")
+    private long refreshExpirationMs;
+
+    private Key getKey() {
+        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /* Access Token */
+    public String createAccessToken(Member member) {
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + expirationMs);
-
-        String token = Jwts.builder()
+        return Jwts.builder()
                 .setSubject(String.valueOf(member.getMemberId()))
                 .claim("role", member.getMemberRole())
+                .claim("type", "access")
                 .setIssuedAt(now)
-                .setExpiration(expiry)
-                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .setExpiration(new Date(now.getTime() + accessExpirationMs))
+                .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
 
-        return TokenResponse.builder()
-                .accessToken(token)
-                .tokenType("Bearer")
-                .expiresIn(expirationMs / 1000)
-                .build();
+    /* Refresh Token */
+    public String createRefreshToken(Long memberId) {
+        Date now = new Date();
+        return Jwts.builder()
+                .setSubject(String.valueOf(memberId))
+                .claim("type", "refresh")
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + refreshExpirationMs))
+                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
     public Long getMemberId(String token) {
         return Long.parseLong(
-                Jwts.parser()
-                        .setSigningKey(secretKey)
+                Jwts.parserBuilder()
+                        .setSigningKey(getKey())
+                        .build()
                         .parseClaimsJws(token)
                         .getBody()
                         .getSubject()
@@ -48,10 +65,24 @@ public class JwtProvider {
 
     public boolean validate(String token) {
         try {
-            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            Jwts.parserBuilder()
+                    .setSigningKey(getKey())
+                    .build()
+                    .parseClaimsJws(token);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (JwtException e) {
             return false;
         }
     }
+
+    public boolean isAccessToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return "access".equals(claims.get("type"));
+    }
+
 }

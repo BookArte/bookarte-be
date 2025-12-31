@@ -1,6 +1,7 @@
 package com.library.bookarte.auth.controller;
 
 import com.library.bookarte.auth.dto.request.LoginRequest;
+import com.library.bookarte.auth.dto.request.RefreshTokenRequest;
 import com.library.bookarte.auth.dto.response.TokenResponse;
 import com.library.bookarte.auth.service.AuthService;
 import com.library.bookarte.global.response.GlobalResponseDto;
@@ -22,6 +23,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<GlobalResponseDto<TokenResponse>> login(@Valid @RequestBody LoginRequest loginRequest) {
         TokenResponse token = authService.login(loginRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, token));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<GlobalResponseDto<TokenResponse>> refresh(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+        TokenResponse token = authService.refresh(refreshTokenRequest);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, token));
     }
 }

@@ -30,7 +30,7 @@ public class JwtFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
-            if (jwtProvider.validate(token)) {
+            if (jwtProvider.validate(token) && jwtProvider.isAccessToken(token)) {
                 Long memberId = jwtProvider.getMemberId(token);
 
                 UsernamePasswordAuthenticationToken authentication =
