@@ -3,8 +3,6 @@ package com.library.bookarte.book.service;
 import com.library.bookarte.book.dto.BookReqDto;
 import com.library.bookarte.book.dto.BookResDto;
 import com.library.bookarte.book.entity.Book;
-import com.library.bookarte.book.entity.BookCategory;
-import com.library.bookarte.book.repository.BookCategoryRepository;
 import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.category.service.CategoryService;
@@ -23,7 +21,6 @@ import java.util.List;
 public class BookService {
 
     private final BookRepository bookRepository;
-    private final BookCategoryRepository bookCategoryRepository;
     private final CategoryService categoryService;
 
     private final int defaultSize = 5;
@@ -44,16 +41,11 @@ public class BookService {
                 .bookBorrowYn('Y')
                 .bookCallNumber(bookReqDto.getBookCallNumber())
                 .bookThumbnail(bookReqDto.getBookThumbnail())
+                .category(category)
                 .build();
 
         bookRepository.save(book);
 
-        BookCategory bookCategory = BookCategory.builder()
-                .book(book)
-                .category(category)
-                .build();
-
-        bookCategoryRepository.save(bookCategory);
 
         return BookResDto.builder()
                 .bookId(book.getBookId())
@@ -64,7 +56,7 @@ public class BookService {
                 .bookIsbn(book.getBookIsbn())
                 .bookContents(book.getBookContents())
                 .bookCallNumber(book.getBookCallNumber())
-                .bookCategoryName(bookCategory.getCategory().getCategoryName())
+                .bookCategoryName(category.getCategoryName())
                 .build();
     }
 

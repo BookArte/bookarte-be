@@ -61,8 +61,9 @@ public class Book extends BaseEntity {
     private String bookThumbnail;
 
     //도서 카테고리
-    @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private BookCategory bookCategory;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
     public void updateBook(String bookTitle,
                            String bookAuthor,
@@ -94,7 +95,7 @@ public class Book extends BaseEntity {
                 .bookCallNumber(this.bookCallNumber)
                 .bookIsbn(this.bookIsbn)
                 .bookThumbnail(this.bookThumbnail)
-                .bookCategoryName(this.bookCategory.getCategory().getCategoryName())
+                .bookCategoryName(this.category.getCategoryName())
                 .build();
     }
 }
