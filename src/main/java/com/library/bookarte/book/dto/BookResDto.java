@@ -30,4 +30,6 @@ public class BookResDto {
 
     private String bookCallNumber;
 
+    private String bookCategoryName;
+
 }

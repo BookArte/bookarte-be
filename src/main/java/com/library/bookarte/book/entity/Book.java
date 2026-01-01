@@ -1,6 +1,7 @@
 package com.library.bookarte.book.entity;
 
 import com.library.bookarte.book.dto.BookResDto;
+import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -59,6 +60,11 @@ public class Book extends BaseEntity {
     @Column(nullable = false)
     private String bookThumbnail;
 
+    //도서 카테고리
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
     public void updateBook(String bookTitle,
                            String bookAuthor,
                            String publisherName,
@@ -83,10 +89,13 @@ public class Book extends BaseEntity {
                 .bookId(this.bookId)
                 .bookTitle(this.bookTitle)
                 .bookAuthor(this.bookAuthor)
+                .publisherName(this.publisherName)
+                .publicationDate(this.publicationDate)
                 .bookContents(this.bookContents)
                 .bookCallNumber(this.bookCallNumber)
                 .bookIsbn(this.bookIsbn)
                 .bookThumbnail(this.bookThumbnail)
+                .bookCategoryName(this.category.getCategoryName())
                 .build();
     }
 }
