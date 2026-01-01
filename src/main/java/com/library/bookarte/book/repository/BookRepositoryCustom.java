@@ -6,5 +6,5 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface BookRepositoryCustom {
-    public Page<BookResDto> findBooks(SearchFilterDto searchFilterDto, Pageable pageable);
+    Page<BookResDto> findBooks(SearchFilterDto searchFilterDto, Pageable pageable);
 }
