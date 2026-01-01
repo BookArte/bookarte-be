@@ -2,6 +2,7 @@ package com.library.bookarte.book.service;
 
 import com.library.bookarte.book.dto.BookReqDto;
 import com.library.bookarte.book.dto.BookResDto;
+import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.category.entity.Category;
@@ -12,8 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -95,7 +94,7 @@ public class BookService {
         bookRepository.delete(deleteTargetBook);
     }
 
-    /*도서 전체 조회 api*/
+/*    *//*도서 전체 조회 api*//*
     public Page<BookResDto> findAllBooks(Pageable pageable){
         int page = pageable.getPageNumber() - 1;
 
@@ -109,7 +108,7 @@ public class BookService {
 
     }
 
-    /*도서 카테고리 별 조회*/
+    *//*도서 카테고리 별 조회*//*
     public Page<BookResDto> findBooksWithCategory(String bookCategoryName, Pageable pageable) {
         int page = pageable.getPageNumber() - 1;
 
@@ -119,6 +118,15 @@ public class BookService {
 
         return bookRepository.findBookResDtosByCategoryId(category.getCategoryId(),
                 PageRequest.of(page,defaultSize,Sort.Direction.DESC,"bookId"));
+    }*/
+
+    @Transactional(readOnly = true)
+    public Page<BookResDto> findBooksWithFilter(SearchFilterDto searchFilterDto,Pageable pageable){
+        int page = pageable.getPageNumber() - 1;
+
+        return bookRepository.findBooks(searchFilterDto,
+                PageRequest.of(page, defaultSize, Sort.Direction.DESC, "bookId"));
     }
+
 
 }
