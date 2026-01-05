@@ -32,6 +32,10 @@ public class Book extends BaseEntity {
     @Column(nullable = false)
     private String bookAuthor;
 
+    //번역가
+    @Column
+    private String bookTranslator;
+
     //출판사 publisher_name
     @Column(nullable = false)
     private String publisherName;
@@ -53,7 +57,7 @@ public class Book extends BaseEntity {
     private char bookBorrowYn;
 
     //청구기호 book_call_number
-    @Column(nullable = false)
+    @Column
     private String bookCallNumber;
 
     //표지사진 book_thumbnail
