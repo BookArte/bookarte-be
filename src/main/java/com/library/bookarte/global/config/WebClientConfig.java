@@ -11,6 +11,9 @@ public class WebClientConfig {
     @Value("${kakao.api.key}")
     private String kakaoApiKey;
 
+    @Value("${kakao.api.baseurl}")
+    private String kakaoBaseURL;
+
     @Bean
     public WebClient kakaoWebClient() {
         return WebClient.builder()
