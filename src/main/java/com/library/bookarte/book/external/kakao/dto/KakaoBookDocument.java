@@ -13,7 +13,7 @@ public class KakaoBookDocument {
     private List<String> authors;
     private List<String> translators;
     private String publisher;
-    private String datetime;   // ISO 문자열
+    private String datetime;
     private String isbn;
     private String thumbnail;
     private String contents;
