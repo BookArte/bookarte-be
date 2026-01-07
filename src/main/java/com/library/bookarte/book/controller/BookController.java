@@ -3,6 +3,7 @@ package com.library.bookarte.book.controller;
 import com.library.bookarte.book.dto.BookReqDto;
 import com.library.bookarte.book.dto.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
+import com.library.bookarte.book.external.dto.BookSearchResult;
 import com.library.bookarte.book.service.BookService;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -58,15 +61,16 @@ public class BookController {
 
     }
 
-/*    //도서 리스트 조회
+/*
+    //도서 리스트 조회
     @GetMapping("/list")
     public ResponseEntity<GlobalResponseDto<Page<BookResDto>>> listBook(@PageableDefault(page = 1) Pageable pageable){
         Page<BookResDto> result = bookService.findAllBooks(pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK,result));
-    }*/
-
+    }
+ */
 /*
     //도서 카테고리 조회
     @GetMapping("/list/category")
@@ -84,6 +88,16 @@ public class BookController {
     @GetMapping("/list")
     public ResponseEntity<GlobalResponseDto<Page<BookResDto>>> listBook(@ModelAttribute SearchFilterDto searchFilterDto, @PageableDefault(page = 1) Pageable pageable){
         Page<BookResDto> result = bookService.findBooksWithFilter(searchFilterDto, pageable);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK,result));
+    }
+
+
+    //카카오 api + 국립 중앙 도서관 api 호출
+    @GetMapping("/library/search")
+    public  ResponseEntity<?> searchBookWithLibraryApi(@RequestParam String query){
+        List<BookSearchResult> result = bookService.searchBooksWithApi(query);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK,result));

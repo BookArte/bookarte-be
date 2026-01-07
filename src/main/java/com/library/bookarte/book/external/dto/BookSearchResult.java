@@ -1,16 +1,11 @@
-package com.library.bookarte.book.dto;
+package com.library.bookarte.book.external.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.*;
-
-import java.time.LocalDate;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-public class BookReqDto {
+public class BookSearchResult {
 
     //책제목
     private String bookTitle;
@@ -24,9 +19,8 @@ public class BookReqDto {
     //출판사
     private String publisherName;
 
-    //출판일
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate publicationDate;
+    //춮판일
+    private String publicationDate;
 
     //ISBN
     private String bookIsbn;
@@ -37,10 +31,6 @@ public class BookReqDto {
     //썸네일
     private String bookThumbnail;
 
-    //청구기호
-    private String bookCallNumber;
-
     //카테고리
     private String bookCategory;
-
 }

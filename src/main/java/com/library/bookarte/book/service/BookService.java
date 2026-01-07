@@ -4,6 +4,9 @@ import com.library.bookarte.book.dto.BookReqDto;
 import com.library.bookarte.book.dto.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.entity.Book;
+import com.library.bookarte.book.external.dto.BookSearchResult;
+import com.library.bookarte.book.external.kakao.KakaoBookSearchClient;
+import com.library.bookarte.book.external.national.NationalLibrarySearchClient;
 import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.category.service.CategoryService;
@@ -13,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -21,6 +25,10 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final CategoryService categoryService;
+
+    private final KakaoBookSearchClient kakaoBookSearchClient;
+    private final NationalLibrarySearchClient nationalLibrarySearchClient;
+
 
     private final int defaultSize = 5;
 
@@ -94,7 +102,9 @@ public class BookService {
         bookRepository.delete(deleteTargetBook);
     }
 
-/*    *//*도서 전체 조회 api*//*
+    /*도서 전체 조회 api*/
+
+    /*
     public Page<BookResDto> findAllBooks(Pageable pageable){
         int page = pageable.getPageNumber() - 1;
 
@@ -108,7 +118,8 @@ public class BookService {
 
     }
 
-    *//*도서 카테고리 별 조회*//*
+    /*도서 카테고리 별 조회*/
+    /*
     public Page<BookResDto> findBooksWithCategory(String bookCategoryName, Pageable pageable) {
         int page = pageable.getPageNumber() - 1;
 
@@ -120,6 +131,7 @@ public class BookService {
                 PageRequest.of(page,defaultSize,Sort.Direction.DESC,"bookId"));
     }*/
 
+    /*도서 조건부 및 전체 조회 api*/
     @Transactional(readOnly = true)
     public Page<BookResDto> findBooksWithFilter(SearchFilterDto searchFilterDto,Pageable pageable){
         int page = pageable.getPageNumber() - 1;
@@ -128,5 +140,27 @@ public class BookService {
                 PageRequest.of(page, defaultSize, Sort.Direction.DESC, "bookId"));
     }
 
+    /*카카오, 국립 중앙 도서관 api 호출*/
+    public List<BookSearchResult> searchBooksWithApi(String query){
+
+        List<BookSearchResult> kakaoBookList = kakaoBookSearchClient.search(query);
+        String category = nationalLibrarySearchClient.fetchCategoryByTitle(query);
+
+        return kakaoBookList.stream()
+                .map(book -> BookSearchResult.builder()
+                        .bookTitle(book.getBookTitle())
+                        .bookAuthor(book.getBookAuthor())
+                        .bookTranslator(book.getBookTranslator())
+                        .bookContents(book.getBookContents())
+                        .publisherName(book.getPublisherName())
+                        .publicationDate(book.getPublicationDate())
+                        .bookIsbn(book.getBookIsbn())
+                        .bookThumbnail(book.getBookThumbnail())
+                        .bookCategory(category) // ⭐ "문학"
+                        .build()
+                )
+                .toList();
+
+    }
 
 }

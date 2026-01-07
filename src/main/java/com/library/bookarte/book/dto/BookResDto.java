@@ -19,6 +19,8 @@ public class BookResDto {
 
     private String publisherName;
 
+    private String bookTranslator;
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate publicationDate;
 
