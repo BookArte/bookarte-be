@@ -36,6 +36,7 @@ public class Book extends BaseEntity {
             name = "book_participant",
             joinColumns = @JoinColumn(name = "book_id")
     )
+    @OrderBy("name ASC")
     private List<Participant> participants = new ArrayList<>();
 
     /*
