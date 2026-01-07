@@ -6,14 +6,31 @@ import lombok.Getter;
 @Getter
 @Builder
 public class BookSearchResult {
-    private String title;
-    private String author;
-    private String publisher;
-    private String translator;
-    private String publishedDate;
-    private String isbn;
-    private String thumbnail;
-    private String description;
-    private String callNumber;
-    private String category;
+
+    //책제목
+    private String bookTitle;
+
+    //책저자
+    private String bookAuthor;
+
+    //번역가
+    private String bookTranslator;
+
+    //출판사
+    private String publisherName;
+
+    //춮판일
+    private String publicationDate;
+
+    //ISBN
+    private String bookIsbn;
+
+    //책소개
+    private String bookContents;
+
+    //썸네일
+    private String bookThumbnail;
+
+    //카테고리
+    private String bookCategory;
 }

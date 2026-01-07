@@ -37,14 +37,14 @@ public class KakaoBookSearchClient{
 
     private BookSearchResult toResult(KakaoBookDocument doc) {
         return BookSearchResult.builder()
-                .title(doc.getTitle())
-                .author(String.join(", ", doc.getAuthors()))
-                .publisher(doc.getPublisher())
-                .translator(String.join(", ", doc.getTranslators()))
-                .publishedDate(doc.getDatetime())
-                .isbn(extractIsbn13(doc.getIsbn()))
-                .thumbnail(doc.getThumbnail())
-                .description(doc.getContents())
+                .bookTitle(doc.getTitle())
+                .bookAuthor(String.join(", ", doc.getAuthors()))
+                .publisherName(doc.getPublisher())
+                .bookTranslator(String.join(", ", doc.getTranslators()))
+                .publicationDate(doc.getDatetime())
+                .bookIsbn(extractIsbn13(doc.getIsbn()))
+                .bookThumbnail(doc.getThumbnail())
+                .bookContents(doc.getContents())
                 .build();
     }
 

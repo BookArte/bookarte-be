@@ -148,14 +148,15 @@ public class BookService {
 
         return kakaoBookList.stream()
                 .map(book -> BookSearchResult.builder()
-                        .title(book.getTitle())
-                        .author(book.getAuthor())
-                        .translator(book.getTranslator())
-                        .description(book.getDescription())
-                        .publisher(book.getPublisher())
-                        .isbn((book.getIsbn()))
-                        .thumbnail(book.getThumbnail())
-                        .category(category) // ⭐ "문학"
+                        .bookTitle(book.getBookTitle())
+                        .bookAuthor(book.getBookAuthor())
+                        .bookTranslator(book.getBookTranslator())
+                        .bookContents(book.getBookContents())
+                        .publisherName(book.getPublisherName())
+                        .publicationDate(book.getPublicationDate())
+                        .bookIsbn(book.getBookIsbn())
+                        .bookThumbnail(book.getBookThumbnail())
+                        .bookCategory(category) // ⭐ "문학"
                         .build()
                 )
                 .toList();
