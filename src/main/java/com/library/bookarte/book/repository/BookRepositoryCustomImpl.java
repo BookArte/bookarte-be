@@ -35,7 +35,6 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                         BookResDto.class,
                         book.bookId,
                         book.bookTitle,
-                        book.bookAuthor,
                         book.publisherName,
                         book.publicationDate,
                         book.bookIsbn,
