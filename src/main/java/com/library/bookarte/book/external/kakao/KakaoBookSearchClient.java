@@ -48,7 +48,10 @@ public class KakaoBookSearchClient{
                 .build();
     }
 
-    //ISBN 추출
+    /*
+    * 카카오는 ISBN-10, ISBN-13을 같이 제공하는데
+    * 2007년 이후 ISBN-13을 기준 사용하기에 ISBN-13만 사용하기 위해 추출
+    * */
     private String extractIsbn13(String isbn) {
         if (isbn == null) return null;
         String[] parts = isbn.split(" ");
