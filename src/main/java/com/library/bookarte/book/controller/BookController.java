@@ -22,6 +22,7 @@ import java.util.List;
 public class BookController {
     private final BookService bookService;
 
+    //도서 등록
     @PostMapping("/register")
     public ResponseEntity<GlobalResponseDto<String>> registerBook(@RequestBody BookReqDto bookReqDto){
         bookService.registerBook(bookReqDto);
@@ -31,7 +32,6 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(GlobalResponseDto.success(HttpStatus.CREATED,result));
     }
-    //도서 등록
 
     //도서 상제 조회
     @GetMapping("/view/{bookId}")
