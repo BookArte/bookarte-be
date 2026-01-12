@@ -24,8 +24,10 @@ public class BookController {
 
     //도서 등록
     @PostMapping("/register")
-    public ResponseEntity<GlobalResponseDto<BookResDto>> registerBook(@RequestBody BookReqDto bookReqDto){
-        BookResDto result = bookService.registerBook(bookReqDto);
+    public ResponseEntity<GlobalResponseDto<String>> registerBook(@RequestBody BookReqDto bookReqDto){
+        bookService.registerBook(bookReqDto);
+
+        String result = "도서 정보 저장 성공";
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(GlobalResponseDto.success(HttpStatus.CREATED,result));
