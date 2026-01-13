@@ -17,9 +17,6 @@ public class RecommendationReqDto {
     //추천 타입
     private String recommendType;
 
-    //우선 순위
-    private int priority;
-
     //추천 코멘트
     private String comments;
 

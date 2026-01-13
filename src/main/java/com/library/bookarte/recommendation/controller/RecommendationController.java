@@ -6,10 +6,7 @@ import com.library.bookarte.recommendation.service.RecommendationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,4 +22,14 @@ public class RecommendationController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(GlobalResponseDto.success(HttpStatus.CREATED, result));
     }
+
+    @DeleteMapping("/{recommendationId}")
+    public ResponseEntity<GlobalResponseDto<String>> deleteRecommend(@PathVariable Long recommendationId){
+        recommendationService.deleteRecommendBook(recommendationId);
+
+        String result = "도서 추천 순위 삭제 완료";
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
 }
