@@ -6,6 +6,7 @@ import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.recommendation.dto.RecommendationBookResDto;
 import com.library.bookarte.recommendation.dto.RecommendationReqDto;
+import com.library.bookarte.recommendation.dto.ReorderReqDto;
 import com.library.bookarte.recommendation.entity.Recommendation;
 import com.library.bookarte.recommendation.entity.type.RecommendType;
 import com.library.bookarte.recommendation.repository.RecommendationRepository;
@@ -24,6 +25,7 @@ public class RecommendationService {
     private final RecommendationRepository recommendationRepository;
     private final BookService bookService;
 
+    //추천 도서 등록
     public void setRecommendBookByAdmin(RecommendationReqDto recommendationReqDto) {
         Book recommendationBook = bookService.findBook(recommendationReqDto.getBookId());
         int defaultPriority = 1; //나중에 추천 리스트에 등록되는 도서는 1순위로 들어가게 된다
@@ -44,6 +46,7 @@ public class RecommendationService {
 
     }
 
+    //추천 도서 삭제
     public void deleteRecommendBook(Long recommendationId){
         Recommendation recommendation = recommendationRepository.findById(recommendationId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.RECOMMENDATION_NOT_FOUND));
@@ -55,11 +58,24 @@ public class RecommendationService {
         recommendationRepository.decreasePrioritiesHigherThan(deletedPriority);
     }
 
+    //추천 도서 목록 조회
     public List<RecommendationBookResDto> getRecommendationBooks() {
         return recommendationRepository.findAllByOrderByPriorityAsc()
                 .stream()
                 .map(Recommendation::toResDto)
                 .collect(Collectors.toList());
+    }
+
+    //추천 도서 목록 순서 변경
+    public void reorderRecommendation(ReorderReqDto reorderReqDto) {
+        List<Long> ids = reorderReqDto.getReorderedIds();
+
+        for (int i = 0; i < ids.size(); i++) {
+            Long id = ids.get(i);
+            int newPriority = i + 1;
+
+            recommendationRepository.updatePriority(id, newPriority);
+        }
     }
 
 

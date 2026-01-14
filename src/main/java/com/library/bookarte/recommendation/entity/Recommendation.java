@@ -34,7 +34,7 @@ public class Recommendation extends BaseEntity {
     private int priority;
 
     //추천 코멘트
-    @Column(length = 255)
+    @Column
     private String comments;
 
     //추천 시작일

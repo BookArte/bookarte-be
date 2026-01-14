@@ -3,6 +3,7 @@ package com.library.bookarte.recommendation.controller;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import com.library.bookarte.recommendation.dto.RecommendationBookResDto;
 import com.library.bookarte.recommendation.dto.RecommendationReqDto;
+import com.library.bookarte.recommendation.dto.ReorderReqDto;
 import com.library.bookarte.recommendation.service.RecommendationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,16 @@ public class RecommendationController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @PatchMapping("/reorder")
+    public ResponseEntity<GlobalResponseDto<String>> reorder(@RequestBody ReorderReqDto reorderReqDto){
+        recommendationService.reorderRecommendation(reorderReqDto);
+
+        String result = "도서 추천 순위 변경 완료";
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+
     }
 
 }
