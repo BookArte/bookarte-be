@@ -82,6 +82,13 @@ public class BookService {
         return book.toBookResDto();
     }
 
+    @Transactional(readOnly = true)
+    public Book findBook(Long bookId) {
+
+        return bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+    }
+
     /*도서 수정 api*/
     public Long updateBook(Long bookId,BookReqDto bookReqDto){
 
