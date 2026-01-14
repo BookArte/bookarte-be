@@ -1,12 +1,15 @@
 package com.library.bookarte.recommendation.controller;
 
 import com.library.bookarte.global.response.GlobalResponseDto;
+import com.library.bookarte.recommendation.dto.RecommendationBookResDto;
 import com.library.bookarte.recommendation.dto.RecommendationReqDto;
 import com.library.bookarte.recommendation.service.RecommendationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -28,6 +31,14 @@ public class RecommendationController {
         recommendationService.deleteRecommendBook(recommendationId);
 
         String result = "도서 추천 순위 삭제 완료";
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @GetMapping("/pick-10/list")
+    public ResponseEntity<GlobalResponseDto<List<RecommendationBookResDto>>> pickList(){
+        List<RecommendationBookResDto> result = recommendationService.getRecommendationBooks();
+
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }

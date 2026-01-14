@@ -4,6 +4,7 @@ import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.service.BookService;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
+import com.library.bookarte.recommendation.dto.RecommendationBookResDto;
 import com.library.bookarte.recommendation.dto.RecommendationReqDto;
 import com.library.bookarte.recommendation.entity.Recommendation;
 import com.library.bookarte.recommendation.entity.type.RecommendType;
@@ -11,6 +12,9 @@ import com.library.bookarte.recommendation.repository.RecommendationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -49,6 +53,13 @@ public class RecommendationService {
         recommendationRepository.delete(recommendation);
 
         recommendationRepository.decreasePrioritiesHigherThan(deletedPriority);
+    }
+
+    public List<RecommendationBookResDto> getRecommendationBooks() {
+        return recommendationRepository.findAllByOrderByPriorityAsc()
+                .stream()
+                .map(Recommendation::toResDto)
+                .collect(Collectors.toList());
     }
 
 
