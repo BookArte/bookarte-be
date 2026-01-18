@@ -32,7 +32,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     @Override
     public Page<BookResDto> findBooks(SearchFilterDto searchFilterDto, Pageable pageable){
         String categoryName = searchFilterDto.getCategory();
-        String keyword = searchFilterDto.getKeyword();
+        String bookTitle = searchFilterDto.getBookTitle();
 
         //도서 id만 선 조회
         List<Long> ids = jpaQueryFactory
@@ -41,7 +41,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .join(book.category, category)
                 .where(
                         categoryNameEq(categoryName),
-                        titleContains(keyword)
+                        titleContains(bookTitle)
                 )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -70,7 +70,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .from(book)
                 .where(
                         categoryNameEq(categoryName),
-                        titleContains(keyword)
+                        titleContains(bookTitle)
                 )
                 .fetchOne();
 
@@ -85,9 +85,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 : null;
     }
 
-    private BooleanExpression titleContains(String keyword) {
-        return StringUtils.hasText(keyword)
-                ? book.bookTitle.contains(keyword)
+    private BooleanExpression titleContains(String bookTitle) {
+        return StringUtils.hasText(bookTitle)
+                ? book.bookTitle.contains(bookTitle)
                 : null;
     }
 

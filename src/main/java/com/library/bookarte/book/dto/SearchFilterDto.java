@@ -7,6 +7,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class SearchFilterDto {
 
-    private final String keyword;
+    private final String bookTitle;
     private final String category;
 }
