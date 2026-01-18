@@ -156,7 +156,7 @@ public class Book extends BaseEntity {
                 .bookCallNumber(this.bookCallNumber)
                 .bookIsbn(this.bookIsbn)
                 .bookThumbnail(this.bookThumbnail)
-                .bookCategoryName(this.category.getCategoryName())
+                .bookCategory(this.category.getCategoryName())
                 .build();
     }
 

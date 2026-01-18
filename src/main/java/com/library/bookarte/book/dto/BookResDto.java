@@ -36,7 +36,7 @@ public class BookResDto {
 
     private String bookCallNumber;
 
-    private String bookCategoryName;
+    private String bookCategory;
 
     public BookResDto(Long bookId,
                       String bookTitle,
@@ -47,7 +47,7 @@ public class BookResDto {
                       String bookContents,
                       String bookThumbnail,
                       String bookCallNumber,
-                      String bookCategoryName) {
+                      String bookCategory) {
         this.bookId = bookId;
         this.bookTitle = bookTitle;
         this.publisherName = publisherName;
@@ -56,7 +56,7 @@ public class BookResDto {
         this.bookContents = bookContents;
         this.bookThumbnail = bookThumbnail;
         this.bookCallNumber = bookCallNumber;
-        this.bookCategoryName = bookCategoryName;
+        this.bookCategory = bookCategory;
 
         // 리스트를 순회하며 저자와 역자를 콤마(,)로 구분된 문자열로 변환
         if (participants != null) {
