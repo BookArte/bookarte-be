@@ -23,6 +23,10 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long categoryId;
 
+    //카테고리 코드
+    @Column(unique = true, nullable = false )
+    private String categoryCode;
+
     //카테고리명
     @Column
     private String categoryName;
@@ -34,6 +38,7 @@ public class Category {
     public CategoryResDto toCategoryResDto(){
         return CategoryResDto.builder()
                 .categoryId(this.categoryId)
+                .categoryCode(this.categoryCode)
                 .categoryName(this.categoryName)
                 .build();
     }

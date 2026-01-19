@@ -9,5 +9,6 @@ import lombok.*;
 @Builder
 public class CategoryResDto {
     private Long categoryId;
+    private String categoryCode;
     private String categoryName;
 }

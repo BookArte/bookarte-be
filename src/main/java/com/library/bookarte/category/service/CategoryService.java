@@ -21,6 +21,7 @@ public class CategoryService {
 
     public Long generateCategory(CategoryReqDto categoryReqDto) {
         Category category = Category.builder()
+                .categoryCode(categoryReqDto.getCategoryCode())
                 .categoryName(categoryReqDto.getCategoryName())
                 .build();
 
