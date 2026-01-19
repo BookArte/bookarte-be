@@ -105,6 +105,4 @@ public class BookController {
                 .body(GlobalResponseDto.success(HttpStatus.OK,result));
     }
 
-
-
 }

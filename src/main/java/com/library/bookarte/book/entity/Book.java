@@ -62,7 +62,7 @@ public class Book extends BaseEntity {
     private String bookIsbn;
 
     //정보 book_contents
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String bookContents;
 
     //대출가능여부 book_borrow_yn
@@ -156,7 +156,7 @@ public class Book extends BaseEntity {
                 .bookCallNumber(this.bookCallNumber)
                 .bookIsbn(this.bookIsbn)
                 .bookThumbnail(this.bookThumbnail)
-                .bookCategoryName(this.category.getCategoryName())
+                .bookCategory(this.category.getCategoryName())
                 .build();
     }
 

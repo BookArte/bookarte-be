@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -41,7 +44,7 @@ public class KakaoBookSearchClient{
                 .bookAuthor(String.join(", ", doc.getAuthors()))
                 .publisherName(doc.getPublisher())
                 .bookTranslator(String.join(", ", doc.getTranslators()))
-                .publicationDate(doc.getDatetime())
+                .publicationDate(formattedDate(doc.getDatetime()))
                 .bookIsbn(extractIsbn13(doc.getIsbn()))
                 .bookThumbnail(doc.getThumbnail())
                 .bookContents(doc.getContents())
@@ -56,5 +59,10 @@ public class KakaoBookSearchClient{
         if (isbn == null) return null;
         String[] parts = isbn.split(" ");
         return parts.length > 1 ? parts[1] : parts[0];
+    }
+
+    private String formattedDate(String date){
+        OffsetDateTime odt = OffsetDateTime.parse(date);
+        return odt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
     }
 }
