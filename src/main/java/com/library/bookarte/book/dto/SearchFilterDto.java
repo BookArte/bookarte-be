@@ -12,9 +12,9 @@ public class SearchFilterDto {
 
     private final String bookTitle;
     private final String category;
-    private final String isbn;
+    private final String bookIsbn;
     private final String publisherName;
-    private final String author;
+    private final String bookAuthor;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private final LocalDate publicationDateStart;

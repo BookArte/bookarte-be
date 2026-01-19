@@ -4,13 +4,10 @@ import com.library.bookarte.book.dto.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
-import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.group.GroupBy.*;
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -36,9 +33,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     public Page<BookResDto> findBooks(SearchFilterDto searchFilterDto, Pageable pageable){
         String categoryName = searchFilterDto.getCategory();
         String bookTitle = searchFilterDto.getBookTitle();
-        String bookIsbn = searchFilterDto.getIsbn();
+        String bookIsbn = searchFilterDto.getBookIsbn();
         String publisherName = searchFilterDto.getPublisherName();
-        String author = searchFilterDto.getAuthor();
+        String author = searchFilterDto.getBookAuthor();
         LocalDate start = searchFilterDto.getPublicationDateStart();
         LocalDate end = searchFilterDto.getPublicationDateEnd();
 
