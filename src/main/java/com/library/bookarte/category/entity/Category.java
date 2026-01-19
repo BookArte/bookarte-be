@@ -43,6 +43,11 @@ public class Category {
                 .build();
     }
 
+    public Category(String code, String name) {
+        this.categoryCode = code;
+        this.categoryName = name;
+    }
+
     public void updateCategory(String categoryName){
         this.categoryName = categoryName;
     }
