@@ -9,4 +9,6 @@ public class SearchFilterDto {
 
     private final String bookTitle;
     private final String category;
+    private final String isbn;
+    private final String publisherName;
 }

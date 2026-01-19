@@ -33,6 +33,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     public Page<BookResDto> findBooks(SearchFilterDto searchFilterDto, Pageable pageable){
         String categoryName = searchFilterDto.getCategory();
         String bookTitle = searchFilterDto.getBookTitle();
+        String bookIsbn = searchFilterDto.getIsbn();
+        String publisherName = searchFilterDto.getPublisherName();
 
         //도서 id만 선 조회
         List<Long> ids = jpaQueryFactory
@@ -41,7 +43,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .join(book.category, category)
                 .where(
                         categoryNameEq(categoryName),
-                        titleContains(bookTitle)
+                        titleContains(bookTitle),
+                        isbnContains(bookIsbn),
+                        publisherContains(publisherName)
                 )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -80,7 +84,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     // ===== 조건 메서드 =====
 
     private BooleanExpression categoryNameEq(String categoryName) {
-        return categoryName != null
+        return StringUtils.hasText(categoryName)
                 ? book.category.categoryName.eq(categoryName)
                 : null;
     }
@@ -88,6 +92,18 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     private BooleanExpression titleContains(String bookTitle) {
         return StringUtils.hasText(bookTitle)
                 ? book.bookTitle.contains(bookTitle)
+                : null;
+    }
+
+    private BooleanExpression isbnContains(String isbn) {
+        return isbn != null
+                ? book.bookIsbn.contains(isbn)
+                : null;
+    }
+
+    private BooleanExpression publisherContains(String publisherName) {
+        return StringUtils.hasText(publisherName)
+                ? book.publisherName.contains(publisherName)
                 : null;
     }
 

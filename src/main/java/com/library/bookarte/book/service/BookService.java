@@ -205,7 +205,7 @@ public class BookService {
                         .publicationDate(book.getPublicationDate())
                         .bookIsbn(book.getBookIsbn())
                         .bookThumbnail(book.getBookThumbnail())
-                        .bookCategory(category) // ⭐ "문학"
+                        .bookCategory(category)
                         .build()
                 )
                 .toList();
