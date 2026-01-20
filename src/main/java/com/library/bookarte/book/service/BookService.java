@@ -34,9 +34,6 @@ public class BookService {
     private final NationalLibrarySearchClient nationalLibrarySearchClient;
 
 
-    private final int defaultSize = 5;
-
-
     /*도서 등록 api*/
     public void registerBook(BookReqDto bookReqDto){
 
@@ -183,10 +180,7 @@ public class BookService {
     /*도서 조건부 및 전체 조회 api*/
     @Transactional(readOnly = true)
     public Page<BookResDto> findBooksWithFilter(SearchFilterDto searchFilterDto,Pageable pageable){
-        int page = pageable.getPageNumber() - 1;
-
-        return bookRepository.findBooks(searchFilterDto,
-                PageRequest.of(page, defaultSize, Sort.Direction.DESC, "bookId"));
+        return bookRepository.findBooks(searchFilterDto, pageable);
     }
 
     /*카카오, 국립 중앙 도서관 api 호출*/
@@ -209,7 +203,5 @@ public class BookService {
                         .build()
                 )
                 .toList();
-
     }
-
 }

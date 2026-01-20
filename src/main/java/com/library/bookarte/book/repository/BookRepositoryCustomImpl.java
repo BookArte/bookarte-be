@@ -5,6 +5,8 @@ import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
 import com.querydsl.core.group.GroupBy.*;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -12,10 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +35,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
     @Override
     public Page<BookResDto> findBooks(SearchFilterDto searchFilterDto, Pageable pageable){
+
+        //파라미터
         String categoryName = searchFilterDto.getCategory();
         String bookTitle = searchFilterDto.getBookTitle();
         String bookIsbn = searchFilterDto.getBookIsbn();
@@ -52,6 +58,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                         authorContains(author),
                         publicationDateBetween(start,end)
                 )
+                .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -66,6 +73,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .join(book.category, category).fetchJoin()
                 .leftJoin(book.participants).fetchJoin() // 컬렉션 페치 조인
                 .where(book.bookId.in(ids))
+                .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .fetch();
 
         List<BookResDto> content = books.stream()
@@ -133,7 +141,6 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return end != null ? book.publicationDate.loe(end) : null;
     }
 
-
     private BooleanExpression publicationDateBetween(LocalDate start, LocalDate end ){
         BooleanExpression isGoe = publicationDateGoe(start);
         BooleanExpression isLoe = publicationDateLoe(end);
@@ -144,4 +151,36 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
         return null;
     }
+
+    private OrderSpecifier<?>[] getOrderSpecifiers(Sort sort) {
+        List<OrderSpecifier<?>> orders = new ArrayList<>();
+
+        sort.forEach(order -> {
+            Order direction = order.isAscending() ? Order.ASC : Order.DESC;
+            String property = order.getProperty();
+
+            switch (property) {
+                case "bookTitle":
+                    orders.add(new OrderSpecifier<>(direction, book.bookTitle));
+                    break;
+                case "bookAuthor":
+                    // 저자가 다수가 있을 경우 첫번째 저자를 대표 저자로 하여 정렬
+                    orders.add(new OrderSpecifier<>(direction, book.participants.any().name));
+                    break;
+                case "publicationDate":
+                    orders.add(new OrderSpecifier<>(direction, book.publicationDate));
+                    break;
+                case "createdAt":
+                    orders.add(new OrderSpecifier<>(direction, book.createdAt));
+                    break;
+                default:
+                    // 기본 정렬값 (최신 등록순)
+                    orders.add(new OrderSpecifier<>(Order.DESC, book.createdAt));
+                    break;
+            }
+        });
+
+        return orders.toArray(new OrderSpecifier[0]);
+    }
+
 }

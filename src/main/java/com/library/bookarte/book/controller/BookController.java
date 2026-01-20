@@ -9,6 +9,7 @@ import com.library.bookarte.global.response.GlobalResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -88,7 +89,8 @@ public class BookController {
 */
     //도서 리스트 조회
     @GetMapping("/list")
-    public ResponseEntity<GlobalResponseDto<Page<BookResDto>>> listBook(@ModelAttribute SearchFilterDto searchFilterDto, @PageableDefault(page = 1) Pageable pageable){
+    public ResponseEntity<GlobalResponseDto<Page<BookResDto>>> listBook(@ModelAttribute SearchFilterDto searchFilterDto,
+                                                                        @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable){
         Page<BookResDto> result = bookService.findBooksWithFilter(searchFilterDto, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
