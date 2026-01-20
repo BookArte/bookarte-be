@@ -32,6 +32,8 @@ public class JwtProvider {
         Date now = new Date();
         return Jwts.builder()
                 .setSubject(String.valueOf(member.getMemberId()))
+                .claim("userId", member.getMemberUserId())
+                .claim("userName", member.getMemberName())
                 .claim("role", member.getMemberRole())
                 .claim("type", "access")
                 .setIssuedAt(now)

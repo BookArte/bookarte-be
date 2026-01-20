@@ -11,21 +11,21 @@ import lombok.NoArgsConstructor;
 public class MemberJoinRequest {
 
     @NotBlank
-    private String userId;
+    private String memberUserId;
 
     @NotBlank
-    private String name;
+    private String memberName;
 
     @NotBlank
-    private String tel;
+    private String memberTel;
 
     @NotBlank
     @Size(min = 8, max = 16)
-    private String password;
+    private String memberPassword;
 
     @NotBlank
     @Email
-    private String email;
+    private String memberEmail;
 
     @NotBlank
     private Boolean agreeService;

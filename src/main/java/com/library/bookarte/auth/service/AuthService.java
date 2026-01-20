@@ -11,6 +11,7 @@ import com.library.bookarte.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -35,13 +36,36 @@ public class AuthService {
 
     public TokenResponse login(LoginRequest loginRequest) {
 
-        Member member = memberRepository.findByMemberUserId(loginRequest.getUserId())
+        Member member = memberRepository.findByMemberUserId(loginRequest.getMemberUserId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
-        if (!passwordEncoder.matches(loginRequest.getPassword(), member.getMemberPwd())) {
+        if (!passwordEncoder.matches(loginRequest.getMemberPassword(), member.getMemberPwd())) {
             throw new CustomException(CustomErrorCode.INVALID_PASSWORD);
         }
 
+        return generateTokenResponse(member);
+    }
+
+    public TokenResponse refresh(String refreshToken) {
+        if (!jwtProvider.validate(refreshToken)) {
+            throw new CustomException(CustomErrorCode.INVALID_TOKEN);
+        }
+
+        Long memberId = jwtProvider.getMemberId(refreshToken);
+        String savedToken = redisTemplate.opsForValue()
+                .get(REFRESH_TOKEN_PREFIX + memberId);
+
+        if (savedToken == null || !savedToken.equals(refreshToken)) {
+            throw new CustomException(CustomErrorCode.INVALID_TOKEN);
+        }
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        return generateTokenResponse(member);
+    }
+
+    private TokenResponse generateTokenResponse(Member member) {
         String accessToken = jwtProvider.createAccessToken(member);
         String refreshToken = jwtProvider.createRefreshToken(member.getMemberId());
 
@@ -59,40 +83,27 @@ public class AuthService {
                 .build();
     }
 
-    public TokenResponse refresh(RefreshTokenRequest refreshTokenRequest) {
+    public ResponseCookie createHttpOnlyCookie(String refreshToken) {
+        return ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(refreshExpirationMs / 1000)
+                .sameSite("Lax")
+                .build();
+    }
 
-        String refreshToken = refreshTokenRequest.getRefreshToken();
+    public void logout(Long memberId) {
+        redisTemplate.delete(REFRESH_TOKEN_PREFIX + memberId);
+    }
 
-        if (!jwtProvider.validate(refreshToken)) {
-            throw new CustomException(CustomErrorCode.INVALID_TOKEN);
-        }
-
-        Long memberId = jwtProvider.getMemberId(refreshToken);
-
-        String savedToken = redisTemplate.opsForValue()
-                .get(REFRESH_TOKEN_PREFIX + memberId);
-
-        if (savedToken == null || !savedToken.equals(refreshToken)) {
-            throw new CustomException(CustomErrorCode.INVALID_TOKEN);
-        }
-
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
-
-        String newAccessToken = jwtProvider.createAccessToken(member);
-        String newRefreshToken = jwtProvider.createRefreshToken(memberId);
-
-        redisTemplate.opsForValue().set(
-                REFRESH_TOKEN_PREFIX + memberId,
-                newRefreshToken,
-                Duration.ofMillis(refreshExpirationMs)
-        );
-
-        return TokenResponse.builder()
-                .accessToken(newAccessToken)
-                .refreshToken(newRefreshToken)
-                .tokenType("Bearer")
-                .expiresIn(accessExpirationMs / 1000)
+    public ResponseCookie createLogoutCookie() {
+        return ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
                 .build();
     }
 }
