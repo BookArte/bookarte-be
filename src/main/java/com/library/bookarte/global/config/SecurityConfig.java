@@ -22,6 +22,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // Postman 테스트용
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(SWAGGER_PATTERNS).permitAll() //swagger 관련 요청 허용
                         .requestMatchers(
                                 "/api/**"
                         ).permitAll()
@@ -38,4 +39,9 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    private static final String[] SWAGGER_PATTERNS = {
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+    };
 }
