@@ -15,28 +15,28 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/recommendation")
-public class RecommendationController {
+public class RecommendationController implements RecommendationControllerDocs {
     private final RecommendationService recommendationService;
 
-    @PostMapping("/set")
+    @Override
     public ResponseEntity<GlobalResponseDto<String>> setRecommendByAdmin(@RequestBody RecommendationReqDto recommendationReqDto) {
         recommendationService.setRecommendBookByAdmin(recommendationReqDto);
 
-        String result = "도서 추천 순위 등록 완료";
+        String result = "추천 등록 완료";
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(GlobalResponseDto.success(HttpStatus.CREATED, result));
     }
 
-    @DeleteMapping("/{recommendationId}")
+    @Override
     public ResponseEntity<GlobalResponseDto<String>> deleteRecommend(@PathVariable Long recommendationId){
         recommendationService.deleteRecommendBook(recommendationId);
 
-        String result = "도서 추천 순위 삭제 완료";
+        String result = "추천 제외 완료";
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
-    @GetMapping("/pick-10/list")
+    @Override
     public ResponseEntity<GlobalResponseDto<List<RecommendationBookResDto>>> pickList(){
         List<RecommendationBookResDto> result = recommendationService.getRecommendationBooks();
 
@@ -44,11 +44,11 @@ public class RecommendationController {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
-    @PatchMapping("/reorder")
+    @Override
     public ResponseEntity<GlobalResponseDto<String>> reorder(@RequestBody ReorderReqDto reorderReqDto){
         recommendationService.reorderRecommendation(reorderReqDto);
 
-        String result = "도서 추천 순위 변경 완료";
+        String result = "추천 순위 변경 완료";
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
 
