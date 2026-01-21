@@ -20,11 +20,11 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/book")
-public class BookController {
+public class BookController implements BookControllerDocs {
     private final BookService bookService;
 
     //도서 등록
-    @PostMapping("/register")
+    @Override
     public ResponseEntity<GlobalResponseDto<String>> registerBook(@RequestBody BookReqDto bookReqDto){
         bookService.registerBook(bookReqDto);
 
@@ -35,7 +35,7 @@ public class BookController {
     }
 
     //도서 상제 조회
-    @GetMapping("/view/{bookId}")
+    @Override
     public ResponseEntity<GlobalResponseDto<BookResDto>> findBookById(@PathVariable("bookId") Long bookId){
         BookResDto result = bookService.findBookById(bookId);
 
@@ -44,7 +44,7 @@ public class BookController {
     }
 
     //도서 정보 수정
-    @PatchMapping("/{bookId}")
+    @Override
     public ResponseEntity<GlobalResponseDto<Long>> updateBook(@PathVariable("bookId") Long bookId,
                                                         @RequestBody BookReqDto bookReqDto) {
         Long result = bookService.updateBook(bookId, bookReqDto);
@@ -54,7 +54,7 @@ public class BookController {
     }
 
     //도서 삭제
-    @DeleteMapping("/{bookId}")
+    @Override
     public ResponseEntity<GlobalResponseDto<?>> deleteBook(@PathVariable("bookId") Long bookId){
 
         bookService.deleteBook(bookId);
@@ -88,7 +88,7 @@ public class BookController {
     }
 */
     //도서 리스트 조회
-    @GetMapping("/list")
+    @Override
     public ResponseEntity<GlobalResponseDto<Page<BookResDto>>> listBook(@ModelAttribute SearchFilterDto searchFilterDto,
                                                                         @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable){
         Page<BookResDto> result = bookService.findBooksWithFilter(searchFilterDto, pageable);
@@ -100,7 +100,7 @@ public class BookController {
 
     //카카오 api + 국립 중앙 도서관 api 호출
     @GetMapping("/library/search")
-    public  ResponseEntity<?> searchBookWithLibraryApi(@RequestParam String query){
+    public  ResponseEntity<GlobalResponseDto<List<BookSearchResult>>> searchBookWithLibraryApi(@RequestParam String query){
         List<BookSearchResult> result = bookService.searchBooksWithApi(query);
 
         return ResponseEntity.status(HttpStatus.OK)
