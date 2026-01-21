@@ -63,6 +63,7 @@ public class CategoryService {
 
 
     public Category findByCategoryName(String categoryName){
-        return categoryRepository.findByCategoryName(categoryName);
+        return categoryRepository.findByCategoryName(categoryName)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.CATEGORY_NOT_FOUND));
     }
 }

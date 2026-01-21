@@ -27,6 +27,7 @@ public interface BookControllerDocs {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "도서 등록 성공"),
             @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "카테고리 찾을 수 없음"),
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @PostMapping("/register")
@@ -82,8 +83,4 @@ public interface BookControllerDocs {
     })
     @GetMapping("/library/search")
     ResponseEntity<GlobalResponseDto<List<BookSearchResult>>> searchBookWithLibraryApi(@RequestParam String query);
-
-
-
-
 }
