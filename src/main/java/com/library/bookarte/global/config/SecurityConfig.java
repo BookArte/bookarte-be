@@ -41,7 +41,10 @@ public class SecurityConfig {
     }
 
     private static final String[] SWAGGER_PATTERNS = {
-            "/swagger-ui/**",
-            "/v3/api-docs/**",
+            "/v3/api-docs/**",         // API 정의 JSON 파일
+            "/swagger-ui/**",          // Swagger UI 리소스
+            "/swagger-ui.html",        // 접속 페이지
+            "/swagger-resources/**",   // 관련 리소스
+            "/webjars/**"              // 라이브러리 파일
     };
 }
