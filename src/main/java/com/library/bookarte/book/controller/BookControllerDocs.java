@@ -64,7 +64,7 @@ public interface BookControllerDocs {
     @PatchMapping("/{bookId}")
     ResponseEntity<GlobalResponseDto<Long>> updateBook(@PathVariable("bookId") Long bookId,
                                                        @RequestBody BookReqDto bookReqDto);
-
+    /*Delete: 도서 정보 삭제*/
     @Operation(summary = "도서 삭제 요청", description = "**성공 응답 데이터:** 도서 삭제 성공`")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "도서 삭제 성공"),
@@ -75,6 +75,7 @@ public interface BookControllerDocs {
     @DeleteMapping("/{bookId}")
     ResponseEntity<GlobalResponseDto<?>> deleteBook(@PathVariable("bookId") Long bookId);
 
+    /*Read: 외부 api에서 도서 정보 검색*/
     @Operation(summary = "외부 api 도서 정보 검색", description = "**성공 응답 데이터:** 해당되는 도서 목록`")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "외부 api 요청 성공"),
