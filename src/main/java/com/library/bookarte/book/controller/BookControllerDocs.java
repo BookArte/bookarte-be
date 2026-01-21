@@ -6,6 +6,7 @@ import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.external.dto.BookSearchResult;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,6 +36,7 @@ public interface BookControllerDocs {
 
     /*Read: 단일 도서 정보 조회*/
     @Operation(summary = "단일 도서 조회 요청", description = "**성공 응답 데이터:** 단일 도서 정보")
+    @Parameter(name = "bookId", description = "상세 조회할 도서 id", example = "1")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "단일 도서 조회 성공"),
             @ApiResponse(responseCode = "404", description = "해당 도서가 존재하지 않음"),
@@ -55,6 +57,7 @@ public interface BookControllerDocs {
 
     /*Update: 도서 정보 수정*/
     @Operation(summary = "도서 정보 수정 요청", description = "**성공 응답 데이터:** 도서의 `bookId`")
+    @Parameter(name = "bookId", description = "수정할 도서 id", example = "1")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "도서 목록 조회 성공"),
             @ApiResponse(responseCode = "401", description = "권한 없음"),
@@ -66,6 +69,7 @@ public interface BookControllerDocs {
                                                        @RequestBody BookReqDto bookReqDto);
     /*Delete: 도서 정보 삭제*/
     @Operation(summary = "도서 삭제 요청", description = "**성공 응답 데이터:** 도서 삭제 성공`")
+    @Parameter(name = "bookId", description = "삭제할 도서 id", example = "1")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "도서 삭제 성공"),
             @ApiResponse(responseCode = "401", description = "권한 없음"),
@@ -83,5 +87,6 @@ public interface BookControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @GetMapping("/library/search")
+    @Parameter(name = "query", description = "검색할 도서 이름", example = "이방인")
     ResponseEntity<GlobalResponseDto<List<BookSearchResult>>> searchBookWithLibraryApi(@RequestParam String query);
 }
