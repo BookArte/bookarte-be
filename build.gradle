@@ -88,6 +88,9 @@ dependencies {
 	implementation 'jakarta.xml.bind:jakarta.xml.bind-api'
 	implementation 'org.glassfish.jaxb:jaxb-runtime'
 
+	//swagger
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0")
+
 }
 
 tasks.named('test') {

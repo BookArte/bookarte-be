@@ -1,0 +1,57 @@
+package com.library.bookarte.recommendation.controller;
+
+import com.library.bookarte.global.response.GlobalResponseDto;
+import com.library.bookarte.recommendation.dto.RecommendationBookResDto;
+import com.library.bookarte.recommendation.dto.RecommendationReqDto;
+import com.library.bookarte.recommendation.dto.ReorderReqDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@Tag(name = "Recommendation")
+public interface RecommendationControllerDocs {
+
+    @Operation(summary = "추천 도서 설정 요청", description = "**성공 응답 데이터:**: 추천 설정 완료")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "추천 설정 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @PostMapping("/set")
+    ResponseEntity<GlobalResponseDto<String>> setRecommendByAdmin(@RequestBody RecommendationReqDto recommendationReqDto);
+
+    @Operation(summary = "추천 도서 제외 요청", description = "**성공 응답 데이터:**: 추천 제외 완료")
+    @Parameter(name = "recommendationId", description = "제외할  추천 id", example = "1")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "추천 제외 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "해당 추천 도서 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @DeleteMapping("/{recommendationId}")
+    ResponseEntity<GlobalResponseDto<String>> deleteRecommend(@PathVariable Long recommendationId);
+
+    @Operation(summary = "추천 도서 목록 조회 요청", description = "**성공 응답 데이터:**: 추천 도서 목록")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "추천 도서 목록 조회 성공"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/pick-10/list")
+    ResponseEntity<GlobalResponseDto<List<RecommendationBookResDto>>> pickList();
+
+    @Operation(summary = "추천 도서 순위 변경 요청", description = "**성공 응답 데이터:**: 추천 도서 순위 변경 완료")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "추천 도서 순위 변경 완료"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "해당 도서 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @PatchMapping("/reorder")
+    ResponseEntity<GlobalResponseDto<String>> reorder(@RequestBody ReorderReqDto reorderReqDto);
+}

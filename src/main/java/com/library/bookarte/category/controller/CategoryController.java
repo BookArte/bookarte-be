@@ -15,11 +15,11 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/category")
-public class CategoryController {
+public class CategoryController implements CategoryControllerDocs {
 
     private final CategoryService categoryService;
 
-    @PostMapping
+    @Override
     public ResponseEntity<GlobalResponseDto<Long>> generateCategory(@RequestBody CategoryReqDto categoryReqDto) {
         Long result = categoryService.generateCategory(categoryReqDto);
 
@@ -27,7 +27,7 @@ public class CategoryController {
                 .body(GlobalResponseDto.success(HttpStatus.CREATED, result));
     }
 
-    @GetMapping("/{categoryId}")
+    @Override
     public ResponseEntity<GlobalResponseDto<CategoryResDto>> findByCategoryId(@PathVariable Long categoryId) {
         CategoryResDto result = categoryService.findByCategoryId(categoryId);
 
@@ -35,7 +35,7 @@ public class CategoryController {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
-    @PatchMapping("/{categoryId}")
+    @Override
     public ResponseEntity<GlobalResponseDto<Long>> updateCategory(@PathVariable Long categoryId,
                                                                   @RequestBody CategoryReqDto categoryReqDto) {
 
@@ -45,7 +45,7 @@ public class CategoryController {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
-    @DeleteMapping("/{categoryId}")
+    @Override
     public ResponseEntity<GlobalResponseDto<?>> deleteCategory(@PathVariable Long categoryId) {
         categoryService.deleteCategory(categoryId);
 
@@ -53,7 +53,7 @@ public class CategoryController {
                 .body(GlobalResponseDto.success(HttpStatus.OK, null));
     }
 
-    @GetMapping("/list")
+    @Override
     public ResponseEntity<GlobalResponseDto<List<CategoryResDto>>> findAllCategory(){
         List<CategoryResDto> result = categoryService.findAllCategory();
 
