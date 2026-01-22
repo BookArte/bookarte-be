@@ -89,4 +89,14 @@ public interface BookControllerDocs {
     @GetMapping("/library/search")
     @Parameter(name = "query", description = "검색할 도서 이름", example = "이방인")
     ResponseEntity<GlobalResponseDto<List<BookSearchResult>>> searchBookWithLibraryApi(@RequestParam String query);
+
+
+    @Operation(summary = "DB 내 도서 존재 확인", description = "**성공 응답 데이터:** 존재 유무에 대한 `boolean`값")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "db 유무에 대한 응답 성공"),
+            @ApiResponse(responseCode = "401", description = "권한없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/is-duplicatie-isbn")
+    ResponseEntity<GlobalResponseDto<Boolean>> isDuplicateIsbn(@RequestParam String isbn);
 }

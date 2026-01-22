@@ -32,4 +32,6 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
             @Param("categoryId") Long categoryId,
             Pageable pageable
     );*/
+
+    boolean existsByBookIsbn(String isbn);
 }

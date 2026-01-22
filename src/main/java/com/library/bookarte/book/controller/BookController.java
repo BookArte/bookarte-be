@@ -99,7 +99,7 @@ public class BookController implements BookControllerDocs {
 
 
     //카카오 api + 국립 중앙 도서관 api 호출
-    @GetMapping("/library/search")
+    @Override
     public  ResponseEntity<GlobalResponseDto<List<BookSearchResult>>> searchBookWithLibraryApi(@RequestParam String query){
         List<BookSearchResult> result = bookService.searchBooksWithApi(query);
 
@@ -107,4 +107,11 @@ public class BookController implements BookControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK,result));
     }
 
+    //중복된 ISBN인지 확인
+    @Override
+    public ResponseEntity<GlobalResponseDto<Boolean>> isDuplicateIsbn(@RequestParam String isbn){
+        boolean result = bookService.isDuplicateIsbn(isbn);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
 }
