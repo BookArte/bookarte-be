@@ -21,6 +21,7 @@ public class CategoryService {
 
     public Long generateCategory(CategoryReqDto categoryReqDto) {
         Category category = Category.builder()
+                .categoryCode(categoryReqDto.getCategoryCode())
                 .categoryName(categoryReqDto.getCategoryName())
                 .build();
 
@@ -58,5 +59,11 @@ public class CategoryService {
         return categoryList.stream()
                 .map(Category::toCategoryResDto)
                 .toList();
+    }
+
+
+    public Category findByCategoryName(String categoryName){
+        return categoryRepository.findByCategoryName(categoryName)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.CATEGORY_NOT_FOUND));
     }
 }

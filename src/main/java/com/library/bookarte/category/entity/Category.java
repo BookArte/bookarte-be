@@ -1,11 +1,15 @@
 package com.library.bookarte.category.entity;
 
+import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.category.dto.CategoryResDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -19,16 +23,29 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long categoryId;
 
+    //카테고리 코드
+    @Column(unique = true, nullable = false )
+    private String categoryCode;
+
     //카테고리명
     @Column
     private String categoryName;
+
+    @OneToMany(mappedBy = "category")
+    private List<Book> books = new ArrayList<>();
 
 
     public CategoryResDto toCategoryResDto(){
         return CategoryResDto.builder()
                 .categoryId(this.categoryId)
+                .categoryCode(this.categoryCode)
                 .categoryName(this.categoryName)
                 .build();
+    }
+
+    public Category(String code, String name) {
+        this.categoryCode = code;
+        this.categoryName = name;
     }
 
     public void updateCategory(String categoryName){

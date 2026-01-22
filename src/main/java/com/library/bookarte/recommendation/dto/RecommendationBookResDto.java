@@ -1,4 +1,4 @@
-package com.library.bookarte.book.dto;
+package com.library.bookarte.recommendation.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
@@ -10,37 +10,35 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BookReqDto {
+public class RecommendationBookResDto {
+    private Long recommendationId;
+    private int priority;
+    private String comments;
+    private String recommendType;
 
-    //책제목
+
+    //도서 정보
+    private Long bookId;
+
     private String bookTitle;
 
-    //책저자
     private String bookAuthor;
 
-    //번역가
-    private String bookTranslator;
-
-    //출판사
     private String publisherName;
 
-    //출판일
+    private String bookTranslator;
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate publicationDate;
 
-    //ISBN
     private String bookIsbn;
 
-    //책소개
     private String bookContents;
 
-    //썸네일
     private String bookThumbnail;
 
-    //청구기호
     private String bookCallNumber;
 
-    //카테고리
-    private String bookCategory;
+    private String bookCategoryName;
 
 }

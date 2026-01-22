@@ -32,7 +32,9 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(SWAGGER_PATTERNS).permitAll() //swagger 관련 요청 허용
                         .requestMatchers(
+                                "/api/**",
                                 "/api/auth/**",
                                 "/api/member/**"
                         ).permitAll()
@@ -63,4 +65,11 @@ public class SecurityConfig {
         return source;
     }
 
+    private static final String[] SWAGGER_PATTERNS = {
+            "/v3/api-docs/**",         // API 정의 JSON 파일
+            "/swagger-ui/**",          // Swagger UI 리소스
+            "/swagger-ui.html",        // 접속 페이지
+            "/swagger-resources/**",   // 관련 리소스
+            "/webjars/**"              // 라이브러리 파일
+    };
 }
