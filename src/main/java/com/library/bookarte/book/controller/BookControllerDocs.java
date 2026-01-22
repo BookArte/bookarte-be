@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +33,7 @@ public interface BookControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @PostMapping("/register")
-    ResponseEntity<GlobalResponseDto<String>> registerBook(@RequestBody BookReqDto bookReqDto);
+    ResponseEntity<GlobalResponseDto<String>> registerBook(@Valid @RequestBody BookReqDto bookReqDto);
 
     /*Read: 단일 도서 정보 조회*/
     @Operation(summary = "단일 도서 조회 요청", description = "**성공 응답 데이터:** 단일 도서 정보")
@@ -97,6 +98,6 @@ public interface BookControllerDocs {
             @ApiResponse(responseCode = "401", description = "권한없음"),
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
-    @GetMapping("/is-duplicatie-isbn")
+    @GetMapping("/is-duplicate-isbn")
     ResponseEntity<GlobalResponseDto<Boolean>> isDuplicateIsbn(@RequestParam String isbn);
 }

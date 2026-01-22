@@ -6,6 +6,7 @@ import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.external.dto.BookSearchResult;
 import com.library.bookarte.book.service.BookService;
 import com.library.bookarte.global.response.GlobalResponseDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +26,7 @@ public class BookController implements BookControllerDocs {
 
     //도서 등록
     @Override
-    public ResponseEntity<GlobalResponseDto<String>> registerBook(@RequestBody BookReqDto bookReqDto){
+    public ResponseEntity<GlobalResponseDto<String>> registerBook(@Valid @RequestBody BookReqDto bookReqDto){
         bookService.registerBook(bookReqDto);
 
         String result = "도서 정보 저장 성공";
