@@ -1,7 +1,6 @@
 package com.library.bookarte.member.controller;
 
 import com.library.bookarte.global.response.GlobalResponseDto;
-import com.library.bookarte.member.dto.request.IdCheckRequest;
 import com.library.bookarte.member.dto.request.MemberDeleteRequest;
 import com.library.bookarte.member.dto.request.MemberJoinRequest;
 import com.library.bookarte.member.dto.request.MemberUpdateRequest;
@@ -10,14 +9,11 @@ import com.library.bookarte.member.dto.response.MemberJoinResponse;
 import com.library.bookarte.member.dto.response.MemberResponse;
 import com.library.bookarte.member.dto.response.MemberUpdateResponse;
 import com.library.bookarte.member.service.MemberService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.nio.file.attribute.UserPrincipal;
 
 @RestController
 @RequestMapping("/api/member")
@@ -47,8 +43,8 @@ public class MemberController {
     }
 
     @GetMapping("/id_check")
-    public ResponseEntity<GlobalResponseDto<IdCheckResponse>> idCheck(@RequestBody IdCheckRequest idCheckRequest) {
-        IdCheckResponse result = memberService.idCheck(idCheckRequest.getUserId());
+    public ResponseEntity<GlobalResponseDto<IdCheckResponse>> idCheck(@RequestParam("userId") String userId) {
+        IdCheckResponse result = memberService.idCheck(userId);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 

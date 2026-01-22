@@ -28,11 +28,11 @@ public class MemberService {
     public MemberJoinResponse join(MemberJoinRequest memberJoinRequest) {
         LocalDateTime now = LocalDateTime.now();
         Member member = Member.builder()
-                .memberUserId(memberJoinRequest.getUserId())
-                .memberName(memberJoinRequest.getName())
-                .memberTel(memberJoinRequest.getTel())
-                .memberPwd(passwordEncoder.encode(memberJoinRequest.getPassword()))
-                .memberEmail(memberJoinRequest.getEmail())
+                .memberUserId(memberJoinRequest.getMemberUserId())
+                .memberName(memberJoinRequest.getMemberName())
+                .memberTel(memberJoinRequest.getMemberTel())
+                .memberPwd(passwordEncoder.encode(memberJoinRequest.getMemberPassword()))
+                .memberEmail(memberJoinRequest.getMemberEmail())
                 .memberRole("ROLE01")               // 상수 ENUM 작업
                 .memberSocialType("SOCIAL01")       // 상수 ENUM 작업
                 .memberStatus("STATUS01")           // 상수 ENUM 작업

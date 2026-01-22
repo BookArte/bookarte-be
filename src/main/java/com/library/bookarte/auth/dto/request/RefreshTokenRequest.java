@@ -1,4 +1,4 @@
-package com.library.bookarte.member.dto.request;
+package com.library.bookarte.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class IdCheckRequest {
+public class RefreshTokenRequest {
     @NotBlank
-    private String userId;
+    private String refreshToken;
 }
