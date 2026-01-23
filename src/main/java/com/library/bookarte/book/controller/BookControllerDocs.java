@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +33,7 @@ public interface BookControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @PostMapping("/register")
-    ResponseEntity<GlobalResponseDto<String>> registerBook(@RequestBody BookReqDto bookReqDto);
+    ResponseEntity<GlobalResponseDto<String>> registerBook(@Valid @RequestBody BookReqDto bookReqDto);
 
     /*Read: 단일 도서 정보 조회*/
     @Operation(summary = "단일 도서 조회 요청", description = "**성공 응답 데이터:** 단일 도서 정보")
@@ -89,4 +90,14 @@ public interface BookControllerDocs {
     @GetMapping("/library/search")
     @Parameter(name = "query", description = "검색할 도서 이름", example = "이방인")
     ResponseEntity<GlobalResponseDto<List<BookSearchResult>>> searchBookWithLibraryApi(@RequestParam String query);
+
+
+    @Operation(summary = "DB 내 도서 존재 확인", description = "**성공 응답 데이터:** 존재 유무에 대한 `boolean`값")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "db 유무에 대한 응답 성공"),
+            @ApiResponse(responseCode = "401", description = "권한없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/is-duplicate-isbn")
+    ResponseEntity<GlobalResponseDto<Boolean>> isDuplicateIsbn(@RequestParam String isbn);
 }

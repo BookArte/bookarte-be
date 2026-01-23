@@ -6,6 +6,7 @@ import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.external.dto.BookSearchResult;
 import com.library.bookarte.book.service.BookService;
 import com.library.bookarte.global.response.GlobalResponseDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +26,7 @@ public class BookController implements BookControllerDocs {
 
     //도서 등록
     @Override
-    public ResponseEntity<GlobalResponseDto<String>> registerBook(@RequestBody BookReqDto bookReqDto){
+    public ResponseEntity<GlobalResponseDto<String>> registerBook(@Valid @RequestBody BookReqDto bookReqDto){
         bookService.registerBook(bookReqDto);
 
         String result = "도서 정보 저장 성공";
@@ -99,7 +100,7 @@ public class BookController implements BookControllerDocs {
 
 
     //카카오 api + 국립 중앙 도서관 api 호출
-    @GetMapping("/library/search")
+    @Override
     public  ResponseEntity<GlobalResponseDto<List<BookSearchResult>>> searchBookWithLibraryApi(@RequestParam String query){
         List<BookSearchResult> result = bookService.searchBooksWithApi(query);
 
@@ -107,4 +108,11 @@ public class BookController implements BookControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK,result));
     }
 
+    //중복된 ISBN인지 확인
+    @Override
+    public ResponseEntity<GlobalResponseDto<Boolean>> isDuplicateIsbn(@RequestParam String isbn){
+        boolean result = bookService.isDuplicateIsbn(isbn);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
 }

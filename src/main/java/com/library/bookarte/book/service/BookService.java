@@ -204,4 +204,9 @@ public class BookService {
                 )
                 .toList();
     }
+
+    /* DB 내 이미 존재하는 도서인지 검색*/
+    public boolean isDuplicateIsbn(String isbn){
+        return bookRepository.existsByBookIsbn(isbn);
+    }
 }
