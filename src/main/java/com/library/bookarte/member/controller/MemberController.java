@@ -18,16 +18,16 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/member")
 @RequiredArgsConstructor
-public class MemberController {
+public class MemberController implements MemberControllerDocs {
     private final MemberService memberService;
 
-    @PostMapping
+    @Override
     public ResponseEntity<GlobalResponseDto<MemberJoinResponse>> join(@RequestBody MemberJoinRequest memberJoinRequest) {
         MemberJoinResponse result = memberService.join(memberJoinRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(GlobalResponseDto.success(HttpStatus.CREATED, result));
     }
 
-    @PatchMapping("/me")
+    @Override
     public ResponseEntity<GlobalResponseDto<MemberUpdateResponse>> updateMember(
             @AuthenticationPrincipal Long memberId,
             @RequestBody MemberUpdateRequest memberUpdateRequest
@@ -36,13 +36,13 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
-    @GetMapping("/my")
+    @Override
     public ResponseEntity<GlobalResponseDto<MemberResponse>> getMember(@AuthenticationPrincipal Long memberId) {
         MemberResponse result = memberService.getMember(memberId);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
-    @GetMapping("/id_check")
+    @Override
     public ResponseEntity<GlobalResponseDto<IdCheckResponse>> idCheck(@RequestParam("userId") String userId) {
         IdCheckResponse result = memberService.idCheck(userId);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
@@ -53,7 +53,7 @@ public class MemberController {
         return null;
     }
 
-    @PatchMapping("/delete")
+    @Override
     public ResponseEntity<GlobalResponseDto> deleteMember(
             @AuthenticationPrincipal Long memberId,
             @RequestBody MemberDeleteRequest memberDeleteRequest

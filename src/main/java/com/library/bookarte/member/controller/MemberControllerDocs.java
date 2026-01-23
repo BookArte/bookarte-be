@@ -1,0 +1,79 @@
+package com.library.bookarte.member.controller;
+
+import com.library.bookarte.global.response.GlobalResponseDto;
+import com.library.bookarte.member.dto.request.MemberDeleteRequest;
+import com.library.bookarte.member.dto.request.MemberJoinRequest;
+import com.library.bookarte.member.dto.request.MemberUpdateRequest;
+import com.library.bookarte.member.dto.response.IdCheckResponse;
+import com.library.bookarte.member.dto.response.MemberJoinResponse;
+import com.library.bookarte.member.dto.response.MemberResponse;
+import com.library.bookarte.member.dto.response.MemberUpdateResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+@Tag(name = "Member")
+public interface MemberControllerDocs {
+
+    /* Create: 회원 등록 */
+    @Operation(summary = "회원 등록 요청", description = "**성공 응답 데이터:** 회원 등록 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "회원 등록 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @PostMapping
+    ResponseEntity<GlobalResponseDto<MemberJoinResponse>> join(@RequestBody MemberJoinRequest memberJoinRequest);
+
+    /* Update: 회원 정보 수정 */
+    @Operation(summary = "회원 정보 수정", description = "**성공 응답 데이터:** 회원 정보 수정 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원 정보 수정 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "회원 정보가 존재하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @PatchMapping("/me")
+    ResponseEntity<GlobalResponseDto<MemberUpdateResponse>> updateMember(
+            @AuthenticationPrincipal Long memberId,
+            @RequestBody MemberUpdateRequest memberUpdateRequest
+    );
+
+    /* Read: 회원 정보 조회 */
+    @Operation(summary = "회원 정보 조회", description = "**성공 응답 데이터:** 회원 정보 조회 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원 정보 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "회원 정보가 존재하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @GetMapping("/my")
+    ResponseEntity<GlobalResponseDto<MemberResponse>> getMember(@AuthenticationPrincipal Long memberId);
+
+    /* Read: 아이디 중복체크 */
+    @Operation(summary = "아이디 중복체크", description = "**성공 응답 데이터:** 아이디 중복체크 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "아이디 중복체크 성공"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @GetMapping("/id_check")
+    ResponseEntity<GlobalResponseDto<IdCheckResponse>> idCheck(@RequestParam("userId") String userId);
+
+    /* Update: 회원 정보 탈퇴 */
+    @Operation(summary = "회원 정보 탈퇴", description = "**성공 응답 데이터:** 회원 정보 탈퇴 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원 정보 탈퇴 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "회원 정보가 존재하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @PatchMapping("/delete")
+    ResponseEntity<GlobalResponseDto> deleteMember(
+            @AuthenticationPrincipal Long memberId,
+            @RequestBody MemberDeleteRequest memberDeleteRequest
+    );
+}
