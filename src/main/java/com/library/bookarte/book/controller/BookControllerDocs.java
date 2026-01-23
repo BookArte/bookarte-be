@@ -67,7 +67,7 @@ public interface BookControllerDocs {
     })
     @PatchMapping("/{bookId}")
     ResponseEntity<GlobalResponseDto<Long>> updateBook(@PathVariable("bookId") Long bookId,
-                                                       @RequestBody BookReqDto bookReqDto);
+                                                       @Valid @RequestBody BookReqDto bookReqDto);
     /*Delete: 도서 정보 삭제*/
     @Operation(summary = "도서 삭제 요청", description = "**성공 응답 데이터:** 도서 삭제 성공`")
     @Parameter(name = "bookId", description = "삭제할 도서 id", example = "1")
