@@ -67,4 +67,11 @@ public class RecommendationController implements RecommendationControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    @Override
+    public ResponseEntity<GlobalResponseDto<Boolean>> isRecommend(@RequestParam Long bookId) {
+        boolean result = recommendationService.existByBookId(bookId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
 }

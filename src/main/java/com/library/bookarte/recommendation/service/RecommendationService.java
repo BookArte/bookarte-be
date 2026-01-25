@@ -87,6 +87,10 @@ public class RecommendationService {
 
 
         target.updateComments(updateComments);
+    }
 
+    //추천 도서 존재 유무
+    public boolean existByBookId(Long bookId){
+        return recommendationRepository.existsByBook_BookId(bookId);
     }
 }

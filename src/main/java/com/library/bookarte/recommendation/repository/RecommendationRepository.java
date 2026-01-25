@@ -25,4 +25,6 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     @Modifying
     @Query("UPDATE Recommendation r SET r.priority = :priority WHERE r.id = :id")
     void updatePriority(@Param("id") Long id, @Param("priority") int priority);
+
+    boolean existsByBook_BookId(Long bookId);
 }
