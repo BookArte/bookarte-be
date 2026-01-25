@@ -26,8 +26,16 @@ public class RecommendationService {
     private final RecommendationRepository recommendationRepository;
     private final BookService bookService;
 
+    private static final int MAX_RECOMMEND_COUNT = 10;
+
     //추천 도서 등록
     public void setRecommendBookByAdmin(RecommendationReqDto recommendationReqDto) {
+        int currentAdminPickCount = recommendationRepository.countByRecommendType(RecommendType.ADMIN_PICK);
+
+        if(currentAdminPickCount >= MAX_RECOMMEND_COUNT) {
+            throw new CustomException(CustomErrorCode.RECOMMENDATION_LIMIT_EXCEEDED);
+        }
+
         Book recommendationBook = bookService.findBook(recommendationReqDto.getBookId());
         int defaultPriority = 1; //나중에 추천 리스트에 등록되는 도서는 1순위로 들어가게 된다
 
