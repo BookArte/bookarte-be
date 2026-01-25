@@ -78,4 +78,9 @@ public class Recommendation extends BaseEntity {
                 .build();
     }
 
+
+    public void updateComments(String comments){
+        this.comments = comments;
+    }
+
 }

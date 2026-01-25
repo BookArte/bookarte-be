@@ -7,6 +7,7 @@ import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.recommendation.dto.RecommendationBookResDto;
 import com.library.bookarte.recommendation.dto.RecommendationReqDto;
 import com.library.bookarte.recommendation.dto.ReorderReqDto;
+import com.library.bookarte.recommendation.dto.UpdateCommentsDto;
 import com.library.bookarte.recommendation.entity.Recommendation;
 import com.library.bookarte.recommendation.entity.type.RecommendType;
 import com.library.bookarte.recommendation.repository.RecommendationRepository;
@@ -43,7 +44,6 @@ public class RecommendationService {
                 .build();
 
         recommendationRepository.save(recommendation);
-
     }
 
     //추천 도서 삭제
@@ -78,5 +78,15 @@ public class RecommendationService {
         }
     }
 
+    //추천 코멘트 수정
+    public void updateComments(Long recommendationId, UpdateCommentsDto updateCommentsDto){
+        String updateComments = updateCommentsDto.getComments();
 
+        Recommendation target = recommendationRepository.findById(recommendationId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.RECOMMENDATION_NOT_FOUND));
+
+
+        target.updateComments(updateComments);
+
+    }
 }

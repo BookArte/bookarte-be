@@ -4,7 +4,9 @@ import com.library.bookarte.global.response.GlobalResponseDto;
 import com.library.bookarte.recommendation.dto.RecommendationBookResDto;
 import com.library.bookarte.recommendation.dto.RecommendationReqDto;
 import com.library.bookarte.recommendation.dto.ReorderReqDto;
+import com.library.bookarte.recommendation.dto.UpdateCommentsDto;
 import com.library.bookarte.recommendation.service.RecommendationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +21,7 @@ public class RecommendationController implements RecommendationControllerDocs {
     private final RecommendationService recommendationService;
 
     @Override
-    public ResponseEntity<GlobalResponseDto<String>> setRecommendByAdmin(@RequestBody RecommendationReqDto recommendationReqDto) {
+    public ResponseEntity<GlobalResponseDto<String>> setRecommendByAdmin(@Valid @RequestBody RecommendationReqDto recommendationReqDto) {
         recommendationService.setRecommendBookByAdmin(recommendationReqDto);
 
         String result = "추천 등록 완료";
@@ -52,6 +54,17 @@ public class RecommendationController implements RecommendationControllerDocs {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
 
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<String>> updateComments(@PathVariable Long recommendationId,
+                                                             @RequestBody UpdateCommentsDto updateCommentsDto){
+        recommendationService.updateComments(recommendationId, updateCommentsDto);
+
+        String result = "추천 도서 코멘트 변경 완료";
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
 }
