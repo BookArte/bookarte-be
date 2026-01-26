@@ -3,12 +3,10 @@ package com.library.bookarte.member.service;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.member.dto.request.MemberDeleteRequest;
+import com.library.bookarte.member.dto.request.MemberFindIdRequest;
 import com.library.bookarte.member.dto.request.MemberJoinRequest;
 import com.library.bookarte.member.dto.request.MemberUpdateRequest;
-import com.library.bookarte.member.dto.response.IdCheckResponse;
-import com.library.bookarte.member.dto.response.MemberJoinResponse;
-import com.library.bookarte.member.dto.response.MemberResponse;
-import com.library.bookarte.member.dto.response.MemberUpdateResponse;
+import com.library.bookarte.member.dto.response.*;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -54,7 +53,7 @@ public class MemberService {
 
     public MemberUpdateResponse updateMember(Long memberId, MemberUpdateRequest memberUpdateRequest) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.DATA_INTEGRITY_VIOLATION));  // 에러코드 추가 필요
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
         String encodedPassword = null;
         if (memberUpdateRequest.getPassword() != null && !memberUpdateRequest.getPassword().isBlank()) {
@@ -77,7 +76,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public MemberResponse getMember(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.DATA_INTEGRITY_VIOLATION));  // 에러코드 추가 필요
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
         return MemberResponse.builder()
                 .id(member.getMemberId())
@@ -100,12 +99,36 @@ public class MemberService {
 
     public void deleteMember(Long memberId, MemberDeleteRequest memberDeleteRequest) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.DATA_INTEGRITY_VIOLATION));  // 에러코드 추가 필요
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
-        if("STATUS02".equals(member.getMemberStatus())) {
-            throw new CustomException(CustomErrorCode.DATA_INTEGRITY_VIOLATION);  // 에러코드 추가 필요
+        if ("STATUS02".equals(member.getMemberStatus())) {
+            throw new CustomException(CustomErrorCode.MEMBER_DELETE_STATUS_ERROR);
         }
 
         member.delete(memberDeleteRequest.getReason());
+    }
+
+    public MemberFindIdResponse findId(MemberFindIdRequest memberFindIdRequest) {
+        List<Member> members = memberRepository.findByMemberNameAndMemberTelAndMemberEmail(
+                memberFindIdRequest.getMemberName(),
+                memberFindIdRequest.getMemberTel(),
+                memberFindIdRequest.getMemberEmail()
+        ).orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_USER_ID_NOT_FOUND));
+
+        List<String> userIds = members.stream()
+                .map(member -> maskUserId(member.getMemberUserId()))
+                .toList();
+
+        return MemberFindIdResponse.builder()
+                .userIds(userIds)
+                .build();
+    }
+
+    private String maskUserId(String userId) {
+        if (userId == null || userId.length() < 3) {
+            return userId;
+        }
+
+        return userId.substring(0, 3) + "*".repeat(userId.length() - 3);
     }
 }

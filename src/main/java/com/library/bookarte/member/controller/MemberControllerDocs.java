@@ -2,12 +2,10 @@ package com.library.bookarte.member.controller;
 
 import com.library.bookarte.global.response.GlobalResponseDto;
 import com.library.bookarte.member.dto.request.MemberDeleteRequest;
+import com.library.bookarte.member.dto.request.MemberFindIdRequest;
 import com.library.bookarte.member.dto.request.MemberJoinRequest;
 import com.library.bookarte.member.dto.request.MemberUpdateRequest;
-import com.library.bookarte.member.dto.response.IdCheckResponse;
-import com.library.bookarte.member.dto.response.MemberJoinResponse;
-import com.library.bookarte.member.dto.response.MemberResponse;
-import com.library.bookarte.member.dto.response.MemberUpdateResponse;
+import com.library.bookarte.member.dto.response.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -76,4 +74,14 @@ public interface MemberControllerDocs {
             @AuthenticationPrincipal Long memberId,
             @RequestBody MemberDeleteRequest memberDeleteRequest
     );
+
+    /* Read: 아이디 찾기 */
+    @Operation(summary = "아이디 찾기", description = "**성공 응답 데이터:** 아이디 찾기 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "아이디 찾기 성공"),
+            @ApiResponse(responseCode = "404", description = "회원 정보가 존재하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @PostMapping("/find_id")
+    ResponseEntity<GlobalResponseDto<MemberFindIdResponse>> findId(@RequestBody MemberFindIdRequest memberFindIdRequest);
 }
