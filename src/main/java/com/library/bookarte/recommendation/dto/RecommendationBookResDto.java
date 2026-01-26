@@ -11,10 +11,20 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 public class RecommendationBookResDto {
+    //추천 정보
     private Long recommendationId;
+
     private int priority;
+
     private String comments;
+
     private String recommendType;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate startDate;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate endDate;
 
 
     //도서 정보

@@ -63,6 +63,8 @@ public class Recommendation extends BaseEntity {
                 .recommendationId(this.recommendationId)
                 .recommendType(this.recommendType.getKey())
                 .comments(this.comments)
+                .startDate(this.startDate)
+                .endDate(this.endDate)
                 .priority(this.priority)
                 .bookId(this.book.getBookId())
                 .bookTitle(this.book.getBookTitle())

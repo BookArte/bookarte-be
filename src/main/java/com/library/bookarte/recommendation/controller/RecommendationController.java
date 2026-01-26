@@ -47,6 +47,14 @@ public class RecommendationController implements RecommendationControllerDocs {
     }
 
     @Override
+    public ResponseEntity<GlobalResponseDto<RecommendationBookResDto>> getRecommendationDetail(@PathVariable Long recommendationId) {
+        RecommendationBookResDto result = recommendationService.getRecommendationBookDetail(recommendationId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
     public ResponseEntity<GlobalResponseDto<String>> reorder(@RequestBody ReorderReqDto reorderReqDto){
         recommendationService.reorderRecommendation(reorderReqDto);
 

@@ -74,6 +74,14 @@ public class RecommendationService {
                 .collect(Collectors.toList());
     }
 
+    //추천 도서 상세 정보 조회
+    public RecommendationBookResDto getRecommendationBookDetail(Long recommendationId){
+        Recommendation recommendation = recommendationRepository.findById(recommendationId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.RECOMMENDATION_NOT_FOUND));
+
+        return recommendation.toResDto();
+    }
+
     //추천 도서 목록 순서 변경
     public void reorderRecommendation(ReorderReqDto reorderReqDto) {
         List<Long> ids = reorderReqDto.getReorderedIds();
@@ -86,7 +94,7 @@ public class RecommendationService {
         }
     }
 
-    //추천 코멘트 수정
+    //추천 정보 수정
     public void updateRecommend(Long recommendationId, UpdateRecommendDto updateRecommendDto){
 
         Recommendation target = recommendationRepository.findById(recommendationId)

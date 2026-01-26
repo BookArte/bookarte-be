@@ -46,6 +46,17 @@ public interface RecommendationControllerDocs {
     @GetMapping("/pick-10/list")
     ResponseEntity<GlobalResponseDto<List<RecommendationBookResDto>>> pickList();
 
+    @Operation(summary = "추천 도서 정보 단일 조회", description = "**성공 응답 데이터:** 단일 추천 도서 정보")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "추천 도서 정보 단일 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "권한없음"),
+            @ApiResponse(responseCode = "404", description = "추천 도서 정보 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/{recommendationId}")
+    ResponseEntity<GlobalResponseDto<RecommendationBookResDto>> getRecommendationDetail(@PathVariable Long recommendationId);
+
+
     @Operation(summary = "추천 도서 순위 변경 요청", description = "**성공 응답 데이터:**: 추천 도서 순위 변경 완료")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "추천 도서 순위 변경 완료"),
@@ -74,5 +85,5 @@ public interface RecommendationControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @GetMapping("/is-recommend")
-    ResponseEntity<GlobalResponseDto<Boolean>> isRecommend(@RequestParam Long book);
+    ResponseEntity<GlobalResponseDto<Boolean>> isRecommend(@RequestParam Long bookId);
 }
