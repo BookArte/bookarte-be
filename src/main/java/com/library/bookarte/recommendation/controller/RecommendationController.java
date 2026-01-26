@@ -4,7 +4,7 @@ import com.library.bookarte.global.response.GlobalResponseDto;
 import com.library.bookarte.recommendation.dto.RecommendationBookResDto;
 import com.library.bookarte.recommendation.dto.RecommendationReqDto;
 import com.library.bookarte.recommendation.dto.ReorderReqDto;
-import com.library.bookarte.recommendation.dto.UpdateCommentsDto;
+import com.library.bookarte.recommendation.dto.UpdateRecommendDto;
 import com.library.bookarte.recommendation.service.RecommendationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -57,11 +57,11 @@ public class RecommendationController implements RecommendationControllerDocs {
     }
 
     @Override
-    public ResponseEntity<GlobalResponseDto<String>> updateComments(@PathVariable Long recommendationId,
-                                                             @RequestBody UpdateCommentsDto updateCommentsDto){
-        recommendationService.updateComments(recommendationId, updateCommentsDto);
+    public ResponseEntity<GlobalResponseDto<String>> updateRecommend(@PathVariable Long recommendationId,
+                                                             @RequestBody UpdateRecommendDto updateRecommendDto){
+        recommendationService.updateRecommend(recommendationId, updateRecommendDto);
 
-        String result = "추천 도서 코멘트 변경 완료";
+        String result = "추천 도서 정보 수정 완료";
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));

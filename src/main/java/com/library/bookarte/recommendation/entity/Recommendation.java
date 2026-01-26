@@ -79,8 +79,12 @@ public class Recommendation extends BaseEntity {
     }
 
 
-    public void updateComments(String comments){
+    public void updateRecommend(String comments,
+                               LocalDate startDate,
+                               LocalDate endDate){
         this.comments = comments;
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 
 }
