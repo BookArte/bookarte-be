@@ -1,13 +1,8 @@
 package com.library.bookarte.member.controller;
 
 import com.library.bookarte.global.response.GlobalResponseDto;
-import com.library.bookarte.member.dto.request.MemberDeleteRequest;
-import com.library.bookarte.member.dto.request.MemberJoinRequest;
-import com.library.bookarte.member.dto.request.MemberUpdateRequest;
-import com.library.bookarte.member.dto.response.IdCheckResponse;
-import com.library.bookarte.member.dto.response.MemberJoinResponse;
-import com.library.bookarte.member.dto.response.MemberResponse;
-import com.library.bookarte.member.dto.response.MemberUpdateResponse;
+import com.library.bookarte.member.dto.request.*;
+import com.library.bookarte.member.dto.response.*;
 import com.library.bookarte.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -54,7 +49,7 @@ public class MemberController implements MemberControllerDocs {
     }
 
     @Override
-    public ResponseEntity<GlobalResponseDto> deleteMember(
+    public ResponseEntity<GlobalResponseDto<Void>> deleteMember(
             @AuthenticationPrincipal Long memberId,
             @RequestBody MemberDeleteRequest memberDeleteRequest
     ) {
@@ -65,5 +60,11 @@ public class MemberController implements MemberControllerDocs {
     @GetMapping("/point")
     public ResponseEntity<GlobalResponseDto> getPoint() {
         return null;
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<MemberFindIdResponse>> findId(@RequestBody MemberFindIdRequest memberFindIdRequest) {
+        MemberFindIdResponse result = memberService.findId(memberFindIdRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 }
