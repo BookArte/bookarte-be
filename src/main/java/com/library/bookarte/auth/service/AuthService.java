@@ -8,6 +8,7 @@ import com.library.bookarte.auth.dto.response.TokenResponse;
 import com.library.bookarte.auth.jwt.JwtProvider;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
+import com.library.bookarte.global.util.MailService;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final StringRedisTemplate redisTemplate;
+    private final MailService mailService;
 
     @Value("${jwt.access-expiration}")
     private long accessExpirationMs;
@@ -134,6 +136,7 @@ public class AuthService {
                 Duration.ofSeconds(authCodeExpiration)
         );
 
+        mailService.sendAuthMail(memberFindPasswordRequest.getMemberEmail(), authCode);
         System.out.println("인증코드 발송 완료: " + authCode);
 
         return MemberFindPasswordResponse.builder()
