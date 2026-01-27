@@ -63,6 +63,8 @@ public class Recommendation extends BaseEntity {
                 .recommendationId(this.recommendationId)
                 .recommendType(this.recommendType.getKey())
                 .comments(this.comments)
+                .startDate(this.startDate)
+                .endDate(this.endDate)
                 .priority(this.priority)
                 .bookId(this.book.getBookId())
                 .bookTitle(this.book.getBookTitle())
@@ -76,6 +78,15 @@ public class Recommendation extends BaseEntity {
                 .bookCallNumber(this.book.getBookCallNumber())
                 .bookCategoryName(this.book.getCategory().getCategoryName())
                 .build();
+    }
+
+
+    public void updateRecommend(String comments,
+                               LocalDate startDate,
+                               LocalDate endDate){
+        this.comments = comments;
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 
 }
