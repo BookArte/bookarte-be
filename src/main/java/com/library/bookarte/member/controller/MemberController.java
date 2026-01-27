@@ -1,10 +1,7 @@
 package com.library.bookarte.member.controller;
 
 import com.library.bookarte.global.response.GlobalResponseDto;
-import com.library.bookarte.member.dto.request.MemberDeleteRequest;
-import com.library.bookarte.member.dto.request.MemberFindIdRequest;
-import com.library.bookarte.member.dto.request.MemberJoinRequest;
-import com.library.bookarte.member.dto.request.MemberUpdateRequest;
+import com.library.bookarte.member.dto.request.*;
 import com.library.bookarte.member.dto.response.*;
 import com.library.bookarte.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +49,7 @@ public class MemberController implements MemberControllerDocs {
     }
 
     @Override
-    public ResponseEntity<GlobalResponseDto> deleteMember(
+    public ResponseEntity<GlobalResponseDto<Void>> deleteMember(
             @AuthenticationPrincipal Long memberId,
             @RequestBody MemberDeleteRequest memberDeleteRequest
     ) {

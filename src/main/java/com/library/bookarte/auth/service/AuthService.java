@@ -1,7 +1,9 @@
 package com.library.bookarte.auth.service;
 
 import com.library.bookarte.auth.dto.request.LoginRequest;
-import com.library.bookarte.auth.dto.request.RefreshTokenRequest;
+import com.library.bookarte.auth.dto.request.MemberFindPasswordRequest;
+import com.library.bookarte.auth.dto.request.VerifyCodeRequest;
+import com.library.bookarte.auth.dto.response.MemberFindPasswordResponse;
 import com.library.bookarte.auth.dto.response.TokenResponse;
 import com.library.bookarte.auth.jwt.JwtProvider;
 import com.library.bookarte.global.exception.CustomErrorCode;
@@ -15,7 +17,10 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.Duration;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +36,9 @@ public class AuthService {
 
     @Value("${jwt.refresh-expiration}")
     private long refreshExpirationMs;
+
+    @Value("${auth.code.expiration}")
+    private long authCodeExpiration;
 
     private static final String REFRESH_TOKEN_PREFIX = "RT:";
 
@@ -105,5 +113,53 @@ public class AuthService {
                 .maxAge(0)
                 .sameSite("Lax")
                 .build();
+    }
+
+    public MemberFindPasswordResponse findPassword(MemberFindPasswordRequest memberFindPasswordRequest) {
+        boolean exists = memberRepository.existsByMemberUserIdAndMemberNameAndMemberEmail(
+                memberFindPasswordRequest.getMemberUserId(),
+                memberFindPasswordRequest.getMemberName(),
+                memberFindPasswordRequest.getMemberEmail()
+        );
+
+        if (!exists) {
+            throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        String authCode = generateRandomCode();
+
+        redisTemplate.opsForValue().set(
+                "AUTH:" + memberFindPasswordRequest.getMemberEmail(),
+                authCode,
+                Duration.ofSeconds(authCodeExpiration)
+        );
+
+        System.out.println("인증코드 발송 완료: " + authCode);
+
+        return MemberFindPasswordResponse.builder()
+                .expiresIn(authCodeExpiration)
+                .build();
+    }
+
+    private String generateRandomCode() {
+        SecureRandom sr = new SecureRandom();
+        return IntStream.range(0, 6)
+                .map(i -> sr.nextInt(10))
+                .mapToObj(String::valueOf)
+                .collect(Collectors.joining());
+    }
+
+    public void verifyCode(VerifyCodeRequest verifyCodeRequest) {
+        String savedCode = redisTemplate.opsForValue().get("AUTH:" + verifyCodeRequest.getMemberEmail());
+
+        if (savedCode == null) {
+            throw new CustomException(CustomErrorCode.AUTH_CODE_EXPIRED);
+        }
+
+        if (!savedCode.equals(verifyCodeRequest.getCode())) {
+            throw new CustomException(CustomErrorCode.INVALID_AUTH_CODE);
+        }
+
+        redisTemplate.delete("AUTH:" + verifyCodeRequest.getMemberEmail());
     }
 }

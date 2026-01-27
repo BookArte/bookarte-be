@@ -1,10 +1,7 @@
 package com.library.bookarte.member.controller;
 
 import com.library.bookarte.global.response.GlobalResponseDto;
-import com.library.bookarte.member.dto.request.MemberDeleteRequest;
-import com.library.bookarte.member.dto.request.MemberFindIdRequest;
-import com.library.bookarte.member.dto.request.MemberJoinRequest;
-import com.library.bookarte.member.dto.request.MemberUpdateRequest;
+import com.library.bookarte.member.dto.request.*;
 import com.library.bookarte.member.dto.response.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -70,7 +67,7 @@ public interface MemberControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러")
     })
     @PatchMapping("/delete")
-    ResponseEntity<GlobalResponseDto> deleteMember(
+    ResponseEntity<GlobalResponseDto<Void>> deleteMember(
             @AuthenticationPrincipal Long memberId,
             @RequestBody MemberDeleteRequest memberDeleteRequest
     );
@@ -84,4 +81,5 @@ public interface MemberControllerDocs {
     })
     @PostMapping("/find_id")
     ResponseEntity<GlobalResponseDto<MemberFindIdResponse>> findId(@RequestBody MemberFindIdRequest memberFindIdRequest);
+
 }

@@ -20,6 +20,8 @@ public enum CustomErrorCode {
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원정보가 존재하지 않습니다."),
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "패스워드가 일치하지 않습니다."),
     INVALID_TOKEN(HttpStatus.BAD_REQUEST, "유효하지 않는 토큰입니다."),
+    AUTH_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "인증 시간이 만료되었거나 유효하지 않은 요청입니다."),
+    INVALID_AUTH_CODE(HttpStatus.BAD_REQUEST, "인증 번호가 일치하지 않습니다."),
 
     //member
     MEMBER_DELETE_STATUS_ERROR(HttpStatus.BAD_REQUEST, "이미 탈퇴된 회원입니다."),

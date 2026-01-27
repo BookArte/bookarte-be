@@ -1,7 +1,9 @@
 package com.library.bookarte.auth.controller;
 
 import com.library.bookarte.auth.dto.request.LoginRequest;
-import com.library.bookarte.auth.dto.request.RefreshTokenRequest;
+import com.library.bookarte.auth.dto.request.MemberFindPasswordRequest;
+import com.library.bookarte.auth.dto.request.VerifyCodeRequest;
+import com.library.bookarte.auth.dto.response.MemberFindPasswordResponse;
 import com.library.bookarte.auth.dto.response.TokenResponse;
 import com.library.bookarte.auth.service.AuthService;
 import com.library.bookarte.global.response.GlobalResponseDto;
@@ -58,5 +60,17 @@ public class AuthController implements AuthControllerDocs {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         return ResponseEntity.ok(GlobalResponseDto.success(HttpStatus.OK, null));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<MemberFindPasswordResponse>> findPassword(@RequestBody MemberFindPasswordRequest memberFindPasswordRequest) {
+        MemberFindPasswordResponse result = authService.findPassword(memberFindPasswordRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<Void>> verifyCode(@RequestBody VerifyCodeRequest verifyCodeRequest) {
+        authService.verifyCode(verifyCodeRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, null));
     }
 }
