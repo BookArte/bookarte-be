@@ -15,6 +15,7 @@ import java.time.LocalDate;
 public class RecommendationReqDto {
 
     //도서
+    @NotBlank(message = "추천 도서는 필수 입력 항목입니다.")
     private Long bookId;
 
     //추천 타입
