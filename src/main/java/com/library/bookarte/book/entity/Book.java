@@ -67,7 +67,7 @@ public class Book extends BaseEntity {
 
     //대출가능여부 book_borrow_yn
     @Column(nullable = false)
-    private char bookBorrowYn;
+    private boolean canBorrow;
 
     //청구기호 book_call_number
     @Column
@@ -88,7 +88,7 @@ public class Book extends BaseEntity {
                 LocalDate publicationDate,
                 String bookIsbn,
                 String bookContents,
-                char bookBorrowYn,
+                boolean canBorrow,
                 String bookCallNumber,
                 String bookThumbnail,
                 Category category) {
@@ -97,7 +97,7 @@ public class Book extends BaseEntity {
         this.publicationDate = publicationDate;
         this.bookIsbn = bookIsbn;
         this.bookContents = bookContents;
-        this.bookBorrowYn = bookBorrowYn;
+        this.canBorrow = canBorrow;
         this.bookCallNumber = bookCallNumber;
         this.bookThumbnail = bookThumbnail;
         this.category = category;
@@ -158,6 +158,12 @@ public class Book extends BaseEntity {
                 .bookThumbnail(this.bookThumbnail)
                 .bookCategory(this.category.getCategoryName())
                 .build();
+    }
+
+
+    /* 대출가능여부 업데이트 */
+    public void updateCanBorrow(boolean canBorrow){
+        this.canBorrow = canBorrow;
     }
 
     /**

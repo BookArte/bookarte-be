@@ -45,7 +45,7 @@ public class BookService {
                 .publicationDate(bookReqDto.getPublicationDate())
                 .bookIsbn(bookReqDto.getBookIsbn())
                 .bookContents(bookReqDto.getBookContents())
-                .bookBorrowYn('Y')
+                .canBorrow(true)
                 .bookCallNumber(bookReqDto.getBookCallNumber())
                 .bookThumbnail(bookReqDto.getBookThumbnail())
                 .category(category)
@@ -209,4 +209,5 @@ public class BookService {
     public boolean isDuplicateIsbn(String isbn){
         return bookRepository.existsByBookIsbn(isbn);
     }
+
 }
