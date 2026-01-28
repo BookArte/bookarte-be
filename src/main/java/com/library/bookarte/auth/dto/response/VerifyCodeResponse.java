@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class MemberFindPasswordResponse {
+public class VerifyCodeResponse {
     private Long memberId;
-    private Long expiresIn;
+    private String resetToken;
 }

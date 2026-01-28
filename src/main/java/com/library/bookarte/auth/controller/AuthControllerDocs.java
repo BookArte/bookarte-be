@@ -5,6 +5,7 @@ import com.library.bookarte.auth.dto.request.MemberFindPasswordRequest;
 import com.library.bookarte.auth.dto.request.VerifyCodeRequest;
 import com.library.bookarte.auth.dto.response.MemberFindPasswordResponse;
 import com.library.bookarte.auth.dto.response.TokenResponse;
+import com.library.bookarte.auth.dto.response.VerifyCodeResponse;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -79,5 +80,5 @@ public interface AuthControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러")
     })
     @PostMapping("/verify_code")
-    ResponseEntity<GlobalResponseDto<Void>> verifyCode(@RequestBody VerifyCodeRequest verifyCodeRequest);
+    ResponseEntity<GlobalResponseDto<VerifyCodeResponse>> verifyCode(@RequestBody VerifyCodeRequest verifyCodeRequest);
 }

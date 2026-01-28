@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class VerifyCodeRequest {
     @NotBlank
-    @Email
-    private String memberEmail;
+    private Long memberId;
 
     @NotBlank
     private String code;
