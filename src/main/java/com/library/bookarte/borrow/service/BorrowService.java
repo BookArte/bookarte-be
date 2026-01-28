@@ -1,6 +1,7 @@
 package com.library.bookarte.borrow.service;
 
 import com.library.bookarte.book.entity.Book;
+import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.book.service.BookService;
 import com.library.bookarte.borrow.entity.Borrow;
 import com.library.bookarte.borrow.entity.type.Status;
@@ -23,13 +24,22 @@ public class BorrowService {
 
     private final BorrowRepository borrowRepository;
     private final MemberRepository memberRepository;
+    private final BookRepository bookRepository;
     private final BookService bookService;
 
     public void borrowBook(long bookId){
         long memberId = Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName());
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
-        Book book = bookService.findBook(bookId);
+
+        /**
+         * 1. 비관적 릭을 적용하여 도서 조회
+         * 2. 해당 도서에 대해서 다른 트랜잭션은 이 도서 정보를 수정할 수 없음
+         * 3. 트랜잭션이 종료되면 자물쇠가 해제
+         */
+
+        Book book = bookRepository.findByIdWithLock(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
 
         if(!book.isCanBorrow()){
             throw new CustomException(CustomErrorCode.BOOK_BORROW_FORBIDDEN);
@@ -49,5 +59,4 @@ public class BorrowService {
 
         book.updateCanBorrow(false);
     }
-
 }
