@@ -1,6 +1,6 @@
 package com.library.bookarte.borrow.controller;
 
-import com.library.bookarte.borrow.dto.TotalBorrowResDto;
+import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

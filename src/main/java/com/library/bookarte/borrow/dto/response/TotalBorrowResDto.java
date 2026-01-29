@@ -1,4 +1,4 @@
-package com.library.bookarte.borrow.dto;
+package com.library.bookarte.borrow.dto.response;
 
 
 import com.library.bookarte.member.entity.Member;

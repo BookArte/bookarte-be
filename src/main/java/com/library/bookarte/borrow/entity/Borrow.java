@@ -2,7 +2,7 @@ package com.library.bookarte.borrow.entity;
 
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
-import com.library.bookarte.borrow.dto.TotalBorrowResDto;
+import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.entity.type.Status;
 import com.library.bookarte.global.base.BaseEntity;
 import com.library.bookarte.member.entity.Member;

@@ -1,6 +1,6 @@
 package com.library.bookarte.borrow.controller;
 
-import com.library.bookarte.borrow.dto.TotalBorrowResDto;
+import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.service.BorrowService;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import lombok.RequiredArgsConstructor;
