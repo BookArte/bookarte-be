@@ -2,6 +2,7 @@ package com.library.bookarte.auth.service;
 
 import com.library.bookarte.auth.dto.request.LoginRequest;
 import com.library.bookarte.auth.dto.request.MemberFindPasswordRequest;
+import com.library.bookarte.auth.dto.request.ResetPasswordRequest;
 import com.library.bookarte.auth.dto.request.VerifyCodeRequest;
 import com.library.bookarte.auth.dto.response.MemberFindPasswordResponse;
 import com.library.bookarte.auth.dto.response.TokenResponse;
@@ -18,6 +19,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.Duration;
@@ -27,6 +29,7 @@ import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(rollbackFor = CustomException.class)
 public class AuthService {
 
     private final MemberRepository memberRepository;
@@ -95,6 +98,7 @@ public class AuthService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public ResponseCookie createHttpOnlyCookie(String refreshToken) {
         return ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
@@ -109,6 +113,7 @@ public class AuthService {
         redisTemplate.delete(REFRESH_TOKEN_PREFIX + memberId);
     }
 
+    @Transactional(readOnly = true)
     public ResponseCookie createLogoutCookie() {
         return ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
@@ -134,7 +139,7 @@ public class AuthService {
                 Duration.ofSeconds(authCodeExpiration)
         );
 
-        mailService.sendAuthMail(memberFindPasswordRequest.getMemberEmail(), authCode);
+//        mailService.sendAuthMail(memberFindPasswordRequest.getMemberEmail(), authCode);
         System.out.println("인증코드 발송 완료: " + authCode);
 
         return MemberFindPasswordResponse.builder()
@@ -156,7 +161,8 @@ public class AuthService {
         String savedCode = redisTemplate.opsForValue().get(redisKey);
 
         if (savedCode == null) throw new CustomException(CustomErrorCode.AUTH_CODE_EXPIRED);
-        if (!savedCode.equals(verifyCodeRequest.getCode())) throw new CustomException(CustomErrorCode.INVALID_AUTH_CODE);
+        if (!savedCode.equals(verifyCodeRequest.getCode()))
+            throw new CustomException(CustomErrorCode.INVALID_AUTH_CODE);
 
         redisTemplate.delete(redisKey);
 
@@ -171,5 +177,24 @@ public class AuthService {
                 .memberId(verifyCodeRequest.getMemberId())
                 .resetToken(resetToken)
                 .build();
+    }
+
+    public void resetPassword(ResetPasswordRequest request) {
+        String redisKey = "RESET_TOKEN:" + request.getId();
+        String savedToken = redisTemplate.opsForValue().get(redisKey);
+
+        if (savedToken == null || !savedToken.equals(request.getResetToken())) {
+            throw new CustomException(CustomErrorCode.INVALID_TOKEN);
+        }
+
+        Member member = memberRepository.findById(request.getId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        String encodedPassword = passwordEncoder.encode(request.getMemberPassword());
+
+        member.updatePassword(encodedPassword);
+
+        redisTemplate.delete(redisKey);
+
     }
 }

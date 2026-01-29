@@ -2,6 +2,7 @@ package com.library.bookarte.auth.controller;
 
 import com.library.bookarte.auth.dto.request.LoginRequest;
 import com.library.bookarte.auth.dto.request.MemberFindPasswordRequest;
+import com.library.bookarte.auth.dto.request.ResetPasswordRequest;
 import com.library.bookarte.auth.dto.request.VerifyCodeRequest;
 import com.library.bookarte.auth.dto.response.MemberFindPasswordResponse;
 import com.library.bookarte.auth.dto.response.TokenResponse;
@@ -52,7 +53,7 @@ public class AuthController implements AuthControllerDocs {
 
     @Override
     public ResponseEntity<GlobalResponseDto<Void>> logout(
-            @AuthenticationPrincipal Long memberId, // 현재 로그인한 사용자 ID
+            @AuthenticationPrincipal Long memberId,
             HttpServletResponse response) {
 
         authService.logout(memberId);
@@ -73,5 +74,11 @@ public class AuthController implements AuthControllerDocs {
     public ResponseEntity<GlobalResponseDto<VerifyCodeResponse>> verifyCode(@RequestBody VerifyCodeRequest verifyCodeRequest) {
         VerifyCodeResponse result = authService.verifyCode(verifyCodeRequest);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
+        authService.resetPassword(resetPasswordRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, null));
     }
 }
