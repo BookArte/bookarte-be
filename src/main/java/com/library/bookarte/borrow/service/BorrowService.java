@@ -3,6 +3,8 @@ package com.library.bookarte.borrow.service;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.book.service.BookService;
+import com.library.bookarte.borrow.dto.TotalBorrowResDto;
+import com.library.bookarte.borrow.dto.UserBorrowResDto;
 import com.library.bookarte.borrow.entity.Borrow;
 import com.library.bookarte.borrow.entity.type.Status;
 import com.library.bookarte.borrow.repository.BorrowRepository;
@@ -11,6 +13,8 @@ import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +31,7 @@ public class BorrowService {
     private final BookRepository bookRepository;
     private final BookService bookService;
 
+    //도서 대출 등록
     public void borrowBook(long bookId){
         long memberId = Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName());
         Member member = memberRepository.findById(memberId)
@@ -59,4 +64,17 @@ public class BorrowService {
 
         book.updateCanBorrow(false);
     }
+    //전체 대출 이력 조회
+    public Page<TotalBorrowResDto> getTotalBorrows(Pageable pageable){
+        Page<Borrow> borrows = borrowRepository.findAllBorrowByBorrowSearchFilter(pageable);
+
+        return borrows.map(Borrow::toTotalBorrowResDto);
+    }
+
+    //유저 대출 현황
+
+
+    //유저 대출 이력
+
+
 }

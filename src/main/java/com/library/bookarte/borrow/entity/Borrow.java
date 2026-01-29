@@ -1,7 +1,10 @@
 package com.library.bookarte.borrow.entity;
 
 import com.library.bookarte.book.entity.Book;
+import com.library.bookarte.book.entity.type.ParticipantType;
+import com.library.bookarte.borrow.dto.TotalBorrowResDto;
 import com.library.bookarte.borrow.entity.type.Status;
+import com.library.bookarte.global.base.BaseEntity;
 import com.library.bookarte.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -10,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -17,7 +21,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 @Table(name = "borrow")
-public class Borrow {
+public class Borrow extends BaseEntity {
 
     //대출일련번호
     @Id
@@ -50,4 +54,25 @@ public class Borrow {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+
+    public TotalBorrowResDto toTotalBorrowResDto(){
+        String authors = this.book.getParticipants().stream()
+                .filter(participant -> participant.getType() == ParticipantType.AUTHOR)
+                .map(Book.Participant::getName)
+                .collect(Collectors.joining(", "));
+
+        return TotalBorrowResDto.builder()
+                .borrowId(this.borrowId)
+                .returnDate(this.returnDate)
+                .returnDueDate(this.returnDueDate)
+                .borrowDate(LocalDate.from(this.getCreatedAt()))
+                .canExtend(this.canExtend)
+                .isOverdue(this.isOverdue)
+                .overdueDays(this.overdueDays)
+                .bookId(this.book.getBookId())
+                .bookTitle(this.book.getBookTitle())
+                .bookAuthor(authors)
+                .member(this.member)
+                .build();
+    }
 }
