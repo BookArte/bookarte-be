@@ -3,6 +3,7 @@ package com.library.bookarte.borrow.entity;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
+import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
 import com.library.bookarte.borrow.entity.type.Status;
 import com.library.bookarte.global.base.BaseEntity;
 import com.library.bookarte.member.entity.Member;
@@ -72,7 +73,29 @@ public class Borrow extends BaseEntity {
                 .bookId(this.book.getBookId())
                 .bookTitle(this.book.getBookTitle())
                 .bookAuthor(authors)
-                .member(this.member)
+                .memberUserId(this.member.getMemberUserId())
+                .memberName(this.member.getMemberName())
+                .memberEmail(this.member.getMemberEmail())
+                .build();
+    }
+
+    public UserBorrowResDto toUserBorrowResDto(){
+        String authors = this.book.getParticipants().stream()
+                .filter(participant -> participant.getType() == ParticipantType.AUTHOR)
+                .map(Book.Participant::getName)
+                .collect(Collectors.joining(", "));
+
+        return UserBorrowResDto.builder()
+                .borrowId(this.borrowId)
+                .returnDate(this.returnDate)
+                .returnDueDate(this.returnDueDate)
+                .borrowDate(LocalDate.from(this.getCreatedAt()))
+                .canExtend(this.canExtend)
+                .isOverdue(this.isOverdue)
+                .overdueDays(this.overdueDays)
+                .bookId(this.book.getBookId())
+                .bookTitle(this.book.getBookTitle())
+                .bookAuthor(authors)
                 .build();
     }
 }

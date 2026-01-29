@@ -5,6 +5,7 @@ import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.book.service.BookService;
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
+import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
 import com.library.bookarte.borrow.entity.Borrow;
 import com.library.bookarte.borrow.entity.type.Status;
 import com.library.bookarte.borrow.repository.BorrowRepository;
@@ -73,10 +74,21 @@ public class BorrowService {
         return borrows.map(Borrow::toTotalBorrowResDto);
     }
 
+    //유저 대출 이력
+    public Page<UserBorrowResDto> getUserBorrows(BorrowSearchFilterDto borrowSearchFilterDto,
+                                                 Pageable pageable){
+        long memberId = Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName());
+        borrowSearchFilterDto.setMemberId(memberId);
+
+        Page<Borrow> borrows = borrowRepository.findAllBorrowByBorrowSearchFilter(borrowSearchFilterDto, pageable);
+
+        return borrows.map(Borrow::toUserBorrowResDto);
+
+    }
+
     //유저 대출 현황
 
 
-    //유저 대출 이력
 
 
 }

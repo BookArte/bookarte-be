@@ -2,12 +2,12 @@ package com.library.bookarte.borrow.dto.response;
 
 
 import com.library.bookarte.member.entity.Member;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
-
 @Getter
+@SuperBuilder
 public class TotalBorrowResDto extends UserBorrowResDto  {
 
     //멤버 정보
@@ -15,7 +15,6 @@ public class TotalBorrowResDto extends UserBorrowResDto  {
     private final String memberName;
     private final String memberEmail;
 
-    @Builder
     public TotalBorrowResDto(Long borrowId,
                              LocalDate returnDueDate,
                              LocalDate returnDate,
@@ -32,7 +31,4 @@ public class TotalBorrowResDto extends UserBorrowResDto  {
         this.memberName = member.getMemberName();
         this.memberEmail = member.getMemberEmail();
     }
-
-
-
 }

@@ -2,6 +2,7 @@ package com.library.bookarte.borrow.controller;
 
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
+import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
 import com.library.bookarte.borrow.service.BorrowService;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -33,4 +34,14 @@ public class BorrowController implements BorrowControllerDocs {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<Page<UserBorrowResDto>>> getUserBorrows(@ModelAttribute BorrowSearchFilterDto borrowSearchFilterDto,
+                                                                                    Pageable pageable) {
+        Page<UserBorrowResDto> result = borrowService.getUserBorrows(borrowSearchFilterDto, pageable);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+
 }

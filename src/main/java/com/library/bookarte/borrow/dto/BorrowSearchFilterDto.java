@@ -18,7 +18,7 @@ public class BorrowSearchFilterDto {
 
     private Status status;
 
-    private boolean isOverdue;
+    private Boolean isOverdue;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;

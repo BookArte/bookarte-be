@@ -2,6 +2,7 @@ package com.library.bookarte.borrow.controller;
 
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
+import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,12 +35,23 @@ public interface BorrowControllerDocs {
     /*Read: 관리자용 전체 대출 정보 목록 조회*/
     @Operation(summary = "관리자 전체 대출 정보 목록 조회", description = "**성공 응답 데이터:** 전체 대출 정보 목록")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "전체 대출 몱록 조회 성공"),
+            @ApiResponse(responseCode = "200", description = "전체 대출 몱록 조회 성공"),
             @ApiResponse(responseCode = "401", description = "권한 없음"),
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
-    @GetMapping("/admin/list")
+    @GetMapping("/admin")
     ResponseEntity<GlobalResponseDto<Page<TotalBorrowResDto>>> getTotalBorrows(@ParameterObject @ModelAttribute BorrowSearchFilterDto borrowSearchFilterDto,
                                                                                @ParameterObject Pageable pageable);
+
+    /*Read: 사용자용 전체 대출 정보 목록 조회*/
+    @Operation(summary = "사용자 전체 정보 목록 조회", description = "**성공 응답 데이터:** 사용자 대출 정보 목록")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "사용자 대출 몱록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping
+    ResponseEntity<GlobalResponseDto<Page<UserBorrowResDto>>> getUserBorrows(@ParameterObject @ModelAttribute BorrowSearchFilterDto borrowSearchFilterDto,
+                                                                             @ParameterObject Pageable pageable);
 
 }

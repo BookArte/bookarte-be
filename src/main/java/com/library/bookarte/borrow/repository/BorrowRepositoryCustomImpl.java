@@ -32,7 +32,8 @@ public class BorrowRepositoryCustomImpl implements BorrowRepositoryCustom{
                 .join(borrow.book, book).fetchJoin()
                 .where(
                         statusEq(borrowSearchFilterDto.getStatus()),
-                        isOverdueEq(borrowSearchFilterDto.isOverdue())
+                        isOverdueEq(borrowSearchFilterDto.getIsOverdue()),
+                        memberIdEq(borrowSearchFilterDto.getMemberId())
                 )
                 .orderBy(borrow.borrowId.desc())
                 .offset(pageable.getOffset())
@@ -57,6 +58,11 @@ public class BorrowRepositoryCustomImpl implements BorrowRepositoryCustom{
     // 연장 여부에 따른 조건 메서드
     private BooleanExpression isOverdueEq(Boolean isOverdue) {
         return isOverdue != null ? borrow.isOverdue.eq(isOverdue) : null;
+    }
+
+    //회원 조건 메서드
+    private BooleanExpression memberIdEq(Long memberId) {
+        return memberId != null ? borrow.member.memberId.eq(memberId) : null;
     }
 
 }
