@@ -1,10 +1,10 @@
 package com.library.bookarte.borrow.controller;
 
+import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.service.BorrowService;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -27,8 +27,9 @@ public class BorrowController implements BorrowControllerDocs {
     }
 
     @Override
-    public  ResponseEntity<GlobalResponseDto<Page<TotalBorrowResDto>>> getTotalBorrows(@ParameterObject Pageable pageable) {
-        Page<TotalBorrowResDto> result = borrowService.getTotalBorrows(pageable);
+    public  ResponseEntity<GlobalResponseDto<Page<TotalBorrowResDto>>> getTotalBorrows(@ModelAttribute BorrowSearchFilterDto borrowSearchFilterDto,
+                                                                                       Pageable pageable) {
+        Page<TotalBorrowResDto> result = borrowService.getTotalBorrows(borrowSearchFilterDto, pageable);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }

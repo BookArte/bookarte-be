@@ -3,6 +3,7 @@ package com.library.bookarte.borrow.service;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.book.service.BookService;
+import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.entity.Borrow;
 import com.library.bookarte.borrow.entity.type.Status;
@@ -64,8 +65,10 @@ public class BorrowService {
         book.updateCanBorrow(false);
     }
     //전체 대출 이력 조회
-    public Page<TotalBorrowResDto> getTotalBorrows(Pageable pageable){
-        Page<Borrow> borrows = borrowRepository.findAllBorrowByBorrowSearchFilter(pageable);
+    public Page<TotalBorrowResDto> getTotalBorrows(BorrowSearchFilterDto borrowSearchFilterDto,
+                                                   Pageable pageable){
+        Page<Borrow> borrows = borrowRepository.findAllBorrowByBorrowSearchFilter(borrowSearchFilterDto,
+                pageable);
 
         return borrows.map(Borrow::toTotalBorrowResDto);
     }
