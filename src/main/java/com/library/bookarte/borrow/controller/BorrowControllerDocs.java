@@ -49,6 +49,17 @@ public interface BorrowControllerDocs {
     @PatchMapping("/request-return/{borrowId}")
     ResponseEntity<GlobalResponseDto<String>> requestReturn(@PathVariable Long borrowId);
 
+    @Operation(summary = "도서 대출 기간 연장 요청", description = "**성공 응답 데이터:** 도서 대출 기간 연장 요청 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "도서 반납 신청 요청 성공"),
+            @ApiResponse(responseCode = "400", description = "기간 연장할 수 없는 도서"),
+            @ApiResponse(responseCode = "400", description = "대출 중인 아닌 도서"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 도서 대출 이력"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @PatchMapping("/extend/{borrowId}")
+    ResponseEntity<GlobalResponseDto<String>> extendReturn(@PathVariable Long borrowId);
+
     /*Read: 관리자용 전체 대출 정보 목록 조회*/
     @Operation(summary = "관리자 전체 대출 정보 목록 조회", description = "**성공 응답 데이터:** 전체 대출 정보 목록")
     @ApiResponses(value = {

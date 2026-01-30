@@ -111,6 +111,9 @@ public class BorrowService {
     public void approveReturnBook(Long borrowId){
         Borrow borrow = borrowRepository.findById(borrowId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BORROW_NOT_FOUND));
+
+        Book book = bookRepository.findById(borrow.getBook().getBookId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
         Status borrowStatus = borrow.getStatus();
 
         if(!borrowStatus.equals(Status.RETURN_REQUESTED)){
@@ -119,9 +122,23 @@ public class BorrowService {
 
         Status status = Status.RETURNED;
         borrow.updateStatus(status);
+        borrow.updateReturnDate(LocalDate.now());
+        book.updateCanBorrow(true);
     }
 
     //도서 대출 연장
+    public void extendReturnDate(Long borrowId){
+        Borrow borrow = borrowRepository.findById(borrowId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BORROW_NOT_FOUND));
+        if(!borrow.isCanExtend()) throw new CustomException(CustomErrorCode.CAN_NOT_EXTEND);
+
+        Status borrowStatus = borrow.getStatus();
+        if(!borrowStatus.equals(Status.BORROWED)) throw new CustomException(CustomErrorCode.NOT_STATUS_BORROW);
+
+        borrow.updateCanExtend(false);
+        borrow.extendReturnDate(borrow.getReturnDueDate().plusDays(7));
+    }
+
     //도서 연체 처리
     //도서 연체에 의한 패널티 부여
 

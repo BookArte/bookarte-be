@@ -101,7 +101,8 @@ public class Borrow extends BaseEntity {
                 .build();
     }
 
-    public void updateStatus(Status status){
-        this.status = status;
-    }
+    public void updateStatus(Status status){ this.status = status; }
+    public void updateReturnDate(LocalDate returnDate) { this.returnDate = returnDate; }
+    public void extendReturnDate(LocalDate extendDate) { this.returnDueDate = extendDate; }
+    public void updateCanExtend(Boolean canExtend) { this.canExtend = canExtend; }
 }

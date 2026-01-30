@@ -59,4 +59,11 @@ public class BorrowController implements BorrowControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    @Override
+    public  ResponseEntity<GlobalResponseDto<String>> extendReturn(@PathVariable Long borrowId) {
+        borrowService.extendReturnDate(borrowId);
+        String result = "도서 대출 기간 연장 완료";
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
 }
