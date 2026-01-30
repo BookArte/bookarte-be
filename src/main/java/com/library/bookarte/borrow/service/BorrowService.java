@@ -106,8 +106,23 @@ public class BorrowService {
         Status status = Status.RETURN_REQUESTED;
         borrow.updateStatus(status);
     }
-    //도서 대출 연장
 
+    //도서 반납 승인
+    public void approveReturnBook(Long borrowId){
+        Borrow borrow = borrowRepository.findById(borrowId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BORROW_NOT_FOUND));
+        Status borrowStatus = borrow.getStatus();
+
+        if(!borrowStatus.equals(Status.RETURN_REQUESTED)){
+            throw new CustomException(CustomErrorCode.NOT_RETURN_REQUEST);
+        }
+
+        Status status = Status.RETURNED;
+        borrow.updateStatus(status);
+    }
+
+    //도서 대출 연장
+    //도서 연체 처리
     //도서 연체에 의한 패널티 부여
 
 }

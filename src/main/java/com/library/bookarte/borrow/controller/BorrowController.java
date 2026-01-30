@@ -51,4 +51,12 @@ public class BorrowController implements BorrowControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK,result));
     }
 
+    @Override
+    public ResponseEntity<GlobalResponseDto<String>> approveReturn(@PathVariable Long borrowId){
+        borrowService.approveReturnBook(borrowId);
+        String result = "도서 반납 승인 완료";
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
 }

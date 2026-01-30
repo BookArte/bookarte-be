@@ -29,17 +29,6 @@ public interface BorrowControllerDocs {
     @PostMapping
     ResponseEntity<GlobalResponseDto<String>> borrowBook(@RequestParam Long bookId);
 
-    /*Read: 관리자용 전체 대출 정보 목록 조회*/
-    @Operation(summary = "관리자 전체 대출 정보 목록 조회", description = "**성공 응답 데이터:** 전체 대출 정보 목록")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "전체 대출 몱록 조회 성공"),
-            @ApiResponse(responseCode = "401", description = "권한 없음"),
-            @ApiResponse(responseCode = "500", description = "서버 에러"),
-    })
-    @GetMapping("/admin")
-    ResponseEntity<GlobalResponseDto<Page<TotalBorrowResDto>>> getTotalBorrows(@ParameterObject @ModelAttribute BorrowSearchFilterDto borrowSearchFilterDto,
-                                                                               @ParameterObject Pageable pageable);
-
     /*Read: 사용자용 전체 대출 정보 목록 조회*/
     @Operation(summary = "사용자 전체 정보 목록 조회", description = "**성공 응답 데이터:** 사용자 대출 정보 목록")
     @ApiResponses(value = {
@@ -50,7 +39,7 @@ public interface BorrowControllerDocs {
     @GetMapping
     ResponseEntity<GlobalResponseDto<Page<UserBorrowResDto>>> getUserBorrows(@ParameterObject @ModelAttribute BorrowSearchFilterDto borrowSearchFilterDto,
                                                                              @ParameterObject Pageable pageable);
-
+    /*Update: 대출 도서 반납 신청*/
     @Operation(summary = "도서 반납 신청 요청", description = "**성공 응답 데이터:** 도서 반납 신청 요청 성공")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "도서 반납 신청 요청 성공"),
@@ -60,5 +49,24 @@ public interface BorrowControllerDocs {
     @PatchMapping("/request-return/{borrowId}")
     ResponseEntity<GlobalResponseDto<String>> requestReturn(@PathVariable Long borrowId);
 
+    /*Read: 관리자용 전체 대출 정보 목록 조회*/
+    @Operation(summary = "관리자 전체 대출 정보 목록 조회", description = "**성공 응답 데이터:** 전체 대출 정보 목록")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "전체 대출 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/admin")
+    ResponseEntity<GlobalResponseDto<Page<TotalBorrowResDto>>> getTotalBorrows(@ParameterObject @ModelAttribute BorrowSearchFilterDto borrowSearchFilterDto,
+                                                                               @ParameterObject Pageable pageable);
 
+    /*Update: 관리자 도서 반납 승인*/
+    @Operation(summary = "관리자 도서 반납 승인", description = "**성공 응답 데이터:** 관리자 도서 반납 승인 완료")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "관리자 도서 반납 승인 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @PatchMapping("/admin/{borrowId}")
+    ResponseEntity<GlobalResponseDto<String>> approveReturn(@PathVariable Long borrowId);
 }
