@@ -1,6 +1,7 @@
 package com.library.bookarte.borrow.dto.response;
 
 
+import com.library.bookarte.borrow.entity.type.Status;
 import com.library.bookarte.member.entity.Member;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
@@ -25,8 +26,9 @@ public class TotalBorrowResDto extends UserBorrowResDto  {
                              Long bookId,
                              String bookTitle,
                              String bookAuthor,
+                             Status status,
                              Member member) {
-        super(borrowId, returnDueDate, returnDate, borrowDate, canExtend, isOverdue, overdueDays, bookId, bookTitle, bookAuthor);
+        super(borrowId, returnDueDate, returnDate, borrowDate, canExtend, isOverdue, overdueDays, status,bookId, bookTitle, bookAuthor);
         this.memberUserId = member.getMemberUserId();
         this.memberName = member.getMemberName();
         this.memberEmail = member.getMemberEmail();

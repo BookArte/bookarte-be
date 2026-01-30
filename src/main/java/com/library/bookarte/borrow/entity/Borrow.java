@@ -70,6 +70,7 @@ public class Borrow extends BaseEntity {
                 .canExtend(this.canExtend)
                 .isOverdue(this.isOverdue)
                 .overdueDays(this.overdueDays)
+                .status(this.status)
                 .bookId(this.book.getBookId())
                 .bookTitle(this.book.getBookTitle())
                 .bookAuthor(authors)
@@ -93,9 +94,14 @@ public class Borrow extends BaseEntity {
                 .canExtend(this.canExtend)
                 .isOverdue(this.isOverdue)
                 .overdueDays(this.overdueDays)
+                .status(this.status)
                 .bookId(this.book.getBookId())
                 .bookTitle(this.book.getBookTitle())
                 .bookAuthor(authors)
                 .build();
+    }
+
+    public void updateStatus(Status status){
+        this.status = status;
     }
 }

@@ -35,7 +35,11 @@ public enum CustomErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다"),
 
     //borrow
-    BOOK_BORROW_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 도서는 이미 대출 중인 도서입니다");
+    BOOK_BORROW_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 도서는 이미 대출 중인 도서입니다."),
+    NOT_YOUR_BORROW_RECORD(HttpStatus.UNAUTHORIZED,"해당 대출 이력에 대한 권한이 없습니다."),
+    INVALID_RETURN_REQUEST(HttpStatus.BAD_REQUEST, "반납 처리 중이거나 반납 완료된 도서입니다."),
+    BORROW_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 대출 내역은 존재하지 않습니다.");
+
 
     private final HttpStatus httpStatus;
     private final String message;

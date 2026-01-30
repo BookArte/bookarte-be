@@ -20,7 +20,7 @@ public class BorrowController implements BorrowControllerDocs {
     private final BorrowService borrowService;
 
     @Override
-    public ResponseEntity<GlobalResponseDto<String>> borrowBook(@RequestParam long bookId){
+    public ResponseEntity<GlobalResponseDto<String>> borrowBook(@RequestParam Long bookId){
         borrowService.borrowBook(bookId);
         String result = "대출 완료";
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -43,5 +43,12 @@ public class BorrowController implements BorrowControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    @Override
+    public ResponseEntity<GlobalResponseDto<String>> requestReturn(@PathVariable Long borrowId){
+        borrowService.requestReturnBook(borrowId);
+        String result = "도서 반납 신청 완료";
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK,result));
+    }
 
 }

@@ -1,5 +1,6 @@
 package com.library.bookarte.borrow.dto.response;
 
+import com.library.bookarte.borrow.entity.type.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
@@ -18,8 +19,7 @@ public class UserBorrowResDto {
     private final boolean canExtend; //연장 가능 여부
     private final boolean isOverdue; // 연체 여부
     private final int overdueDays; // 연체 일수
-
-
+    private final Status status;
 
     //도서 정보
     private final Long bookId;

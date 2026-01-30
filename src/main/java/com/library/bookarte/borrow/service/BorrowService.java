@@ -33,8 +33,8 @@ public class BorrowService {
     private final BookService bookService;
 
     //도서 대출 등록
-    public void borrowBook(long bookId){
-        long memberId = Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName());
+    public void borrowBook(Long bookId){
+        Long memberId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
@@ -83,12 +83,31 @@ public class BorrowService {
         Page<Borrow> borrows = borrowRepository.findAllBorrowByBorrowSearchFilter(borrowSearchFilterDto, pageable);
 
         return borrows.map(Borrow::toUserBorrowResDto);
-
     }
 
-    //유저 대출 현황
+    //도서 반납 신청
+    public void requestReturnBook(Long borrowId){
+        Long memberId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
 
+        Borrow borrow = borrowRepository.findById(borrowId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BORROW_NOT_FOUND));
 
+        Long borrowMemberId = borrow.getMember().getMemberId();
+        Status borrowStatus = borrow.getStatus();
 
+        if(!borrowMemberId.equals(memberId)){
+            throw new CustomException(CustomErrorCode.NOT_YOUR_BORROW_RECORD);
+        }
+
+        if (borrowStatus != Status.BORROWED && borrowStatus != Status.OVERDUE) {
+            throw new CustomException(CustomErrorCode.INVALID_RETURN_REQUEST);
+        }
+
+        Status status = Status.RETURN_REQUESTED;
+        borrow.updateStatus(status);
+    }
+    //도서 대출 연장
+
+    //도서 연체에 의한 패널티 부여
 
 }

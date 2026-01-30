@@ -12,10 +12,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Borrow")
 public interface BorrowControllerDocs {
@@ -30,7 +27,7 @@ public interface BorrowControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @PostMapping
-    ResponseEntity<GlobalResponseDto<String>> borrowBook(@RequestParam long bookId);
+    ResponseEntity<GlobalResponseDto<String>> borrowBook(@RequestParam Long bookId);
 
     /*Read: 관리자용 전체 대출 정보 목록 조회*/
     @Operation(summary = "관리자 전체 대출 정보 목록 조회", description = "**성공 응답 데이터:** 전체 대출 정보 목록")
@@ -53,5 +50,15 @@ public interface BorrowControllerDocs {
     @GetMapping
     ResponseEntity<GlobalResponseDto<Page<UserBorrowResDto>>> getUserBorrows(@ParameterObject @ModelAttribute BorrowSearchFilterDto borrowSearchFilterDto,
                                                                              @ParameterObject Pageable pageable);
+
+    @Operation(summary = "도서 반납 신청 요청", description = "**성공 응답 데이터:** 도서 반납 신청 요청 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "도서 반납 신청 요청 성공"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 도서 대출 이력"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @PatchMapping("/request-return/{borrowId}")
+    ResponseEntity<GlobalResponseDto<String>> requestReturn(@PathVariable Long borrowId);
+
 
 }
