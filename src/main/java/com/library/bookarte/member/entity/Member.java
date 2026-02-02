@@ -100,4 +100,10 @@ public class Member extends BaseEntity {
         this.memberStatus = "STATUS02";
         this.memberPwd = null;
     }
+
+    public void updatePassword(String encodedPassword) {
+        if (encodedPassword != null && !encodedPassword.isBlank()) {
+            this.memberPwd = encodedPassword;
+        }
+    }
 }

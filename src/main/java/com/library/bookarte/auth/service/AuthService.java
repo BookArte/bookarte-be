@@ -2,9 +2,11 @@ package com.library.bookarte.auth.service;
 
 import com.library.bookarte.auth.dto.request.LoginRequest;
 import com.library.bookarte.auth.dto.request.MemberFindPasswordRequest;
+import com.library.bookarte.auth.dto.request.ResetPasswordRequest;
 import com.library.bookarte.auth.dto.request.VerifyCodeRequest;
 import com.library.bookarte.auth.dto.response.MemberFindPasswordResponse;
 import com.library.bookarte.auth.dto.response.TokenResponse;
+import com.library.bookarte.auth.dto.response.VerifyCodeResponse;
 import com.library.bookarte.auth.jwt.JwtProvider;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
@@ -17,14 +19,17 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.Duration;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(rollbackFor = CustomException.class)
 public class AuthService {
 
     private final MemberRepository memberRepository;
@@ -93,6 +98,7 @@ public class AuthService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public ResponseCookie createHttpOnlyCookie(String refreshToken) {
         return ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
@@ -107,6 +113,7 @@ public class AuthService {
         redisTemplate.delete(REFRESH_TOKEN_PREFIX + memberId);
     }
 
+    @Transactional(readOnly = true)
     public ResponseCookie createLogoutCookie() {
         return ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
@@ -118,28 +125,25 @@ public class AuthService {
     }
 
     public MemberFindPasswordResponse findPassword(MemberFindPasswordRequest memberFindPasswordRequest) {
-        boolean exists = memberRepository.existsByMemberUserIdAndMemberNameAndMemberEmail(
+        Member member = memberRepository.findByMemberUserIdAndMemberNameAndMemberEmail(
                 memberFindPasswordRequest.getMemberUserId(),
                 memberFindPasswordRequest.getMemberName(),
                 memberFindPasswordRequest.getMemberEmail()
-        );
-
-        if (!exists) {
-            throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);
-        }
+        ).orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
         String authCode = generateRandomCode();
 
         redisTemplate.opsForValue().set(
-                "AUTH:" + memberFindPasswordRequest.getMemberEmail(),
+                "AUTH_CODE:" + member.getMemberId(),
                 authCode,
                 Duration.ofSeconds(authCodeExpiration)
         );
 
-        mailService.sendAuthMail(memberFindPasswordRequest.getMemberEmail(), authCode);
+//        mailService.sendAuthMail(memberFindPasswordRequest.getMemberEmail(), authCode);
         System.out.println("인증코드 발송 완료: " + authCode);
 
         return MemberFindPasswordResponse.builder()
+                .memberId(member.getMemberId())
                 .expiresIn(authCodeExpiration)
                 .build();
     }
@@ -152,17 +156,45 @@ public class AuthService {
                 .collect(Collectors.joining());
     }
 
-    public void verifyCode(VerifyCodeRequest verifyCodeRequest) {
-        String savedCode = redisTemplate.opsForValue().get("AUTH:" + verifyCodeRequest.getMemberEmail());
+    public VerifyCodeResponse verifyCode(VerifyCodeRequest verifyCodeRequest) {
+        String redisKey = "AUTH_CODE:" + verifyCodeRequest.getMemberId();
+        String savedCode = redisTemplate.opsForValue().get(redisKey);
 
-        if (savedCode == null) {
-            throw new CustomException(CustomErrorCode.AUTH_CODE_EXPIRED);
-        }
-
-        if (!savedCode.equals(verifyCodeRequest.getCode())) {
+        if (savedCode == null) throw new CustomException(CustomErrorCode.AUTH_CODE_EXPIRED);
+        if (!savedCode.equals(verifyCodeRequest.getCode()))
             throw new CustomException(CustomErrorCode.INVALID_AUTH_CODE);
+
+        redisTemplate.delete(redisKey);
+
+        String resetToken = UUID.randomUUID().toString();
+        redisTemplate.opsForValue().set(
+                "RESET_TOKEN:" + verifyCodeRequest.getMemberId(),
+                resetToken,
+                Duration.ofMinutes(5)
+        );
+
+        return VerifyCodeResponse.builder()
+                .memberId(verifyCodeRequest.getMemberId())
+                .resetToken(resetToken)
+                .build();
+    }
+
+    public void resetPassword(ResetPasswordRequest request) {
+        String redisKey = "RESET_TOKEN:" + request.getId();
+        String savedToken = redisTemplate.opsForValue().get(redisKey);
+
+        if (savedToken == null || !savedToken.equals(request.getResetToken())) {
+            throw new CustomException(CustomErrorCode.INVALID_TOKEN);
         }
 
-        redisTemplate.delete("AUTH:" + verifyCodeRequest.getMemberEmail());
+        Member member = memberRepository.findById(request.getId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        String encodedPassword = passwordEncoder.encode(request.getMemberPassword());
+
+        member.updatePassword(encodedPassword);
+
+        redisTemplate.delete(redisKey);
+
     }
 }

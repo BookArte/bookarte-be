@@ -2,9 +2,11 @@ package com.library.bookarte.auth.controller;
 
 import com.library.bookarte.auth.dto.request.LoginRequest;
 import com.library.bookarte.auth.dto.request.MemberFindPasswordRequest;
+import com.library.bookarte.auth.dto.request.ResetPasswordRequest;
 import com.library.bookarte.auth.dto.request.VerifyCodeRequest;
 import com.library.bookarte.auth.dto.response.MemberFindPasswordResponse;
 import com.library.bookarte.auth.dto.response.TokenResponse;
+import com.library.bookarte.auth.dto.response.VerifyCodeResponse;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -15,6 +17,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -79,5 +82,16 @@ public interface AuthControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러")
     })
     @PostMapping("/verify_code")
-    ResponseEntity<GlobalResponseDto<Void>> verifyCode(@RequestBody VerifyCodeRequest verifyCodeRequest);
+    ResponseEntity<GlobalResponseDto<VerifyCodeResponse>> verifyCode(@RequestBody VerifyCodeRequest verifyCodeRequest);
+
+    /* Read: 비밀번호 재설정 */
+    @Operation(summary = "비밀번호 재설정", description = "**성공 응답 데이터:** 비밀번호 변경 성공.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
+            @ApiResponse(responseCode = "400", description = "유효하지 않은 토큰 혹은 잘못된 요청"),
+            @ApiResponse(responseCode = "404", description = "회원 정보가 존재하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @PatchMapping("/reset_password")
+    ResponseEntity<GlobalResponseDto<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest);
 }
