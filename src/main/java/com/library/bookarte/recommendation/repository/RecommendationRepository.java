@@ -1,6 +1,7 @@
 package com.library.bookarte.recommendation.repository;
 
 import com.library.bookarte.recommendation.entity.Recommendation;
+import com.library.bookarte.recommendation.entity.type.RecommendType;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -25,4 +26,8 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     @Modifying
     @Query("UPDATE Recommendation r SET r.priority = :priority WHERE r.id = :id")
     void updatePriority(@Param("id") Long id, @Param("priority") int priority);
+
+    boolean existsByBook_BookId(Long bookId);
+
+    int countByRecommendType(RecommendType recommendType);
 }

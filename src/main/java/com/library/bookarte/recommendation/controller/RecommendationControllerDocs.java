@@ -4,6 +4,7 @@ import com.library.bookarte.global.response.GlobalResponseDto;
 import com.library.bookarte.recommendation.dto.RecommendationBookResDto;
 import com.library.bookarte.recommendation.dto.RecommendationReqDto;
 import com.library.bookarte.recommendation.dto.ReorderReqDto;
+import com.library.bookarte.recommendation.dto.UpdateRecommendDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -45,6 +46,17 @@ public interface RecommendationControllerDocs {
     @GetMapping("/pick-10/list")
     ResponseEntity<GlobalResponseDto<List<RecommendationBookResDto>>> pickList();
 
+    @Operation(summary = "추천 도서 정보 단일 조회", description = "**성공 응답 데이터:** 단일 추천 도서 정보")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "추천 도서 정보 단일 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "권한없음"),
+            @ApiResponse(responseCode = "404", description = "추천 도서 정보 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/{recommendationId}")
+    ResponseEntity<GlobalResponseDto<RecommendationBookResDto>> getRecommendationDetail(@PathVariable Long recommendationId);
+
+
     @Operation(summary = "추천 도서 순위 변경 요청", description = "**성공 응답 데이터:**: 추천 도서 순위 변경 완료")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "추천 도서 순위 변경 완료"),
@@ -54,4 +66,24 @@ public interface RecommendationControllerDocs {
     })
     @PatchMapping("/reorder")
     ResponseEntity<GlobalResponseDto<String>> reorder(@RequestBody ReorderReqDto reorderReqDto);
+
+    @Operation(summary = "추천 도서 정보 수정 요청", description = "**성공 응답 데이터:**: 추천 도서 정보 수정 완료")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "추천 도서 정보 수정 완료"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "해당 추천 도서 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @PatchMapping("/{recommendationId}")
+    ResponseEntity<GlobalResponseDto<String>> updateRecommend(@PathVariable Long recommendationId,
+                                                             @RequestBody UpdateRecommendDto updateRecommendDto);
+
+    @Operation(summary = "추천 목록 내 도서 존재 확인", description = "**성공 응답 데이터:** 존재 유무에 대한 `boolean`값")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "추천 목록 내 유무에 대한 응답 성공"),
+            @ApiResponse(responseCode = "401", description = "권한없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/is-recommend")
+    ResponseEntity<GlobalResponseDto<Boolean>> isRecommend(@RequestParam Long bookId);
 }

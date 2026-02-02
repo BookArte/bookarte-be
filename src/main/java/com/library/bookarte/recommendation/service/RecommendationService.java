@@ -7,6 +7,7 @@ import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.recommendation.dto.RecommendationBookResDto;
 import com.library.bookarte.recommendation.dto.RecommendationReqDto;
 import com.library.bookarte.recommendation.dto.ReorderReqDto;
+import com.library.bookarte.recommendation.dto.UpdateRecommendDto;
 import com.library.bookarte.recommendation.entity.Recommendation;
 import com.library.bookarte.recommendation.entity.type.RecommendType;
 import com.library.bookarte.recommendation.repository.RecommendationRepository;
@@ -25,8 +26,16 @@ public class RecommendationService {
     private final RecommendationRepository recommendationRepository;
     private final BookService bookService;
 
+    private static final int MAX_RECOMMEND_COUNT = 10;
+
     //추천 도서 등록
     public void setRecommendBookByAdmin(RecommendationReqDto recommendationReqDto) {
+        int currentAdminPickCount = recommendationRepository.countByRecommendType(RecommendType.ADMIN_PICK);
+
+        if(currentAdminPickCount >= MAX_RECOMMEND_COUNT) {
+            throw new CustomException(CustomErrorCode.RECOMMENDATION_LIMIT_EXCEEDED);
+        }
+
         Book recommendationBook = bookService.findBook(recommendationReqDto.getBookId());
         int defaultPriority = 1; //나중에 추천 리스트에 등록되는 도서는 1순위로 들어가게 된다
 
@@ -43,7 +52,6 @@ public class RecommendationService {
                 .build();
 
         recommendationRepository.save(recommendation);
-
     }
 
     //추천 도서 삭제
@@ -66,6 +74,14 @@ public class RecommendationService {
                 .collect(Collectors.toList());
     }
 
+    //추천 도서 상세 정보 조회
+    public RecommendationBookResDto getRecommendationBookDetail(Long recommendationId){
+        Recommendation recommendation = recommendationRepository.findById(recommendationId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.RECOMMENDATION_NOT_FOUND));
+
+        return recommendation.toResDto();
+    }
+
     //추천 도서 목록 순서 변경
     public void reorderRecommendation(ReorderReqDto reorderReqDto) {
         List<Long> ids = reorderReqDto.getReorderedIds();
@@ -78,5 +94,19 @@ public class RecommendationService {
         }
     }
 
+    //추천 정보 수정
+    public void updateRecommend(Long recommendationId, UpdateRecommendDto updateRecommendDto){
 
+        Recommendation target = recommendationRepository.findById(recommendationId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.RECOMMENDATION_NOT_FOUND));
+
+        target.updateRecommend(updateRecommendDto.getComments(),
+                updateRecommendDto.getStartDate(),
+                updateRecommendDto.getEndDate());
+    }
+
+    //추천 도서 존재 유무
+    public boolean existByBookId(Long bookId){
+        return recommendationRepository.existsByBook_BookId(bookId);
+    }
 }
