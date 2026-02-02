@@ -2,6 +2,7 @@ package com.library.bookarte.member.service;
 
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
+import com.library.bookarte.global.util.StringUtils;
 import com.library.bookarte.member.dto.request.MemberDeleteRequest;
 import com.library.bookarte.member.dto.request.MemberFindIdRequest;
 import com.library.bookarte.member.dto.request.MemberJoinRequest;
@@ -116,19 +117,11 @@ public class MemberService {
         ).orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_USER_ID_NOT_FOUND));
 
         List<String> userIds = members.stream()
-                .map(member -> maskUserId(member.getMemberUserId()))
+                .map(member -> StringUtils.maskUserId(member.getMemberUserId()))
                 .toList();
 
         return MemberFindIdResponse.builder()
                 .userIds(userIds)
                 .build();
-    }
-
-    private String maskUserId(String userId) {
-        if (userId == null || userId.length() < 3) {
-            return userId;
-        }
-
-        return userId.substring(0, 3) + "*".repeat(userId.length() - 3);
     }
 }

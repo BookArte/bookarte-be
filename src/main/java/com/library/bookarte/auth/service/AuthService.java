@@ -11,6 +11,7 @@ import com.library.bookarte.auth.jwt.JwtProvider;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.global.util.MailService;
+import com.library.bookarte.global.util.StringUtils;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -131,7 +132,7 @@ public class AuthService {
                 memberFindPasswordRequest.getMemberEmail()
         ).orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
-        String authCode = generateRandomCode();
+        String authCode = StringUtils.generateRandomCode();
 
         redisTemplate.opsForValue().set(
                 "AUTH_CODE:" + member.getMemberId(),
@@ -139,21 +140,13 @@ public class AuthService {
                 Duration.ofSeconds(authCodeExpiration)
         );
 
-//        mailService.sendAuthMail(memberFindPasswordRequest.getMemberEmail(), authCode);
+        mailService.sendAuthMail(memberFindPasswordRequest.getMemberEmail(), authCode);
         System.out.println("인증코드 발송 완료: " + authCode);
 
         return MemberFindPasswordResponse.builder()
                 .memberId(member.getMemberId())
                 .expiresIn(authCodeExpiration)
                 .build();
-    }
-
-    private String generateRandomCode() {
-        SecureRandom sr = new SecureRandom();
-        return IntStream.range(0, 6)
-                .map(i -> sr.nextInt(10))
-                .mapToObj(String::valueOf)
-                .collect(Collectors.joining());
     }
 
     public VerifyCodeResponse verifyCode(VerifyCodeRequest verifyCodeRequest) {
