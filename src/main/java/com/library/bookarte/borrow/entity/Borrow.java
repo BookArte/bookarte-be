@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.stream.Collectors;
 
 @Entity
@@ -105,4 +106,28 @@ public class Borrow extends BaseEntity {
     public void updateReturnDate(LocalDate returnDate) { this.returnDate = returnDate; }
     public void extendReturnDate(LocalDate extendDate) { this.returnDueDate = extendDate; }
     public void updateCanExtend(Boolean canExtend) { this.canExtend = canExtend; }
+
+
+    //연체 처리 메소드
+    //연체 일수 업데이트
+    public void updateOverdueDays(int overdueDays){
+        this.overdueDays = overdueDays;
+    }
+
+    //실시간 연체 일수 계산
+    public int calculateOverdueDays(){
+        if (this.returnDate != null || LocalDate.now().isBefore((returnDueDate))) {
+            return 0;
+        }
+        return (int) ChronoUnit.DAYS.between(returnDueDate, LocalDate.now());
+    }
+
+    //연체 상태 업데이트
+    public void updateOverdueStatus(){
+        if (this.status == Status.BORROWED && LocalDate.now().isAfter(this.returnDueDate)) {
+            this.status = Status.OVERDUE;
+            this.isOverdue = true;
+        }
+    }
+
 }

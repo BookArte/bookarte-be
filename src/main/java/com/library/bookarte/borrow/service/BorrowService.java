@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -140,6 +141,18 @@ public class BorrowService {
     }
 
     //도서 연체 처리
+    public void processOverdue(){
+        LocalDate today = LocalDate.now();
+
+        List<Borrow> overdueBorrows = borrowRepository
+                .findAllByStatusInAndReturnDueDateBefore(List.of(Status.BORROWED, Status.RETURN_REQUESTED), today);
+
+        overdueBorrows.forEach(borrow -> {
+            borrow.updateOverdueStatus();
+            borrow.updateOverdueDays(borrow.calculateOverdueDays());
+        });
+    }
+
     //도서 연체에 의한 패널티 부여
 
 }
