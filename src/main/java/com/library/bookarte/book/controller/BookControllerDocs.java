@@ -95,7 +95,8 @@ public interface BookControllerDocs {
     @Operation(summary = "DB 내 도서 존재 확인", description = "**성공 응답 데이터:** 존재 유무에 대한 `boolean`값")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "db 유무에 대한 응답 성공"),
-            @ApiResponse(responseCode = "401", description = "권한없음"),
+            @ApiResponse(responseCode = "400", description = "이미 반납 중이거나 반납 완료된 도서에 대한 잘못된 요청"),
+            @ApiResponse(responseCode = "401", description = "해당 도서를 빌린 사용자가 요청한 타 사용자가 요청"),
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @GetMapping("/is-duplicate-isbn")
