@@ -41,7 +41,8 @@ public enum CustomErrorCode {
     NOT_RETURN_REQUEST(HttpStatus.BAD_REQUEST,"반납 신청되지 않은 도서입니다."),
     CAN_NOT_EXTEND(HttpStatus.BAD_REQUEST, "연장이 불가능한 도서입니다"),
     NOT_STATUS_BORROW(HttpStatus.BAD_REQUEST, "반납 처리 중이거나 연체 중인 도서는 연장 불가능합니다."),
-    BORROW_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 대출 내역은 존재하지 않습니다.");
+    BORROW_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 대출 내역은 존재하지 않습니다."),
+    USER_BORROW_RESTRICTED(HttpStatus.BAD_REQUEST,"연체 패널티가 존재하여 도서 대출이 불가합니다.");
 
 
     private final HttpStatus httpStatus;
