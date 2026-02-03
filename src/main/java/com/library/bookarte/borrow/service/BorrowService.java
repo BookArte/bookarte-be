@@ -2,7 +2,6 @@ package com.library.bookarte.borrow.service;
 
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.repository.BookRepository;
-import com.library.bookarte.book.service.BookService;
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
@@ -13,7 +12,9 @@ import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.repository.MemberRepository;
+import com.library.bookarte.penalty.service.PenaltyService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RequiredArgsConstructor
+@Slf4j
 @Service
 @Transactional(rollbackFor = CustomException.class)
 public class BorrowService {
@@ -31,7 +33,7 @@ public class BorrowService {
     private final BorrowRepository borrowRepository;
     private final MemberRepository memberRepository;
     private final BookRepository bookRepository;
-    private final BookService bookService;
+    private final PenaltyService penaltyService;
 
     //도서 대출 등록
     public void borrowBook(Long bookId){
@@ -121,6 +123,13 @@ public class BorrowService {
             throw new CustomException(CustomErrorCode.NOT_RETURN_REQUEST);
         }
 
+        //도서 연체에 의한 패널티 부여
+        int overdueDays = borrow.calculateOverdueDays();
+        log.info(String.valueOf(overdueDays));
+        if (overdueDays > 0) {
+            penaltyService.createPenalty(borrow.getMember(),borrow, overdueDays);
+        }
+
         Status status = Status.RETURNED;
         borrow.updateStatus(status);
         borrow.updateReturnDate(LocalDate.now());
@@ -152,7 +161,5 @@ public class BorrowService {
             borrow.updateOverdueDays(borrow.calculateOverdueDays());
         });
     }
-
-    //도서 연체에 의한 패널티 부여
 
 }
