@@ -1,15 +1,22 @@
 package com.library.bookarte.penalty.service;
 
 import com.library.bookarte.borrow.entity.Borrow;
+import com.library.bookarte.global.exception.CustomErrorCode;
+import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.member.entity.Member;
+import com.library.bookarte.member.repository.MemberRepository;
+import com.library.bookarte.penalty.dto.ReleaseReqDto;
 import com.library.bookarte.penalty.entity.Penalty;
 import com.library.bookarte.penalty.repository.PenaltyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -18,6 +25,7 @@ import java.time.LocalDate;
 public class PenaltyService {
 
     private final PenaltyRepository penaltyRepository;
+    private final MemberRepository memberRepository;
 
     public void createPenalty(Member member, Borrow borrow, int overdueDays) {
         if (overdueDays <= 0) return;
@@ -50,4 +58,29 @@ public class PenaltyService {
                 .map(p -> p.getEndDate().isAfter(today) ? p.getEndDate() : today)
                 .orElse(today);
     }
+
+    //관리자 권한 도서 연체 패널티 해제
+    public Long releasePenalty(Long penaltyId, ReleaseReqDto releaseReqDto){
+        Penalty penalty = penaltyRepository.findById(penaltyId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PENALTY_NOT_FOUND));
+
+        if(penalty.isReleased()){
+            throw new CustomException(CustomErrorCode.ALREADY_RELEASE);
+        }
+
+        Long memberId = Long.parseLong(Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName());
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        boolean isReleased = true;
+        String releaseReason = releaseReqDto.getReleaseReason();
+        String releasedBy = member.getMemberUserId();
+        LocalDateTime releasedAt = LocalDateTime.now();
+
+        penalty.releasePenalty(isReleased, releaseReason, releasedBy, releasedAt);
+
+        return penaltyId;
+    }
+
 }

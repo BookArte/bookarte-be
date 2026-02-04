@@ -20,7 +20,7 @@ public class Penalty {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long penaltyId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -40,5 +40,15 @@ public class Penalty {
     private String releaseReason;      // "병가 참작", "시스템 오류로 인한 오부과" 등
     private String releasedBy;         // 해제 처리한 관리자 ID
     private LocalDateTime releasedAt;  // 해제 처리 일시
+
+    public void releasePenalty(boolean isReleased,
+                               String releaseReason,
+                               String releasedBy,
+                               LocalDateTime releasedAt){
+        this.isReleased = isReleased;
+        this.releaseReason = releaseReason;
+        this.releasedBy = releasedBy;
+        this.releasedAt = releasedAt;
+    }
 
 }
