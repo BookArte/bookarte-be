@@ -1,6 +1,7 @@
 package com.library.bookarte.penalty.entity;
 
 import com.library.bookarte.borrow.entity.Borrow;
+import com.library.bookarte.global.base.BaseEntity;
 import com.library.bookarte.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Penalty {
+public class Penalty extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,6 +42,9 @@ public class Penalty {
     private String releasedBy;         // 해제 처리한 관리자 ID
     private LocalDateTime releasedAt;  // 해제 처리 일시
 
+    private String lastModifiedBy; // 최종 수정자
+
+    //패널티 해제
     public void releasePenalty(boolean isReleased,
                                String releaseReason,
                                String releasedBy,
@@ -49,6 +53,23 @@ public class Penalty {
         this.releaseReason = releaseReason;
         this.releasedBy = releasedBy;
         this.releasedAt = releasedAt;
+        this.lastModifiedBy = releasedBy;
+    }
+
+    //해제 취소
+    public void cancelRelease(String canceledBy){
+        this.isReleased = false;
+        this.releaseReason = null;
+        this.releasedBy = null;
+        this.releasedAt = null;
+        this.lastModifiedBy = canceledBy;
+    }
+
+    //패널티 해제 사유 변경
+    public void updateReason(String releaseReason,
+                             String modifiedBy){
+        this.releaseReason = releaseReason;
+        this.lastModifiedBy = modifiedBy;
     }
 
 }

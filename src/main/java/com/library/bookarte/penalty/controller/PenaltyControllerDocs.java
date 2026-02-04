@@ -24,5 +24,31 @@ public interface PenaltyControllerDocs {
     })
     @PatchMapping("/admin/{penaltyId}/release")
     ResponseEntity<GlobalResponseDto<Long>> release(@PathVariable Long penaltyId,
-                                                      @RequestBody ReleaseReqDto releaseReqDto);
+                                                    @RequestBody ReleaseReqDto releaseReqDto);
+
+    /*Update: 패널티 해제 철회*/
+    @Operation(summary = "관리자 권한으로 패널티 해제 철회", description = "**성공 응답 데이터:** 요청 성공 패널티 id ")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "페널티 해제 철회 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 패널티 이력"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @PatchMapping("/admin/{penaltyId}/revoke")
+    ResponseEntity<GlobalResponseDto<Long>> revoke(@PathVariable Long penaltyId);
+
+    /*Update: 패널티 해제 철회*/
+    @Operation(summary = "관리자 권한으로 패널티 해제 사유 변경", description = "**성공 응답 데이터:** 요청 성공 패널티 id ")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "페널티 해제 사유 변경 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 패널티 이력"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @PatchMapping("/admin/{penaltyId}/update")
+    ResponseEntity<GlobalResponseDto<Long>> update(@PathVariable Long penaltyId,
+                                                   @RequestBody ReleaseReqDto releaseReqDto);
+
+
+
 }

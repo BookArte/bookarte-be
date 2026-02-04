@@ -46,7 +46,8 @@ public enum CustomErrorCode {
 
     //penalty
     PENALTY_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 패널티에 대해서 존재하지 않습니다."),
-    ALREADY_RELEASE(HttpStatus.BAD_REQUEST,"이미 해제된 패널티입니다.");
+    ALREADY_RELEASE(HttpStatus.BAD_REQUEST,"이미 해제된 패널티입니다."),
+    NOT_RELEASE(HttpStatus.BAD_REQUEST, "해제되지 않은 패널티입니다.");
 
 
     private final HttpStatus httpStatus;

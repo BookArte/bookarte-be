@@ -47,9 +47,6 @@ public class PenaltyService {
                 .isReleased(false)
                 .build();
 
-
-
-
         penaltyRepository.save(penalty);
     }
 
@@ -79,6 +76,40 @@ public class PenaltyService {
         LocalDateTime releasedAt = LocalDateTime.now();
 
         penalty.releasePenalty(isReleased, releaseReason, releasedBy, releasedAt);
+
+        return penaltyId;
+    }
+
+    //연체 패널티 해제 철회
+    public Long revokePenalty(Long penaltyId){
+        Penalty penalty = penaltyRepository.findById(penaltyId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PENALTY_NOT_FOUND));
+
+        if(!penalty.isReleased()){
+            throw new CustomException(CustomErrorCode.NOT_RELEASE);
+        }
+        Long memberId = Long.parseLong(Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName());
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        penalty.cancelRelease(member.getMemberUserId());
+        return penaltyId;
+    }
+
+    //연체 패널티 취소 사유 변경
+    public Long updateReason(Long penaltyId, ReleaseReqDto releaseReqDto){
+        Penalty penalty = penaltyRepository.findById(penaltyId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PENALTY_NOT_FOUND));
+
+        Long memberId = Long.parseLong(Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName());
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        String modifiedBy = member.getMemberUserId();
+        String releaseReason = releaseReqDto.getReleaseReason();
+        penalty.updateReason(releaseReason,modifiedBy);
 
         return penaltyId;
     }

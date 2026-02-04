@@ -23,4 +23,20 @@ public class PenaltyController implements PenaltyControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    @Override
+    public ResponseEntity<GlobalResponseDto<Long>> revoke(@PathVariable Long penaltyId) {
+        Long result = penaltyService.revokePenalty(penaltyId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<Long>> update(@PathVariable Long penaltyId,
+                                                          @RequestBody ReleaseReqDto releaseReqDto) {
+        Long result = penaltyService.updateReason(penaltyId,releaseReqDto);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
 }
