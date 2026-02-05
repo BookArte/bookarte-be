@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface RecommendationRepository extends JpaRepository<Recommendation, Long> {
@@ -21,7 +22,11 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     @Query("UPDATE Recommendation r SET r.priority = r.priority - 1 WHERE r.priority > :deletedPriority")
     void decreasePrioritiesHigherThan(@Param("deletedPriority") int deletedPriority);
 
-    List<Recommendation> findAllByOrderByPriorityAsc();
+    // 현재 유효한 추천 도서 목록만 조회 (시작일 <= 오늘 <= 종료일)
+    @Query("SELECT r FROM Recommendation r " +
+            "WHERE r.startDate <= :today AND r.endDate >= :today " +
+            "ORDER BY r.priority ASC")
+    List<Recommendation> findAllActiveRecommendations(@Param("today") LocalDate today);
 
     @Modifying
     @Query("UPDATE Recommendation r SET r.priority = :priority WHERE r.id = :id")

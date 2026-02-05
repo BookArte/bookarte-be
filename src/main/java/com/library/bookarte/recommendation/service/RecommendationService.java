@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -68,7 +69,8 @@ public class RecommendationService {
 
     //추천 도서 목록 조회
     public List<RecommendationBookResDto> getRecommendationBooks() {
-        return recommendationRepository.findAllByOrderByPriorityAsc()
+        LocalDate today = LocalDate.now();
+        return recommendationRepository.findAllActiveRecommendations(today)
                 .stream()
                 .map(Recommendation::toResDto)
                 .collect(Collectors.toList());
