@@ -1,6 +1,7 @@
 package com.library.bookarte.borrow.controller;
 
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
+import com.library.bookarte.borrow.dto.response.MonthlyData;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
 import com.library.bookarte.borrow.service.BorrowService;
@@ -11,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -60,10 +63,19 @@ public class BorrowController implements BorrowControllerDocs {
     }
 
     @Override
-    public  ResponseEntity<GlobalResponseDto<String>> extendReturn(@PathVariable Long borrowId) {
+    public ResponseEntity<GlobalResponseDto<String>> extendReturn(@PathVariable Long borrowId) {
         borrowService.extendReturnDate(borrowId);
         String result = "도서 대출 기간 연장 완료";
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<List<MonthlyData>>> rollingYear(@PathVariable Long bookId){
+        List<MonthlyData> result = borrowService.getRollingYearHistory(bookId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+
 }

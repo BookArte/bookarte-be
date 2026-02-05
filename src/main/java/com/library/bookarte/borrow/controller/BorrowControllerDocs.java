@@ -1,6 +1,7 @@
 package com.library.bookarte.borrow.controller;
 
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
+import com.library.bookarte.borrow.dto.response.MonthlyData;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
 import com.library.bookarte.global.response.GlobalResponseDto;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "Borrow")
 public interface BorrowControllerDocs {
@@ -60,6 +63,16 @@ public interface BorrowControllerDocs {
     @PatchMapping("/extend/{borrowId}")
     ResponseEntity<GlobalResponseDto<String>> extendReturn(@PathVariable Long borrowId);
 
+    /*Read: 조회 시점 1년 단위 대출 횟수 조회*/
+    @Operation(summary = "도서별 1년 간 대출 횟수", description = "**성공 응답 데이터:** 도서별 1년 간 대출 횟수 데이터")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "관리자 도서 반납 승인 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/{bookId}")
+    ResponseEntity<GlobalResponseDto<List<MonthlyData>>> rollingYear(@PathVariable Long bookId);
+
     /*Read: 관리자용 전체 대출 정보 목록 조회*/
     @Operation(summary = "관리자 전체 대출 정보 목록 조회", description = "**성공 응답 데이터:** 전체 대출 정보 목록")
     @ApiResponses(value = {
@@ -80,4 +93,5 @@ public interface BorrowControllerDocs {
     })
     @PatchMapping("/admin/{borrowId}")
     ResponseEntity<GlobalResponseDto<String>> approveReturn(@PathVariable Long borrowId);
+
 }

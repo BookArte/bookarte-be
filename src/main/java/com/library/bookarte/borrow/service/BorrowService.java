@@ -3,6 +3,7 @@ package com.library.bookarte.borrow.service;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
+import com.library.bookarte.borrow.dto.response.MonthlyData;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
 import com.library.bookarte.borrow.entity.Borrow;
@@ -23,8 +24,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -170,6 +174,30 @@ public class BorrowService {
             borrow.updateOverdueStatus();
             borrow.updateOverdueDays(borrow.calculateOverdueDays());
         });
+    }
+
+    // 현재 달 기준으로 이전 1년까지 특정 도서의 월 별 대출 횟수 조회
+    public List<MonthlyData> getRollingYearHistory(Long bookId){
+        List<MonthlyData> result = borrowRepository.getRollingYearlyStatistics(bookId);
+
+        Map<String, Long> resultMap = result.stream()
+                .collect(Collectors.toMap(
+                        d -> d.year() + "-" + d.month(),
+                        MonthlyData ::count
+                ));
+
+        List<MonthlyData> fullList = new ArrayList<>();
+        LocalDate cursor = LocalDate.now().minusMonths(12);
+
+        for (int i = 0; i < 12; i++) {
+            int y = cursor.getYear();
+            int m = cursor.getMonthValue();
+            long count = resultMap.getOrDefault(y + "-" + m, 0L);
+
+            fullList.add(new MonthlyData(y, m, count));
+            cursor = cursor.plusMonths(1); // 한 달씩 앞으로
+        }
+        return  fullList;
     }
 
 }
