@@ -85,6 +85,7 @@ public class MemberService {
                 .name(member.getMemberName())
                 .email(member.getMemberEmail())
                 .tel(member.getMemberTel())
+                .point(member.getMemberPoint())
                 .build();
     }
 
