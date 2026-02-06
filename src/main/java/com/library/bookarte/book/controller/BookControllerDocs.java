@@ -3,6 +3,7 @@ package com.library.bookarte.book.controller;
 import com.library.bookarte.book.dto.BookReqDto;
 import com.library.bookarte.book.dto.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
+import com.library.bookarte.book.external.dto.AladinBestSellerResDto;
 import com.library.bookarte.book.external.dto.BookSearchResult;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -60,7 +61,7 @@ public interface BookControllerDocs {
     @Operation(summary = "도서 정보 수정 요청", description = "**성공 응답 데이터:** 도서의 `bookId`")
     @Parameter(name = "bookId", description = "수정할 도서 id", example = "1")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "도서 목록 조회 성공"),
+            @ApiResponse(responseCode = "200", description = "도서 정보 수정 성공"),
             @ApiResponse(responseCode = "401", description = "권한 없음"),
             @ApiResponse(responseCode = "404", description = "해당 도서가 존재하지 않음"),
             @ApiResponse(responseCode = "500", description = "서버 에러"),
@@ -69,7 +70,7 @@ public interface BookControllerDocs {
     ResponseEntity<GlobalResponseDto<Long>> updateBook(@PathVariable("bookId") Long bookId,
                                                        @Valid @RequestBody BookReqDto bookReqDto);
     /*Delete: 도서 정보 삭제*/
-    @Operation(summary = "도서 삭제 요청", description = "**성공 응답 데이터:** 도서 삭제 성공`")
+    @Operation(summary = "도서 삭제 요청", description = "**성공 응답 데이터:** 도서 삭제 성공")
     @Parameter(name = "bookId", description = "삭제할 도서 id", example = "1")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "도서 삭제 성공"),
@@ -81,7 +82,7 @@ public interface BookControllerDocs {
     ResponseEntity<GlobalResponseDto<?>> deleteBook(@PathVariable("bookId") Long bookId);
 
     /*Read: 외부 api에서 도서 정보 검색*/
-    @Operation(summary = "외부 api 도서 정보 검색", description = "**성공 응답 데이터:** 해당되는 도서 목록`")
+    @Operation(summary = "외부 api 도서 정보 검색", description = "**성공 응답 데이터:** 해당되는 도서 목록")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "외부 api 요청 성공"),
             @ApiResponse(responseCode = "401", description = "권한 없음"),
@@ -92,7 +93,7 @@ public interface BookControllerDocs {
     ResponseEntity<GlobalResponseDto<List<BookSearchResult>>> searchBookWithLibraryApi(@RequestParam String query);
 
 
-    @Operation(summary = "DB 내 도서 존재 확인", description = "**성공 응답 데이터:** 존재 유무에 대한 `boolean`값")
+    @Operation(summary = "DB 내 도서 존재 확인", description = "**성공 응답 데이터:** 존재 유무에 대한 boolean")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "db 유무에 대한 응답 성공"),
             @ApiResponse(responseCode = "400", description = "이미 반납 중이거나 반납 완료된 도서에 대한 잘못된 요청"),
@@ -101,6 +102,15 @@ public interface BookControllerDocs {
     })
     @GetMapping("/is-duplicate-isbn")
     ResponseEntity<GlobalResponseDto<Boolean>> isDuplicateIsbn(@RequestParam String isbn);
+
+    @Operation(summary = "알라딘 api를 활용한 베스트셀러 목록 조회", description = "**성공 응답 데이터:** 베스트셀러 도서 목록")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "도서 목록 조회 성공"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/bestseller")
+    ResponseEntity<GlobalResponseDto<List<AladinBestSellerResDto>>> getBestseller(@RequestParam int max);
+
 
 
 }

@@ -5,6 +5,8 @@ import com.library.bookarte.book.dto.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
+import com.library.bookarte.book.external.aladin.AladinClient;
+import com.library.bookarte.book.external.dto.AladinBestSellerResDto;
 import com.library.bookarte.book.external.dto.BookSearchResult;
 import com.library.bookarte.book.external.kakao.KakaoBookSearchClient;
 import com.library.bookarte.book.external.national.NationalLibrarySearchClient;
@@ -32,6 +34,7 @@ public class BookService {
 
     private final KakaoBookSearchClient kakaoBookSearchClient;
     private final NationalLibrarySearchClient nationalLibrarySearchClient;
+    private final AladinClient aladinClient;
 
 
     /*도서 등록 api*/
@@ -208,6 +211,12 @@ public class BookService {
     /* DB 내 이미 존재하는 도서인지 검색*/
     public boolean isDuplicateIsbn(String isbn){
         return bookRepository.existsByBookIsbn(isbn);
+    }
+
+    /*알라딘 api를 이용하여 베스트셀러 도서 목록 조회*/
+    public List<AladinBestSellerResDto> getBestsellersWithAladin(){
+        String type = "Bestseller";
+        return aladinClient.getBestSellers(type);
     }
 
 }
