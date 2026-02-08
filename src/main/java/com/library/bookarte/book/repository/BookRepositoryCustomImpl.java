@@ -4,7 +4,6 @@ import com.library.bookarte.book.dto.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
-import com.querydsl.core.group.GroupBy.*;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -22,10 +21,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.library.bookarte.book.entity.QBook.book;
+import static com.library.bookarte.book.entity.QBook_Participant.participant;
 import static com.library.bookarte.category.entity.QCategory.category;
+import static com.library.bookarte.borrow.entity.QBorrow.borrow;
 
 @RequiredArgsConstructor
 @Repository
@@ -71,7 +73,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         List<Book> books = jpaQueryFactory
                 .selectFrom(book)
                 .join(book.category, category).fetchJoin()
-                .leftJoin(book.participants).fetchJoin() // 컬렉션 페치 조인
+                .leftJoin(book.participants).fetchJoin()
                 .where(book.bookId.in(ids))
                 .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .fetch();
@@ -92,6 +94,64 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public  List<Book> findBooksAlsoBorrowed(Long bookId, Set<Long> excludeIds){
+        List<Long> userIds = jpaQueryFactory
+                .select(borrow.member.memberId)
+                .from(borrow)
+                .where(borrow.book.bookId.eq(bookId))
+                .fetch();
+
+        if(userIds.isEmpty()) return new ArrayList<>();
+
+        return jpaQueryFactory
+                .select(borrow.book)
+                .from(borrow)
+                .where(
+                        borrow.member.memberId.in(userIds),
+                        book.bookId.notIn(excludeIds)
+                )
+                .groupBy(borrow.book.bookId)
+                .orderBy(borrow.count().desc())
+                .limit(5)
+                .fetch();
+    }
+
+    //같은 저자 대출수 순 조회
+    @Override
+    public List<Book> findBooksByAuthorOrderByBorrowCount(String authorName, Set<Long> excludeIds, int limit) {
+        return jpaQueryFactory
+                .select(book)
+                .from(book)
+                .leftJoin(borrow).on(borrow.book.eq(book))
+                .join(book.participants, participant)
+                .where(
+                        authorContains(authorName),
+                        book.bookId.notIn(excludeIds)
+                )
+                .groupBy(book.bookId)
+                .orderBy(borrow.count().desc())
+                .limit(limit)
+                .fetch();
+    }
+
+    //같은 카테고리 대출수 순 조회
+    @Override
+    public List<Book> findBooksByCategoryOrderByBorrowCount(String category, Set<Long> excludeIds, int limit) {
+        return jpaQueryFactory
+                .select(book)
+                .from(book)
+                .leftJoin(borrow).on(borrow.book.eq(book))
+                .where(
+                        categoryNameEq(category),
+                        book.bookId.notIn(excludeIds)
+                )
+                .groupBy(book.bookId)
+                .orderBy(borrow.count().desc())
+                .limit(limit)
+                .fetch();
     }
 
     // ===== 조건 메서드 =====

@@ -118,8 +118,15 @@ public class BookController implements BookControllerDocs {
     }
 
     @Override
-    public ResponseEntity<GlobalResponseDto<List<AladinBestSellerResDto>>> getBestseller(@RequestParam int max){
+    public ResponseEntity<GlobalResponseDto<List<AladinBestSellerResDto>>> getBestseller(){
         List<AladinBestSellerResDto> result = bookService.getBestsellersWithAladin();
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<List<BookResDto>>> listRelatedBook(@PathVariable Long bookId){
+        List<BookResDto> result = bookService.getRelatedBooks(bookId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }

@@ -20,9 +20,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -217,6 +215,57 @@ public class BookService {
     public List<AladinBestSellerResDto> getBestsellersWithAladin(){
         String type = "Bestseller";
         return aladinClient.getBestSellers(type);
+    }
+
+    /*연관 도서 목록 조회*/
+    public List<BookResDto> getRelatedBooks(Long bookId){
+        int limit;
+
+        Book mainBook = bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+
+        Set<Long> excludeIds = new HashSet<>();
+        excludeIds.add(bookId);
+
+        List<Book> finalRelatedBooks = new ArrayList<>();
+
+        //메인 도서를 대출한 사람이 대출한 다른 도서
+        List<Book> togetherBooks = bookRepository.findBooksAlsoBorrowed(bookId, excludeIds);
+        addBooksToList(finalRelatedBooks, togetherBooks, excludeIds);
+
+        //같은 저자
+        if(finalRelatedBooks.size() < 5){
+            String mainAuthor = mainBook.getParticipants().stream()
+                    .filter(p -> p.getType() == ParticipantType.AUTHOR)
+                    .map(Book.Participant::getName)
+                    .findFirst()
+                    .orElse(null);
+            limit = 5 - finalRelatedBooks.size();
+            if (mainAuthor != null) {
+                List<Book> sameAuthorBooks = bookRepository.findBooksByAuthorOrderByBorrowCount(mainAuthor, excludeIds, limit);
+                addBooksToList(finalRelatedBooks,sameAuthorBooks,excludeIds);
+            }
+        }
+
+        //같은 카테고리
+        if(finalRelatedBooks.size() < 5){
+            limit = 5 - finalRelatedBooks.size();
+            String category = mainBook.getCategory().getCategoryName();
+            List<Book> sameCategoryBooks = bookRepository.findBooksByCategoryOrderByBorrowCount(category, excludeIds, limit);
+            addBooksToList(finalRelatedBooks,sameCategoryBooks,excludeIds);
+        }
+
+        return finalRelatedBooks.stream()
+                .map(Book::toBookResDto)
+                .toList();
+    }
+
+    private void addBooksToList(List<Book> targetList, List<Book> sourceList, Set<Long> excludeIds) {
+        for (Book book : sourceList) {
+            if (excludeIds.add(book.getBookId())) { // Set에 추가 성공 시(중복 아님) 리스트에 추가
+                targetList.add(book);
+            }
+        }
     }
 
 }

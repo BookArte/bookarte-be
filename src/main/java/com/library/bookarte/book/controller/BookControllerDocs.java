@@ -109,8 +109,14 @@ public interface BookControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @GetMapping("/bestseller")
-    ResponseEntity<GlobalResponseDto<List<AladinBestSellerResDto>>> getBestseller(@RequestParam int max);
+    ResponseEntity<GlobalResponseDto<List<AladinBestSellerResDto>>> getBestseller();
 
-
-
+    /*Read: 연관 도서 목록 조회*/
+    @Operation(summary = "연관 도서 목록 조회 요청", description = "**성공 응답 데이터:** 도서 목록 정보")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "도서 목록 조회 성공"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/{bookId}/related")
+    ResponseEntity<GlobalResponseDto<List<BookResDto>>> listRelatedBook(@PathVariable Long bookId);
 }
