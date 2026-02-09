@@ -39,16 +39,6 @@ public class Book extends BaseEntity {
     @OrderBy("name ASC")
     private List<Participant> participants = new ArrayList<>();
 
-    /*
-    //저자 book_author
-    @Column(nullable = false)
-    private String bookAuthor;
-
-    //역자
-    @Column
-    private String bookTranslator;
-     */
-
     //출판사 publisher_name
     @Column(nullable = false)
     private String publisherName;

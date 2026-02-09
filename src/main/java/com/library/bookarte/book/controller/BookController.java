@@ -66,29 +66,6 @@ public class BookController implements BookControllerDocs {
 
     }
 
-/*
-    //도서 리스트 조회
-    @GetMapping("/list")
-    public ResponseEntity<GlobalResponseDto<Page<BookResDto>>> listBook(@PageableDefault(page = 1) Pageable pageable){
-        Page<BookResDto> result = bookService.findAllBooks(pageable);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(GlobalResponseDto.success(HttpStatus.OK,result));
-    }
- */
-/*
-    //도서 카테고리 조회
-    @GetMapping("/list/category")
-    public ResponseEntity<GlobalResponseDto<Page<BookResDto>>> listBookWithCategory(@RequestParam(required = false) String categoryName,
-                                                                                    @PageableDefault(page = 1) Pageable pageable) {
-
-        Page<BookResDto> result = bookService.findBooksWithCategory(categoryName, pageable);
-
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(GlobalResponseDto.success(HttpStatus.OK,result));
-    }
-*/
     //도서 리스트 조회
     @Override
     public ResponseEntity<GlobalResponseDto<Page<BookResDto>>> listBook(@ModelAttribute SearchFilterDto searchFilterDto,

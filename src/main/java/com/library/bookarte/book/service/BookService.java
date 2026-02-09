@@ -149,35 +149,6 @@ public class BookService {
         bookRepository.delete(deleteTargetBook);
     }
 
-    /*도서 전체 조회 api*/
-
-    /*
-    public Page<BookResDto> findAllBooks(Pageable pageable){
-        int page = pageable.getPageNumber() - 1;
-
-        Page<Book> books = bookRepository.findAll(PageRequest.of(page, defaultSize, Sort.Direction.DESC, "bookId"));
-
-        List<BookResDto> bookResDtoList = books.getContent().stream()
-                .map(Book::toBookResDto)
-                .toList();
-
-        return new PageImpl<>(bookResDtoList, pageable, books.getTotalElements());
-
-    }
-
-    /*도서 카테고리 별 조회*/
-    /*
-    public Page<BookResDto> findBooksWithCategory(String bookCategoryName, Pageable pageable) {
-        int page = pageable.getPageNumber() - 1;
-
-        System.out.println(bookCategoryName);
-        Category category = categoryService.findByCategoryName(bookCategoryName);
-        System.out.println(category.getCategoryId());
-
-        return bookRepository.findBookResDtosByCategoryId(category.getCategoryId(),
-                PageRequest.of(page,defaultSize,Sort.Direction.DESC,"bookId"));
-    }*/
-
     /*도서 조건부 및 전체 조회 api*/
     @Transactional(readOnly = true)
     public Page<BookResDto> findBooksWithFilter(SearchFilterDto searchFilterDto,Pageable pageable){
