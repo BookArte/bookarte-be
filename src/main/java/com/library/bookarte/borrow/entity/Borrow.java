@@ -99,6 +99,7 @@ public class Borrow extends BaseEntity {
                 .bookId(this.book.getBookId())
                 .bookTitle(this.book.getBookTitle())
                 .bookAuthor(authors)
+                .bookThumbnail(this.book.getBookThumbnail())
                 .build();
     }
 

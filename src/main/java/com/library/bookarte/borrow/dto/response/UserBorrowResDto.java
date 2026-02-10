@@ -21,9 +21,11 @@ public class UserBorrowResDto {
     private final int overdueDays; // 연체 일수
     private final Status status;
 
+
     //도서 정보
     private final Long bookId;
     private final String bookTitle; //책제목
     private final String bookAuthor; //책저자
+    private final String bookThumbnail; //책썸네일
 
 }

@@ -139,7 +139,6 @@ public class BorrowService {
 
         //도서 연체에 의한 패널티 부여
         int overdueDays = borrow.calculateOverdueDays();
-        log.info(String.valueOf(overdueDays));
         if (overdueDays > 0) {
             penaltyService.createPenalty(borrow.getMember(),borrow, overdueDays);
         }

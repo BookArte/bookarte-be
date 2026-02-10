@@ -47,19 +47,22 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         LocalDate start = searchFilterDto.getPublicationDateStart();
         LocalDate end = searchFilterDto.getPublicationDateEnd();
 
+        //조건 메서드들 분리
+        BooleanExpression[] predicates = {
+                categoryNameEq(categoryName),
+                titleContains(bookTitle),
+                isbnContains(bookIsbn),
+                publisherContains(publisherName),
+                authorContains(author),
+                publicationDateBetween(start,end)
+        };
+
         //도서 id만 선 조회
         List<Long> ids = jpaQueryFactory
                 .select(book.bookId)
                 .from(book)
                 .join(book.category, category)
-                .where(
-                        categoryNameEq(categoryName),
-                        titleContains(bookTitle),
-                        isbnContains(bookIsbn),
-                        publisherContains(publisherName),
-                        authorContains(author),
-                        publicationDateBetween(start,end)
-                )
+                .where(predicates)
                 .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -87,10 +90,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         long total = jpaQueryFactory
                 .select(book.count())
                 .from(book)
-                .where(
-                        categoryNameEq(categoryName),
-                        titleContains(bookTitle)
-                )
+                .where(predicates)
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total);

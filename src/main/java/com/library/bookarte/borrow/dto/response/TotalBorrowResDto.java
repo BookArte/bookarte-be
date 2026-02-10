@@ -27,8 +27,9 @@ public class TotalBorrowResDto extends UserBorrowResDto  {
                              String bookTitle,
                              String bookAuthor,
                              Status status,
+                             String bookThumbnail,
                              Member member) {
-        super(borrowId, returnDueDate, returnDate, borrowDate, canExtend, isOverdue, overdueDays, status,bookId, bookTitle, bookAuthor);
+        super(borrowId, returnDueDate, returnDate, borrowDate, canExtend, isOverdue, overdueDays, status,bookId, bookTitle, bookAuthor, bookThumbnail);
         this.memberUserId = member.getMemberUserId();
         this.memberName = member.getMemberName();
         this.memberEmail = member.getMemberEmail();

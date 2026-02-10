@@ -29,23 +29,29 @@ public class BorrowRepositoryCustomImpl implements BorrowRepositoryCustom{
     public Page<Borrow> findAllBorrowByBorrowSearchFilter(BorrowSearchFilterDto borrowSearchFilterDto,
                                                           Pageable pageable){
 
+
+        BooleanExpression[] predicates = {
+                statusEq(borrowSearchFilterDto.getStatus()),
+                statusNotEq(borrowSearchFilterDto.getStatusNot()),
+                isOverdueEq(borrowSearchFilterDto.getIsOverdue()),
+                memberIdEq(borrowSearchFilterDto.getMemberId())
+        };
+
         List<Borrow> content = jpaQueryFactory
                 .selectFrom(borrow)
                 .join(borrow.member, member).fetchJoin()
                 .join(borrow.book, book).fetchJoin()
-                .where(
-                        statusEq(borrowSearchFilterDto.getStatus()),
-                        isOverdueEq(borrowSearchFilterDto.getIsOverdue()),
-                        memberIdEq(borrowSearchFilterDto.getMemberId())
-                )
+                .where(predicates)
                 .orderBy(borrow.borrowId.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
+
         long total = jpaQueryFactory
                 .select(borrow.count())
                 .from(borrow)
+                .where(predicates)
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total);
@@ -57,6 +63,8 @@ public class BorrowRepositoryCustomImpl implements BorrowRepositoryCustom{
     private BooleanExpression statusEq(Status status) {
         return status != null ? borrow.status.eq(status) : null;
     }
+
+    private BooleanExpression statusNotEq(Status status) { return status != null ? borrow.status.ne(status) : null; }
 
     // 연장 여부에 따른 조건 메서드
     private BooleanExpression isOverdueEq(Boolean isOverdue) {
