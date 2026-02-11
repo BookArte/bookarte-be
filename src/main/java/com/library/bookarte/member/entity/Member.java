@@ -72,6 +72,9 @@ public class Member extends BaseEntity {
     @Column(nullable = true, columnDefinition = "TEXT")
     private String memberOutReason;
 
+    @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
+    private Long memberPoint = 0L;
+
     public void modify(String name, String tel, String email, String encodedPassword) {
 
         if (name != null) {

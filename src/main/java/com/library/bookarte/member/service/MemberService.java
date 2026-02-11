@@ -3,10 +3,7 @@ package com.library.bookarte.member.service;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.global.util.StringUtils;
-import com.library.bookarte.member.dto.request.MemberDeleteRequest;
-import com.library.bookarte.member.dto.request.MemberFindIdRequest;
-import com.library.bookarte.member.dto.request.MemberJoinRequest;
-import com.library.bookarte.member.dto.request.MemberUpdateRequest;
+import com.library.bookarte.member.dto.request.*;
 import com.library.bookarte.member.dto.response.*;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.repository.MemberRepository;
@@ -85,6 +82,7 @@ public class MemberService {
                 .name(member.getMemberName())
                 .email(member.getMemberEmail())
                 .tel(member.getMemberTel())
+                .point(member.getMemberPoint())
                 .build();
     }
 
@@ -123,5 +121,17 @@ public class MemberService {
         return MemberFindIdResponse.builder()
                 .userIds(userIds)
                 .build();
+    }
+
+    public void changePassword(Long memberId, MemberChangePasswordRequest memberChangePasswordRequest) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException((CustomErrorCode.MEMBER_NOT_FOUND)));
+
+        if (!passwordEncoder.matches(memberChangePasswordRequest.getCurrentPassword(), member.getMemberPwd())) {
+            throw new CustomException(CustomErrorCode.INVALID_CURRENT_PASSWORD);
+        }
+
+        String encodedNewPassword = passwordEncoder.encode(memberChangePasswordRequest.getNewPassword());
+        member.updatePassword(encodedNewPassword);
     }
 }

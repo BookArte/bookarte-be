@@ -82,4 +82,17 @@ public interface MemberControllerDocs {
     @PostMapping("/find_id")
     ResponseEntity<GlobalResponseDto<MemberFindIdResponse>> findId(@RequestBody MemberFindIdRequest memberFindIdRequest);
 
+    /* Update: 비밀번호 수정 */
+    @Operation(summary = "비밀번호 수정", description = "**성공 응답 데이터:** 비밀번호 수정 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "비밀번호 수정 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "회원 정보가 존재하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @PatchMapping("/change_password")
+    ResponseEntity<GlobalResponseDto<Void>> changePassword(
+            @AuthenticationPrincipal Long memberId,
+            @RequestBody MemberChangePasswordRequest memberChangePasswordRequest
+    );
 }

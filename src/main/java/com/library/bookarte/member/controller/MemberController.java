@@ -67,4 +67,13 @@ public class MemberController implements MemberControllerDocs {
         MemberFindIdResponse result = memberService.findId(memberFindIdRequest);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<Void>> changePassword(
+            @AuthenticationPrincipal Long memberId,
+            @RequestBody MemberChangePasswordRequest memberChangePasswordRequest
+    ) {
+        memberService.changePassword(memberId, memberChangePasswordRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, null));
+    }
 }
