@@ -3,6 +3,7 @@ package com.library.bookarte.penalty.entity;
 import com.library.bookarte.borrow.entity.Borrow;
 import com.library.bookarte.global.base.BaseEntity;
 import com.library.bookarte.member.entity.Member;
+import com.library.bookarte.penalty.dto.PenaltyResDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -70,6 +71,24 @@ public class Penalty extends BaseEntity {
                              String modifiedBy){
         this.releaseReason = releaseReason;
         this.lastModifiedBy = modifiedBy;
+    }
+
+    //응답 dto로 변환
+    public PenaltyResDto toResDto(){
+        return PenaltyResDto.builder()
+                .penaltyReason(this.penaltyReason)
+                .startDate(this.startDate)
+                .endDate(this.endDate)
+                .isReleased(this.isReleased)
+                .releaseReason(this.releaseReason)
+                .memberUserId(this.member.getMemberUserId())
+                .memberName(this.member.getMemberName())
+                .memberEmail(this.member.getMemberEmail())
+                .memberTel(this.member.getMemberTel())
+                .bookTitle(this.borrow.getBook().getBookTitle())
+                .bookIsbn(this.borrow.getBook().getBookIsbn())
+                .overdueDays(this.borrow.getOverdueDays())
+                .build();
     }
 
 }

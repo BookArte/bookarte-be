@@ -5,6 +5,7 @@ import com.library.bookarte.penalty.entity.Penalty;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface PenaltyRepository extends JpaRepository<Penalty, Long> {
@@ -14,4 +15,6 @@ public interface PenaltyRepository extends JpaRepository<Penalty, Long> {
 
     //패널티 여부 확인
     boolean existsByMember_MemberIdAndEndDateAfterAndIsReleasedFalse(Long memberId, LocalDate today);
+
+    List<Penalty> findByMember_MemberId(Long memberId);
 }

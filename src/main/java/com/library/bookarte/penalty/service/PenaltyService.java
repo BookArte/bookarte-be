@@ -5,6 +5,7 @@ import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.repository.MemberRepository;
+import com.library.bookarte.penalty.dto.PenaltyResDto;
 import com.library.bookarte.penalty.dto.ReleaseReqDto;
 import com.library.bookarte.penalty.entity.Penalty;
 import com.library.bookarte.penalty.repository.PenaltyRepository;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -114,4 +116,17 @@ public class PenaltyService {
         return penaltyId;
     }
 
+    //특정 유저 패널티 목록 조회
+    public List<PenaltyResDto> getPenaltyList(String memberUserId){
+        Member member = memberRepository.findByMemberUserId(memberUserId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        Long memberId = member.getMemberId();
+
+        List<Penalty> penaltys = penaltyRepository.findByMember_MemberId(memberId);
+
+        return penaltys.stream()
+                .map(Penalty::toResDto)
+                .toList();
+    }
 }

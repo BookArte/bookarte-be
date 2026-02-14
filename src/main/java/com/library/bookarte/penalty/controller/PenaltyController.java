@@ -1,12 +1,15 @@
 package com.library.bookarte.penalty.controller;
 
 import com.library.bookarte.global.response.GlobalResponseDto;
+import com.library.bookarte.penalty.dto.PenaltyResDto;
 import com.library.bookarte.penalty.dto.ReleaseReqDto;
 import com.library.bookarte.penalty.service.PenaltyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,9 +37,13 @@ public class PenaltyController implements PenaltyControllerDocs {
     public ResponseEntity<GlobalResponseDto<Long>> update(@PathVariable Long penaltyId,
                                                           @RequestBody ReleaseReqDto releaseReqDto) {
         Long result = penaltyService.updateReason(penaltyId,releaseReqDto);
-
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
-
+    @Override
+    public ResponseEntity<GlobalResponseDto<List<PenaltyResDto>>> getMemberPenaltys(@RequestParam String memberUserId){
+        List<PenaltyResDto> result = penaltyService.getPenaltyList(memberUserId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK,result));
+    }
 }
