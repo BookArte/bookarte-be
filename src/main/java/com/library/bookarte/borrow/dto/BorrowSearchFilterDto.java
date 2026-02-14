@@ -17,6 +17,7 @@ public class BorrowSearchFilterDto {
     private Long bookId;
 
     private Status status;
+    private Status statusNot;
 
     private Boolean isOverdue;
 

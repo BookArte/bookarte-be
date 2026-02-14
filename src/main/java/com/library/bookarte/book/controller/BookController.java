@@ -3,6 +3,7 @@ package com.library.bookarte.book.controller;
 import com.library.bookarte.book.dto.BookReqDto;
 import com.library.bookarte.book.dto.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
+import com.library.bookarte.book.external.dto.AladinBestSellerResDto;
 import com.library.bookarte.book.external.dto.BookSearchResult;
 import com.library.bookarte.book.service.BookService;
 import com.library.bookarte.global.response.GlobalResponseDto;
@@ -65,29 +66,6 @@ public class BookController implements BookControllerDocs {
 
     }
 
-/*
-    //도서 리스트 조회
-    @GetMapping("/list")
-    public ResponseEntity<GlobalResponseDto<Page<BookResDto>>> listBook(@PageableDefault(page = 1) Pageable pageable){
-        Page<BookResDto> result = bookService.findAllBooks(pageable);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(GlobalResponseDto.success(HttpStatus.OK,result));
-    }
- */
-/*
-    //도서 카테고리 조회
-    @GetMapping("/list/category")
-    public ResponseEntity<GlobalResponseDto<Page<BookResDto>>> listBookWithCategory(@RequestParam(required = false) String categoryName,
-                                                                                    @PageableDefault(page = 1) Pageable pageable) {
-
-        Page<BookResDto> result = bookService.findBooksWithCategory(categoryName, pageable);
-
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(GlobalResponseDto.success(HttpStatus.OK,result));
-    }
-*/
     //도서 리스트 조회
     @Override
     public ResponseEntity<GlobalResponseDto<Page<BookResDto>>> listBook(@ModelAttribute SearchFilterDto searchFilterDto,
@@ -112,6 +90,20 @@ public class BookController implements BookControllerDocs {
     @Override
     public ResponseEntity<GlobalResponseDto<Boolean>> isDuplicateIsbn(@RequestParam String isbn){
         boolean result = bookService.isDuplicateIsbn(isbn);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<List<AladinBestSellerResDto>>> getBestseller(){
+        List<AladinBestSellerResDto> result = bookService.getBestsellersWithAladin();
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<List<BookResDto>>> listRelatedBook(@PathVariable Long bookId){
+        List<BookResDto> result = bookService.getRelatedBooks(bookId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }

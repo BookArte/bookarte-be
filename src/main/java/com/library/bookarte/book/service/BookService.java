@@ -5,6 +5,8 @@ import com.library.bookarte.book.dto.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
+import com.library.bookarte.book.external.aladin.AladinClient;
+import com.library.bookarte.book.external.dto.AladinBestSellerResDto;
 import com.library.bookarte.book.external.dto.BookSearchResult;
 import com.library.bookarte.book.external.kakao.KakaoBookSearchClient;
 import com.library.bookarte.book.external.national.NationalLibrarySearchClient;
@@ -18,9 +20,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -32,6 +32,7 @@ public class BookService {
 
     private final KakaoBookSearchClient kakaoBookSearchClient;
     private final NationalLibrarySearchClient nationalLibrarySearchClient;
+    private final AladinClient aladinClient;
 
 
     /*도서 등록 api*/
@@ -148,35 +149,6 @@ public class BookService {
         bookRepository.delete(deleteTargetBook);
     }
 
-    /*도서 전체 조회 api*/
-
-    /*
-    public Page<BookResDto> findAllBooks(Pageable pageable){
-        int page = pageable.getPageNumber() - 1;
-
-        Page<Book> books = bookRepository.findAll(PageRequest.of(page, defaultSize, Sort.Direction.DESC, "bookId"));
-
-        List<BookResDto> bookResDtoList = books.getContent().stream()
-                .map(Book::toBookResDto)
-                .toList();
-
-        return new PageImpl<>(bookResDtoList, pageable, books.getTotalElements());
-
-    }
-
-    /*도서 카테고리 별 조회*/
-    /*
-    public Page<BookResDto> findBooksWithCategory(String bookCategoryName, Pageable pageable) {
-        int page = pageable.getPageNumber() - 1;
-
-        System.out.println(bookCategoryName);
-        Category category = categoryService.findByCategoryName(bookCategoryName);
-        System.out.println(category.getCategoryId());
-
-        return bookRepository.findBookResDtosByCategoryId(category.getCategoryId(),
-                PageRequest.of(page,defaultSize,Sort.Direction.DESC,"bookId"));
-    }*/
-
     /*도서 조건부 및 전체 조회 api*/
     @Transactional(readOnly = true)
     public Page<BookResDto> findBooksWithFilter(SearchFilterDto searchFilterDto,Pageable pageable){
@@ -208,6 +180,63 @@ public class BookService {
     /* DB 내 이미 존재하는 도서인지 검색*/
     public boolean isDuplicateIsbn(String isbn){
         return bookRepository.existsByBookIsbn(isbn);
+    }
+
+    /*알라딘 api를 이용하여 베스트셀러 도서 목록 조회*/
+    public List<AladinBestSellerResDto> getBestsellersWithAladin(){
+        String type = "Bestseller";
+        return aladinClient.getBestSellers(type);
+    }
+
+    /*연관 도서 목록 조회*/
+    public List<BookResDto> getRelatedBooks(Long bookId){
+        int limit;
+
+        Book mainBook = bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+
+        Set<Long> excludeIds = new HashSet<>();
+        excludeIds.add(bookId);
+
+        List<Book> finalRelatedBooks = new ArrayList<>();
+
+        //메인 도서를 대출한 사람이 대출한 다른 도서
+        List<Book> togetherBooks = bookRepository.findBooksAlsoBorrowed(bookId, excludeIds);
+        addBooksToList(finalRelatedBooks, togetherBooks, excludeIds);
+
+        //같은 저자
+        if(finalRelatedBooks.size() < 5){
+            String mainAuthor = mainBook.getParticipants().stream()
+                    .filter(p -> p.getType() == ParticipantType.AUTHOR)
+                    .map(Book.Participant::getName)
+                    .findFirst()
+                    .orElse(null);
+            limit = 5 - finalRelatedBooks.size();
+            if (mainAuthor != null) {
+                List<Book> sameAuthorBooks = bookRepository.findBooksByAuthorOrderByBorrowCount(mainAuthor, excludeIds, limit);
+                addBooksToList(finalRelatedBooks,sameAuthorBooks,excludeIds);
+            }
+        }
+
+        //같은 카테고리
+        if(finalRelatedBooks.size() < 5){
+            limit = 5 - finalRelatedBooks.size();
+            String category = mainBook.getCategory().getCategoryName();
+            List<Book> sameCategoryBooks = bookRepository.findBooksByCategoryOrderByBorrowCount(category, excludeIds, limit);
+            addBooksToList(finalRelatedBooks,sameCategoryBooks,excludeIds);
+        }
+
+        return finalRelatedBooks.stream()
+                .map(Book::toBookResDto)
+                .toList();
+    }
+
+    private void addBooksToList(List<Book> targetList, List<Book> sourceList, Set<Long> excludeIds) {
+        for (Book book : sourceList) {
+            if (excludeIds.add(book.getBookId())) { // Set에 추가 성공 시(중복 아님) 리스트에 추가
+                targetList.add(book);
+            }
+        }
     }
 
 }

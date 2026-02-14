@@ -18,7 +18,9 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name="recommendation")
+@Table(name="recommendation", indexes = {
+        @Index(name = "idx_recommend_period", columnList = "startDate, endDate")
+})
 public class Recommendation extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

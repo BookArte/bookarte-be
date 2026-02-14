@@ -38,6 +38,8 @@ public class BookResDto {
 
     private String bookCategory;
 
+    private boolean canBorrow;
+
     public BookResDto(Long bookId,
                       String bookTitle,
                       List<Book.Participant> participants,
@@ -47,7 +49,8 @@ public class BookResDto {
                       String bookContents,
                       String bookThumbnail,
                       String bookCallNumber,
-                      String bookCategory) {
+                      String bookCategory,
+                      boolean canBorrow) {
         this.bookId = bookId;
         this.bookTitle = bookTitle;
         this.publisherName = publisherName;
@@ -57,6 +60,7 @@ public class BookResDto {
         this.bookThumbnail = bookThumbnail;
         this.bookCallNumber = bookCallNumber;
         this.bookCategory = bookCategory;
+        this.canBorrow = canBorrow;
 
         // 리스트를 순회하며 저자와 역자를 콤마(,)로 구분된 문자열로 변환
         if (participants != null) {
