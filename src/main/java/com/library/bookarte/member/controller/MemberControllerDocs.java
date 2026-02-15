@@ -4,12 +4,16 @@ import com.library.bookarte.global.response.GlobalResponseDto;
 import com.library.bookarte.member.dto.request.*;
 import com.library.bookarte.member.dto.response.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "Member")
 public interface MemberControllerDocs {
@@ -95,4 +99,15 @@ public interface MemberControllerDocs {
             @AuthenticationPrincipal Long memberId,
             @RequestBody MemberChangePasswordRequest memberChangePasswordRequest
     );
+
+    /* Read: 사이트 사용자 목록 조회 */
+    @Operation(summary = "사이트 사용자 목록 조회", description = "**성공 응답 데이터:** 사이트 사용자 목록 조회 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "사용자 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @GetMapping("/find_list")
+    ResponseEntity<GlobalResponseDto<List<MemberResponse>>> getMemberList(@Parameter(description = "검색할 유저 ID (공백일 경우 전체 조회)")
+                                                                          @RequestParam(required = false) String userId);
 }

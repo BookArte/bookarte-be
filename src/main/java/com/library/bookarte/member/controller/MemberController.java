@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/member")
 @RequiredArgsConstructor
@@ -75,5 +77,12 @@ public class MemberController implements MemberControllerDocs {
     ) {
         memberService.changePassword(memberId, memberChangePasswordRequest);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, null));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<List<MemberResponse>>> getMemberList(@RequestParam(required = false) String userId){
+        List<MemberResponse> result = memberService.findListByMemberUserID(userId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 }

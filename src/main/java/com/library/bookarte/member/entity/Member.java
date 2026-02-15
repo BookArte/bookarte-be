@@ -1,6 +1,7 @@
 package com.library.bookarte.member.entity;
 
 import com.library.bookarte.global.base.BaseEntity;
+import com.library.bookarte.member.dto.response.MemberResponse;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -108,5 +109,14 @@ public class Member extends BaseEntity {
         if (encodedPassword != null && !encodedPassword.isBlank()) {
             this.memberPwd = encodedPassword;
         }
+    }
+
+    public MemberResponse toResDto(){
+        return MemberResponse.builder()
+                .userId(this.memberUserId)
+                .name(this.memberName)
+                .tel(this.memberTel)
+                .email(this.memberEmail)
+                .build();
     }
 }
