@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/penalty")
+@RequestMapping("/api/penalty")
 public class PenaltyController implements PenaltyControllerDocs {
 
     private final PenaltyService penaltyService;
