@@ -3,6 +3,8 @@ package com.library.bookarte.recommendation.repository;
 import com.library.bookarte.recommendation.entity.Recommendation;
 import com.library.bookarte.recommendation.entity.type.RecommendType;
 import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,10 +14,6 @@ import java.util.List;
 
 public interface RecommendationRepository extends JpaRepository<Recommendation, Long> {
 
-    //우선 순위 자동 증가
-    @Modifying
-    @Query("UPDATE Recommendation r SET r.priority = r.priority + 1 WHERE r.priority >= 1")
-    void shiftPriorities();
 
     //우선 순위 자동 감소
     @Modifying
@@ -32,7 +30,27 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     @Query("UPDATE Recommendation r SET r.priority = :priority WHERE r.id = :id")
     void updatePriority(@Param("id") Long id, @Param("priority") int priority);
 
-    boolean existsByBook_BookId(Long bookId);
+    boolean existsByBook_BookIdAndEndDateAfter(Long bookId, LocalDate now);
 
-    int countByRecommendType(RecommendType recommendType);
+    //특정 기간 내 최대 우선순위 조회 (값이 없으면 0 반환)
+    @Query("SELECT COALESCE(MAX(r.priority), 0) FROM Recommendation r " +
+            "WHERE r.recommendType = :type " +
+            "AND r.startDate <= :newEnd " +
+            "AND r.endDate >= :newStart")
+    int findMaxPriorityInPeriod(
+            @Param("type") RecommendType type,
+            @Param("newStart") LocalDate newStart,
+            @Param("newEnd") LocalDate newEnd
+    );
+
+    @Query("SELECT COUNT(r) FROM Recommendation r " +
+            "WHERE r.recommendType = :type " +
+            "AND r.startDate <= :newEnd " +
+            "AND r.endDate >= :newStart")
+    int countOverlappingRecommendations(
+            @Param("type") RecommendType type,
+            @Param("newStart") LocalDate newStart,
+            @Param("newEnd") LocalDate newEnd
+    );
+
 }

@@ -47,7 +47,7 @@ public class Recommendation extends BaseEntity {
     @Column(nullable = false)
     private LocalDate endDate;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
