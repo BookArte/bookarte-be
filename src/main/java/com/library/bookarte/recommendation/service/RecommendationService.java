@@ -12,8 +12,6 @@ import com.library.bookarte.recommendation.entity.Recommendation;
 import com.library.bookarte.recommendation.entity.type.RecommendType;
 import com.library.bookarte.recommendation.repository.RecommendationRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -125,11 +123,13 @@ public class RecommendationService {
         return recommendationRepository.existsByBook_BookIdAndEndDateAfter(bookId, today);
     }
 
-    //추천 도서 전체 이력 조회
+    //추천 도서 현재 활성화 혹은 활성화 예정 이력 조회
     @Transactional(readOnly = true)
-    public Page<RecommendationBookResDto> findRecommendations(Pageable pageable){
-        Page<Recommendation> recommendations = recommendationRepository.findAll(pageable);
+    public List<RecommendationBookResDto> findActiveRecommendations(){
+        LocalDate today = LocalDate.now();
+        List<Recommendation> recommendations = recommendationRepository.findActiveAndUpcoming(today);
 
-        return recommendations.map(Recommendation::toResDto);
+        return recommendations.stream().map(Recommendation::toResDto)
+                .collect(Collectors.toList());
     }
 }

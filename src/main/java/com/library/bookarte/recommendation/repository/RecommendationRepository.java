@@ -3,8 +3,6 @@ package com.library.bookarte.recommendation.repository;
 import com.library.bookarte.recommendation.entity.Recommendation;
 import com.library.bookarte.recommendation.entity.type.RecommendType;
 import io.lettuce.core.dynamic.annotation.Param;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -52,5 +50,11 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
             @Param("newStart") LocalDate newStart,
             @Param("newEnd") LocalDate newEnd
     );
+
+    //진행 중 및 예약 도서 전체 조회
+    @Query("SELECT r FROM Recommendation r JOIN FETCH r.book " +
+            "WHERE r.endDate >= :today " +
+            "ORDER BY r.startDate ASC, r.priority ASC")
+    List<Recommendation> findActiveAndUpcoming(@Param("today") LocalDate today);
 
 }

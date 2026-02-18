@@ -82,4 +82,13 @@ public class RecommendationController implements RecommendationControllerDocs {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<List<RecommendationBookResDto>>> getActiveRecommendationList(){
+        List<RecommendationBookResDto> result = recommendationService.findActiveRecommendations();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
 }
