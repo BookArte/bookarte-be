@@ -57,4 +57,27 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
             "ORDER BY r.startDate ASC, r.priority ASC")
     List<Recommendation> findActiveAndUpcoming(@Param("today") LocalDate today);
 
+    @Query("SELECT r FROM Recommendation r " +
+            "WHERE r.recommendType = :type " +
+            "AND r.startDate <= :endDate " +
+            "AND r.endDate >= :startDate")
+    List<Recommendation> findAllOverlapping(
+            @Param("type") RecommendType type,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    //업데이트 대상 한권 제외 조회
+    @Query("SELECT r FROM Recommendation r " +
+            "WHERE r.recommendType = :type " +
+            "AND r.startDate <= :newEnd " +
+            "AND r.endDate >= :newStart " +
+            "AND r.recommendationId != :excludeId")
+    List<Recommendation> findOverlappingExceptSelf(
+            @Param("type") RecommendType type,
+            @Param("newStart") LocalDate newStart,
+            @Param("newEnd") LocalDate newEnd,
+            @Param("excludeId") Long excludeId
+    );
+
 }

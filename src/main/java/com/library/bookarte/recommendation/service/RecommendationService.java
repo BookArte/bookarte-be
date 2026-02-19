@@ -34,14 +34,19 @@ public class RecommendationService {
         LocalDate newStartDate = recommendationReqDto.getStartDate();
         LocalDate newEndDate = recommendationReqDto.getEndDate();
 
-        int overlappingCount = recommendationRepository.countOverlappingRecommendations(
-                RecommendType.ADMIN_PICK,
-                newStartDate,
-                newEndDate
-        );
+        List<Recommendation> overlappingBooks = recommendationRepository.findAllOverlapping(
+                RecommendType.ADMIN_PICK, newStartDate, newEndDate);
 
-        if(overlappingCount >= MAX_RECOMMEND_COUNT) {
-            throw new CustomException(CustomErrorCode.RECOMMENDATION_LIMIT_EXCEEDED);
+        // 일자별 권수 체크
+        for (LocalDate date = newStartDate; !date.isAfter(newEndDate); date = date.plusDays(1)) {
+            final LocalDate checkDate = date;
+            long dailyCount = overlappingBooks.stream()
+                    .filter(r -> !checkDate.isBefore(r.getStartDate()) && !checkDate.isAfter(r.getEndDate()))
+                    .count();
+
+            if (dailyCount >= MAX_RECOMMEND_COUNT) {
+                throw new CustomException(CustomErrorCode.RECOMMENDATION_LIMIT_EXCEEDED);
+            }
         }
 
         Book recommendationBook = bookService.findBook(recommendationReqDto.getBookId());
@@ -108,6 +113,22 @@ public class RecommendationService {
 
     //추천 정보 수정
     public void updateRecommend(Long recommendationId, UpdateRecommendDto updateRecommendDto){
+        LocalDate updateStartDate = updateRecommendDto.getStartDate();
+        LocalDate updateEndDate = updateRecommendDto.getEndDate();
+
+        List<Recommendation> overlaps = recommendationRepository.findOverlappingExceptSelf(RecommendType.ADMIN_PICK,
+                updateStartDate, updateEndDate, recommendationId);
+
+        for (LocalDate date = updateStartDate; !date.isAfter(updateEndDate); date = date.plusDays(1)) {
+            final LocalDate checkDate = date;
+            long dailyCount = overlaps.stream()
+                    .filter(r -> !checkDate.isBefore(r.getStartDate()) && !checkDate.isAfter(r.getEndDate()))
+                    .count();
+
+            if (dailyCount >= MAX_RECOMMEND_COUNT) {
+                throw new CustomException(CustomErrorCode.RECOMMENDATION_LIMIT_EXCEEDED);
+            }
+        }
 
         Recommendation target = recommendationRepository.findById(recommendationId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.RECOMMENDATION_NOT_FOUND));
