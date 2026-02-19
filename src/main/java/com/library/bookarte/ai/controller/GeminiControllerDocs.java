@@ -7,7 +7,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @Tag(name = "gemini")
@@ -19,5 +21,5 @@ public interface GeminiControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러")
     })
     @PostMapping("/chat")
-    ResponseEntity<GlobalResponseDto<GeminiResponse>> chat(GeminiRequest geminiRequest);
+    ResponseEntity<GlobalResponseDto<GeminiResponse>> chat(@AuthenticationPrincipal Long memberId, GeminiRequest geminiRequest, HttpServletRequest request);
 }
