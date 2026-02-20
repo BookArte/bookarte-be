@@ -91,4 +91,11 @@ public class RecommendationController implements RecommendationControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    @Override
+    public ResponseEntity<GlobalResponseDto<List<RecommendationBookResDto>>> getRecommendationHistory(){
+        List<RecommendationBookResDto> result = recommendationService.findRecommendationsHistory();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
 }

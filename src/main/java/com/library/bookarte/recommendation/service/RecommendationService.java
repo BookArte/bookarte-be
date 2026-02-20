@@ -153,4 +153,13 @@ public class RecommendationService {
         return recommendations.stream().map(Recommendation::toResDto)
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public List<RecommendationBookResDto> findRecommendationsHistory(){
+        LocalDate today = LocalDate.now();
+        List<Recommendation> hitorys = recommendationRepository.findHistory(RecommendType.ADMIN_PICK, today);
+
+        return hitorys.stream().map(Recommendation::toResDto)
+                .toList();
+    }
 }

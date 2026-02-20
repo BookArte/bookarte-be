@@ -41,16 +41,6 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
             @Param("newEnd") LocalDate newEnd
     );
 
-    @Query("SELECT COUNT(r) FROM Recommendation r " +
-            "WHERE r.recommendType = :type " +
-            "AND r.startDate <= :newEnd " +
-            "AND r.endDate >= :newStart")
-    int countOverlappingRecommendations(
-            @Param("type") RecommendType type,
-            @Param("newStart") LocalDate newStart,
-            @Param("newEnd") LocalDate newEnd
-    );
-
     //진행 중 및 예약 도서 전체 조회
     @Query("SELECT r FROM Recommendation r JOIN FETCH r.book " +
             "WHERE r.endDate >= :today " +
@@ -80,4 +70,11 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
             @Param("excludeId") Long excludeId
     );
 
+    @Query("SELECT r FROM Recommendation r " +
+            "WHERE r.recommendType = :type " +
+            "AND r.endDate < :today ")
+    List<Recommendation> findHistory(
+            @Param("type") RecommendType type,
+            @Param("today") LocalDate today
+    );
 }

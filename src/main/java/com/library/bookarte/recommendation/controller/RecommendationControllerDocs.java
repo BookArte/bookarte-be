@@ -87,11 +87,19 @@ public interface RecommendationControllerDocs {
     @GetMapping("/is-recommend")
     ResponseEntity<GlobalResponseDto<Boolean>> isRecommend(@RequestParam Long bookId);
 
-    @Operation(summary = "진행 및 예약된 추천 도서 목록 조회 요청", description = "**성공 응답 데이터:**: 진행 및 예약된 추천 도서 목록 ")
+    @Operation(summary = "진행 및 예약된 추천 도서 목록 조회 요청", description = "**성공 응답 데이터:** 진행 및 예약된 추천 도서 목록 ")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "진행 및 예약된 추천 도서 목록 조회 성공"),
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @GetMapping("/admin/active-list")
     ResponseEntity<GlobalResponseDto<List<RecommendationBookResDto>>> getActiveRecommendationList();
+
+    @Operation(summary = "만료된 추천 도서 이력 목록 조회 요청", description = "**성공 응답 데이터:** 만료된 추천 도서 이력 목록")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "만료된 추천 도서 이력 목록 조회 성공"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/admin/history")
+    ResponseEntity<GlobalResponseDto<List<RecommendationBookResDto>>> getRecommendationHistory();
 }
