@@ -35,6 +35,10 @@ public class RecommendationService {
         LocalDate newEndDate = recommendationReqDto.getEndDate();
         RecommendType type = RecommendType.ADMIN_PICK;
 
+        if (newStartDate.isAfter(newEndDate)) {
+            throw new CustomException(CustomErrorCode.INVALID_DATE_RANGE);
+        }
+
         validateDailyRecommendationLimit(type,newStartDate,newEndDate,null);
 
         Book recommendationBook = bookService.findBook(recommendationReqDto.getBookId());
@@ -104,6 +108,10 @@ public class RecommendationService {
         LocalDate updateStartDate = updateRecommendDto.getStartDate();
         LocalDate updateEndDate = updateRecommendDto.getEndDate();
         RecommendType type = RecommendType.ADMIN_PICK;
+
+        if (updateStartDate.isAfter(updateEndDate)) {
+            throw new CustomException(CustomErrorCode.INVALID_DATE_RANGE);
+        }
 
         validateDailyRecommendationLimit(type,updateStartDate,updateEndDate,recommendationId);
 
