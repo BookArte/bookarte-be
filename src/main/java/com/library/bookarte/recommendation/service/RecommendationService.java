@@ -12,6 +12,8 @@ import com.library.bookarte.recommendation.entity.Recommendation;
 import com.library.bookarte.recommendation.entity.type.RecommendType;
 import com.library.bookarte.recommendation.repository.RecommendationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -140,12 +142,11 @@ public class RecommendationService {
     }
 
     @Transactional(readOnly = true)
-    public List<RecommendationBookResDto> findRecommendationsHistory(){
+    public Page<RecommendationBookResDto> findRecommendationsHistory(Pageable pageable){
         LocalDate today = LocalDate.now();
-        List<Recommendation> hitorys = recommendationRepository.findHistory(RecommendType.ADMIN_PICK, today);
+        Page<Recommendation> hitorys = recommendationRepository.findHistory(today, pageable);
 
-        return hitorys.stream().map(Recommendation::toResDto)
-                .toList();
+        return hitorys.map(Recommendation::toResDto);
     }
 
     /**

@@ -3,6 +3,8 @@ package com.library.bookarte.recommendation.repository;
 import com.library.bookarte.recommendation.entity.Recommendation;
 import com.library.bookarte.recommendation.entity.type.RecommendType;
 import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -71,10 +73,9 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     );
 
     @Query("SELECT r FROM Recommendation r " +
-            "WHERE r.recommendType = :type " +
-            "AND r.endDate < :today ")
-    List<Recommendation> findHistory(
-            @Param("type") RecommendType type,
-            @Param("today") LocalDate today
+            "WHERE r.endDate < :today ")
+    Page<Recommendation> findHistory(
+            @Param("today") LocalDate today,
+            Pageable pageable
     );
 }
