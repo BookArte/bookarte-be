@@ -33,21 +33,9 @@ public class RecommendationService {
     public void setRecommendBookByAdmin(RecommendationReqDto recommendationReqDto) {
         LocalDate newStartDate = recommendationReqDto.getStartDate();
         LocalDate newEndDate = recommendationReqDto.getEndDate();
+        RecommendType type = RecommendType.ADMIN_PICK;
 
-        List<Recommendation> overlappingBooks = recommendationRepository.findAllOverlapping(
-                RecommendType.ADMIN_PICK, newStartDate, newEndDate);
-
-        // 일자별 권수 체크
-        for (LocalDate date = newStartDate; !date.isAfter(newEndDate); date = date.plusDays(1)) {
-            final LocalDate checkDate = date;
-            long dailyCount = overlappingBooks.stream()
-                    .filter(r -> !checkDate.isBefore(r.getStartDate()) && !checkDate.isAfter(r.getEndDate()))
-                    .count();
-
-            if (dailyCount >= MAX_RECOMMEND_COUNT) {
-                throw new CustomException(CustomErrorCode.RECOMMENDATION_LIMIT_EXCEEDED);
-            }
-        }
+        validateDailyRecommendationLimit(type,newStartDate,newEndDate,null);
 
         Book recommendationBook = bookService.findBook(recommendationReqDto.getBookId());
 
@@ -115,20 +103,9 @@ public class RecommendationService {
     public void updateRecommend(Long recommendationId, UpdateRecommendDto updateRecommendDto){
         LocalDate updateStartDate = updateRecommendDto.getStartDate();
         LocalDate updateEndDate = updateRecommendDto.getEndDate();
+        RecommendType type = RecommendType.ADMIN_PICK;
 
-        List<Recommendation> overlaps = recommendationRepository.findOverlappingExceptSelf(RecommendType.ADMIN_PICK,
-                updateStartDate, updateEndDate, recommendationId);
-
-        for (LocalDate date = updateStartDate; !date.isAfter(updateEndDate); date = date.plusDays(1)) {
-            final LocalDate checkDate = date;
-            long dailyCount = overlaps.stream()
-                    .filter(r -> !checkDate.isBefore(r.getStartDate()) && !checkDate.isAfter(r.getEndDate()))
-                    .count();
-
-            if (dailyCount >= MAX_RECOMMEND_COUNT) {
-                throw new CustomException(CustomErrorCode.RECOMMENDATION_LIMIT_EXCEEDED);
-            }
-        }
+        validateDailyRecommendationLimit(type,updateStartDate,updateEndDate,recommendationId);
 
         Recommendation target = recommendationRepository.findById(recommendationId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.RECOMMENDATION_NOT_FOUND));
@@ -162,4 +139,33 @@ public class RecommendationService {
         return hitorys.stream().map(Recommendation::toResDto)
                 .toList();
     }
+
+    /**
+     * 특정 기간 내의 각 날짜별 추천 도서 권수가 제한을 초과하는지 검증 함수.
+     * @param type 추천 타입
+     * @param start 시작일
+     * @param end 종료일
+     * @param excludeId 제외할 추천 ID (수정 시 본인 제외용, 등록 시 null)
+     */
+
+    private void validateDailyRecommendationLimit(RecommendType type, LocalDate start, LocalDate end, Long excludeId) {
+        List<Recommendation> overlappingBooks = recommendationRepository.findAllOverlapping(type, start, end);
+
+        for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
+            final LocalDate checkDate = date;
+
+            long dailyCount = overlappingBooks.stream()
+                    .filter(r -> (excludeId == null || !r.getRecommendationId().equals(excludeId))) // 수정 중인 본인 제외
+                    .filter(r -> !checkDate.isBefore(r.getStartDate()) && !checkDate.isAfter(r.getEndDate()))
+                    .count();
+
+            if (dailyCount >= MAX_RECOMMEND_COUNT) {
+                throw new CustomException(CustomErrorCode.RECOMMENDATION_LIMIT_EXCEEDED);
+            }
+        }
+    }
+
+
+
+
 }
