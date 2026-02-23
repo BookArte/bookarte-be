@@ -1,6 +1,6 @@
 package com.library.bookarte.book.entity;
 
-import com.library.bookarte.book.dto.BookResDto;
+import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.entity.type.ParticipantType;
 import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.global.base.BaseEntity;
