@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.time.LocalDate;
 import java.util.List;
 
-public interface RecommendationRepository extends JpaRepository<Recommendation, Long> {
+public interface RecommendationRepository extends JpaRepository<Recommendation, Long>,RecommendationRepositoryCustom {
 
 
     //우선 순위 자동 감소

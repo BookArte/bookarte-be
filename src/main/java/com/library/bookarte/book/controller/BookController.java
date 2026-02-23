@@ -1,8 +1,10 @@
 package com.library.bookarte.book.controller;
 
-import com.library.bookarte.book.dto.BookReqDto;
-import com.library.bookarte.book.dto.BookResDto;
+import com.library.bookarte.book.dto.request.BookDelReqDto;
+import com.library.bookarte.book.dto.request.BookReqDto;
+import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
+import com.library.bookarte.book.dto.response.BulkDeleteResponse;
 import com.library.bookarte.book.external.dto.AladinBestSellerResDto;
 import com.library.bookarte.book.external.dto.BookSearchResult;
 import com.library.bookarte.book.service.BookService;
@@ -57,12 +59,12 @@ public class BookController implements BookControllerDocs {
 
     //도서 삭제
     @Override
-    public ResponseEntity<GlobalResponseDto<?>> deleteBook(@PathVariable("bookId") Long bookId){
+    public ResponseEntity<GlobalResponseDto<BulkDeleteResponse>> deleteBooks(BookDelReqDto bookDelReqDto){
 
-        bookService.deleteBook(bookId);
+        BulkDeleteResponse result = bookService.bulkDeleteBooks(bookDelReqDto);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(GlobalResponseDto.success(HttpStatus.OK,null));
+                .body(GlobalResponseDto.success(HttpStatus.OK,result));
 
     }
 

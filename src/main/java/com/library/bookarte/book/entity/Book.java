@@ -4,6 +4,7 @@ import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.entity.type.ParticipantType;
 import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.global.base.BaseEntity;
+import com.library.bookarte.recommendation.entity.Recommendation;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -71,6 +72,9 @@ public class Book extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Recommendation> recommendations = new ArrayList<>();
 
     @Builder
     public Book(String bookTitle,
