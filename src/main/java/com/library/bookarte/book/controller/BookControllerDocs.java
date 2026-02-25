@@ -92,7 +92,7 @@ public interface BookControllerDocs {
     })
     @GetMapping("/library/search")
     @Parameter(name = "query", description = "검색할 도서 이름", example = "이방인")
-    ResponseEntity<GlobalResponseDto<List<BookSearchResult>>> searchBookWithLibraryApi(@RequestParam String query);
+    ResponseEntity<GlobalResponseDto<List<BookSearchResult>>> searchBookWithLibraryApi(@RequestParam(name = "query") String query);
 
 
     @Operation(summary = "DB 내 도서 존재 확인", description = "**성공 응답 데이터:** 존재 유무에 대한 boolean")
@@ -103,7 +103,7 @@ public interface BookControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @GetMapping("/is-duplicate-isbn")
-    ResponseEntity<GlobalResponseDto<Boolean>> isDuplicateIsbn(@RequestParam String isbn);
+    ResponseEntity<GlobalResponseDto<Boolean>> isDuplicateIsbn(@RequestParam(name = "isbn") String isbn);
 
     @Operation(summary = "알라딘 api를 활용한 베스트셀러 목록 조회", description = "**성공 응답 데이터:** 베스트셀러 도서 목록")
     @ApiResponses(value = {
