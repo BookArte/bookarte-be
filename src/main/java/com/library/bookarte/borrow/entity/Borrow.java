@@ -74,6 +74,7 @@ public class Borrow extends BaseEntity {
                 .status(this.status)
                 .bookId(this.book.getBookId())
                 .bookTitle(this.book.getBookTitle())
+                .bookThumbnail(this.book.getBookThumbnail())
                 .bookAuthor(authors)
                 .memberUserId(this.member.getMemberUserId())
                 .memberName(this.member.getMemberName())

@@ -134,4 +134,18 @@ public class MemberService {
         String encodedNewPassword = passwordEncoder.encode(memberChangePasswordRequest.getNewPassword());
         member.updatePassword(encodedNewPassword);
     }
+
+    public List<MemberResponse> findListByMemberUserID(String userId){
+        List<Member> members;
+
+        if(userId == null || userId.trim().isEmpty()){
+            members = memberRepository.findALlByOrderByMemberNameAsc();
+        } else {
+            members = memberRepository.findMembersByMemberUserId(userId);
+        }
+
+        return members.stream()
+                .map(Member::toResDto)
+                .toList();
+    }
 }

@@ -30,7 +30,8 @@ public enum CustomErrorCode {
   
     //recommendation
     RECOMMENDATION_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 추천 도서는 존재하지 않습니다"),
-    RECOMMENDATION_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "추천 도서는 최대 10권까지만 등록 가능합니다."),
+    RECOMMENDATION_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "해당 기간 내 추천 도서는 최대 10권까지만 등록 가능합니다."),
+    INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST,"적합하지 않은 날짜 범위입니다"),
 
     //server
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다"),

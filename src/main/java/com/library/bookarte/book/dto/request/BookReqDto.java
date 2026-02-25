@@ -1,4 +1,4 @@
-package com.library.bookarte.book.dto;
+package com.library.bookarte.book.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;

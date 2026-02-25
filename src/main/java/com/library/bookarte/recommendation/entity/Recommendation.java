@@ -4,6 +4,7 @@ import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
 import com.library.bookarte.global.base.BaseEntity;
 import com.library.bookarte.recommendation.dto.RecommendationBookResDto;
+import com.library.bookarte.recommendation.dto.type.RecommendationStatus;
 import com.library.bookarte.recommendation.entity.type.RecommendType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -47,7 +48,7 @@ public class Recommendation extends BaseEntity {
     @Column(nullable = false)
     private LocalDate endDate;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
@@ -60,6 +61,13 @@ public class Recommendation extends BaseEntity {
                 .filter(p -> p.getType() == ParticipantType.TRANSLATOR)
                 .map(Book.Participant::getName)
                 .collect(Collectors.joining(", "));
+
+        RecommendationStatus status;
+        LocalDate today = LocalDate.now();
+
+        if(this.endDate.isBefore(today)) status = RecommendationStatus.EXPIRED;
+        else if (this.startDate.isAfter(today)) status = RecommendationStatus.UPCOMING;
+        else status = RecommendationStatus.ACTIVE;
 
         return RecommendationBookResDto.builder()
                 .recommendationId(this.recommendationId)
@@ -79,6 +87,7 @@ public class Recommendation extends BaseEntity {
                 .bookThumbnail(this.book.getBookThumbnail())
                 .bookCallNumber(this.book.getBookCallNumber())
                 .bookCategoryName(this.book.getCategory().getCategoryName())
+                .status(status)
                 .build();
     }
 

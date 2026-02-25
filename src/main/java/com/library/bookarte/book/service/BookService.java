@@ -1,8 +1,10 @@
 package com.library.bookarte.book.service;
 
-import com.library.bookarte.book.dto.BookReqDto;
-import com.library.bookarte.book.dto.BookResDto;
+import com.library.bookarte.book.dto.request.BookDelReqDto;
+import com.library.bookarte.book.dto.request.BookReqDto;
+import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
+import com.library.bookarte.book.dto.response.BulkDeleteResponse;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
 import com.library.bookarte.book.external.aladin.AladinClient;
@@ -15,6 +17,8 @@ import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.category.service.CategoryService;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
+import com.library.bookarte.recommendation.repository.RecommendationRepository;
+import com.library.bookarte.recommendation.service.RecommendationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -29,6 +33,7 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final CategoryService categoryService;
+    private final RecommendationRepository recommendationRepository;
 
     private final KakaoBookSearchClient kakaoBookSearchClient;
     private final NationalLibrarySearchClient nationalLibrarySearchClient;
@@ -142,11 +147,24 @@ public class BookService {
     }
 
     /*도서 삭제 api*/
-    public void deleteBook(Long bookId) {
-        Book deleteTargetBook = bookRepository.findById(bookId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+    public BulkDeleteResponse bulkDeleteBooks(BookDelReqDto bookDelReqDto){
+        List<Long> delTargetBookIds = bookDelReqDto.getBookIds();
 
-        bookRepository.delete(deleteTargetBook);
+        List<String> skippedTitles = bookRepository.skippedTitles(delTargetBookIds);
+        List<Long> deletableIds = bookRepository.deletableBookIds(delTargetBookIds);
+
+        int deletedCount = 0;
+        if (!deletableIds.isEmpty()) {
+            recommendationRepository.deleteRecommendationsByBookIds(deletableIds);
+            deletedCount = (int) bookRepository.deleteBooksByIds(deletableIds);
+        }
+
+        return BulkDeleteResponse.builder()
+                .totalRequestCount(delTargetBookIds.size())
+                .skippedCount(skippedTitles.size())
+                .deletedCount(deletedCount)
+                .skippedTitles(skippedTitles)
+                .build();
     }
 
     /*도서 조건부 및 전체 조회 api*/

@@ -12,6 +12,8 @@ import com.library.bookarte.recommendation.entity.Recommendation;
 import com.library.bookarte.recommendation.entity.type.RecommendType;
 import com.library.bookarte.recommendation.repository.RecommendationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,22 +33,28 @@ public class RecommendationService {
 
     //추천 도서 등록
     public void setRecommendBookByAdmin(RecommendationReqDto recommendationReqDto) {
-        int currentAdminPickCount = recommendationRepository.countByRecommendType(RecommendType.ADMIN_PICK);
+        LocalDate newStartDate = recommendationReqDto.getStartDate();
+        LocalDate newEndDate = recommendationReqDto.getEndDate();
+        RecommendType type = RecommendType.ADMIN_PICK;
 
-        if(currentAdminPickCount >= MAX_RECOMMEND_COUNT) {
-            throw new CustomException(CustomErrorCode.RECOMMENDATION_LIMIT_EXCEEDED);
+        if (newStartDate.isAfter(newEndDate)) {
+            throw new CustomException(CustomErrorCode.INVALID_DATE_RANGE);
         }
 
-        Book recommendationBook = bookService.findBook(recommendationReqDto.getBookId());
-        int defaultPriority = 1; //나중에 추천 리스트에 등록되는 도서는 1순위로 들어가게 된다
+        validateDailyRecommendationLimit(type,newStartDate,newEndDate,null);
 
-        //선행 등록되어있던 도서 우선순위를 한칸씩 미룸
-        recommendationRepository.shiftPriorities();
+        Book recommendationBook = bookService.findBook(recommendationReqDto.getBookId());
+
+        int nextPriority = recommendationRepository.findMaxPriorityInPeriod(
+                RecommendType.ADMIN_PICK,
+                newStartDate,
+                newEndDate
+        ) + 1;
 
         Recommendation recommendation = Recommendation.builder()
                 .book(recommendationBook)
                 .recommendType(RecommendType.ADMIN_PICK)
-                .priority(defaultPriority)
+                .priority(nextPriority)
                 .comments(recommendationReqDto.getComments())
                 .startDate(recommendationReqDto.getStartDate())
                 .endDate(recommendationReqDto.getEndDate())
@@ -68,6 +76,7 @@ public class RecommendationService {
     }
 
     //추천 도서 목록 조회
+    @Transactional(readOnly = true)
     public List<RecommendationBookResDto> getRecommendationBooks() {
         LocalDate today = LocalDate.now();
         return recommendationRepository.findAllActiveRecommendations(today)
@@ -98,6 +107,15 @@ public class RecommendationService {
 
     //추천 정보 수정
     public void updateRecommend(Long recommendationId, UpdateRecommendDto updateRecommendDto){
+        LocalDate updateStartDate = updateRecommendDto.getStartDate();
+        LocalDate updateEndDate = updateRecommendDto.getEndDate();
+        RecommendType type = RecommendType.ADMIN_PICK;
+
+        if (updateStartDate.isAfter(updateEndDate)) {
+            throw new CustomException(CustomErrorCode.INVALID_DATE_RANGE);
+        }
+
+        validateDailyRecommendationLimit(type,updateStartDate,updateEndDate,recommendationId);
 
         Recommendation target = recommendationRepository.findById(recommendationId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.RECOMMENDATION_NOT_FOUND));
@@ -109,6 +127,50 @@ public class RecommendationService {
 
     //추천 도서 존재 유무
     public boolean existByBookId(Long bookId){
-        return recommendationRepository.existsByBook_BookId(bookId);
+        LocalDate today = LocalDate.now();
+        return recommendationRepository.existsByBook_BookIdAndEndDateAfter(bookId, today);
+    }
+
+    //추천 도서 현재 활성화 혹은 활성화 예정 이력 조회
+    @Transactional(readOnly = true)
+    public List<RecommendationBookResDto> findActiveRecommendations(){
+        LocalDate today = LocalDate.now();
+        List<Recommendation> recommendations = recommendationRepository.findActiveAndUpcoming(today);
+
+        return recommendations.stream().map(Recommendation::toResDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<RecommendationBookResDto> findRecommendationsHistory(Pageable pageable){
+        LocalDate today = LocalDate.now();
+        Page<Recommendation> hitorys = recommendationRepository.findHistory(today, pageable);
+
+        return hitorys.map(Recommendation::toResDto);
+    }
+
+    /**
+     * 특정 기간 내의 각 날짜별 추천 도서 권수가 제한을 초과하는지 검증 함수.
+     * @param type 추천 타입
+     * @param start 시작일
+     * @param end 종료일
+     * @param excludeId 제외할 추천 ID (수정 시 본인 제외용, 등록 시 null)
+     */
+
+    private void validateDailyRecommendationLimit(RecommendType type, LocalDate start, LocalDate end, Long excludeId) {
+        List<Recommendation> overlappingBooks = recommendationRepository.findAllOverlapping(type, start, end);
+
+        for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
+            final LocalDate checkDate = date;
+
+            long dailyCount = overlappingBooks.stream()
+                    .filter(r -> (excludeId == null || !r.getRecommendationId().equals(excludeId))) // 수정 중인 본인 제외
+                    .filter(r -> !checkDate.isBefore(r.getStartDate()) && !checkDate.isAfter(r.getEndDate()))
+                    .count();
+
+            if (dailyCount >= MAX_RECOMMEND_COUNT) {
+                throw new CustomException(CustomErrorCode.RECOMMENDATION_LIMIT_EXCEEDED);
+            }
+        }
     }
 }

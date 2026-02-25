@@ -1,6 +1,6 @@
 package com.library.bookarte.book.repository;
 
-import com.library.bookarte.book.dto.BookResDto;
+import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
@@ -135,6 +135,32 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .orderBy(borrow.count().desc())
                 .limit(limit)
                 .fetch();
+    }
+
+    @Override
+    public List<String> skippedTitles(List<Long> bookIds){
+        return jpaQueryFactory
+                .select(book.bookTitle)
+                .from(book)
+                .where(book.bookId.in(bookIds).and(book.canBorrow.isFalse()))
+                .fetch();
+    }
+
+    @Override
+    public List<Long> deletableBookIds(List<Long> bookIds){
+        return jpaQueryFactory
+                .select(book.bookId)
+                .from(book)
+                .where(book.bookId.in(bookIds).and(book.canBorrow.isTrue()))
+                .fetch();
+    }
+
+    @Override
+    public long deleteBooksByIds(List<Long> bookIds){
+        return jpaQueryFactory
+                .delete(book)
+                .where(book.bookId.in(bookIds))
+                .execute();
     }
 
     //같은 카테고리 대출수 순 조회

@@ -8,6 +8,11 @@ import com.library.bookarte.recommendation.dto.UpdateRecommendDto;
 import com.library.bookarte.recommendation.service.RecommendationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -78,6 +83,22 @@ public class RecommendationController implements RecommendationControllerDocs {
     @Override
     public ResponseEntity<GlobalResponseDto<Boolean>> isRecommend(@RequestParam Long bookId) {
         boolean result = recommendationService.existByBookId(bookId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<List<RecommendationBookResDto>>> getActiveRecommendationList(){
+        List<RecommendationBookResDto> result = recommendationService.findActiveRecommendations();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<Page<RecommendationBookResDto>>> getRecommendationHistory(@PageableDefault(sort = "endDate", direction = Sort.Direction.DESC) Pageable pageable){
+        Page<RecommendationBookResDto> result = recommendationService.findRecommendationsHistory(pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));

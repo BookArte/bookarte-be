@@ -38,7 +38,7 @@ public interface PenaltyControllerDocs {
     @PatchMapping("/admin/{penaltyId}/revoke")
     ResponseEntity<GlobalResponseDto<Long>> revoke(@PathVariable Long penaltyId);
 
-    /*Update: 패널티 해제 철회*/
+    /*Update: 패널티 해제 사유 변경*/
     @Operation(summary = "관리자 권한으로 패널티 해제 사유 변경", description = "**성공 응답 데이터:** 요청 성공 패널티 id ")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "페널티 해제 사유 변경 성공"),

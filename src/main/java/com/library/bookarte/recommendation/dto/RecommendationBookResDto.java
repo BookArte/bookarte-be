@@ -1,6 +1,7 @@
 package com.library.bookarte.recommendation.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.library.bookarte.recommendation.dto.type.RecommendationStatus;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -25,6 +26,8 @@ public class RecommendationBookResDto {
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
+
+    private RecommendationStatus status;
 
 
     //도서 정보

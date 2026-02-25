@@ -1,8 +1,10 @@
 package com.library.bookarte.book.controller;
 
-import com.library.bookarte.book.dto.BookReqDto;
-import com.library.bookarte.book.dto.BookResDto;
+import com.library.bookarte.book.dto.request.BookDelReqDto;
+import com.library.bookarte.book.dto.request.BookReqDto;
+import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
+import com.library.bookarte.book.dto.response.BulkDeleteResponse;
 import com.library.bookarte.book.external.dto.AladinBestSellerResDto;
 import com.library.bookarte.book.external.dto.BookSearchResult;
 import com.library.bookarte.global.response.GlobalResponseDto;
@@ -78,8 +80,8 @@ public interface BookControllerDocs {
             @ApiResponse(responseCode = "404", description = "해당 도서가 존재하지 않음"),
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
-    @DeleteMapping("/{bookId}")
-    ResponseEntity<GlobalResponseDto<?>> deleteBook(@PathVariable("bookId") Long bookId);
+    @DeleteMapping
+    ResponseEntity<GlobalResponseDto<BulkDeleteResponse>> deleteBooks(@RequestBody BookDelReqDto bookDelReqDto);
 
     /*Read: 외부 api에서 도서 정보 검색*/
     @Operation(summary = "외부 api 도서 정보 검색", description = "**성공 응답 데이터:** 해당되는 도서 목록")

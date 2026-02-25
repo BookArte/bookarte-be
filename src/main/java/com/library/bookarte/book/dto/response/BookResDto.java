@@ -1,4 +1,4 @@
-package com.library.bookarte.book.dto;
+package com.library.bookarte.book.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.library.bookarte.book.entity.Book;
