@@ -33,6 +33,7 @@ public class MemberService {
                 .memberRole("ROLE01")               // 상수 ENUM 작업
                 .memberSocialType("SOCIAL01")       // 상수 ENUM 작업
                 .memberStatus("STATUS01")           // 상수 ENUM 작업
+                .memberPoint(0L)
                 .usePrivacyYn(memberJoinRequest.getAgreePrivacy() ? "Y" : "N")
                 .useServiceYn(memberJoinRequest.getAgreeService() ? "Y" : "N")
                 .usePrivacyDate(memberJoinRequest.getAgreePrivacy() ? now : null)
