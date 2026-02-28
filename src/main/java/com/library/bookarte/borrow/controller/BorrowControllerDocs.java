@@ -13,6 +13,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public interface BorrowControllerDocs {
     })
     @GetMapping
     ResponseEntity<GlobalResponseDto<Page<UserBorrowResDto>>> getUserBorrows(@ParameterObject @ModelAttribute BorrowSearchFilterDto borrowSearchFilterDto,
+                                                                             @AuthenticationPrincipal Long memberId,
                                                                              @ParameterObject Pageable pageable);
     /*Update: 대출 도서 반납 신청*/
     @Operation(summary = "도서 반납 신청 요청", description = "**성공 응답 데이터:** 도서 반납 신청 요청 성공")
