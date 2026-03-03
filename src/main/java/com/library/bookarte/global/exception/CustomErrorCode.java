@@ -27,6 +27,7 @@ public enum CustomErrorCode {
     //member
     MEMBER_DELETE_STATUS_ERROR(HttpStatus.BAD_REQUEST, "이미 탈퇴된 회원입니다."),
     MEMBER_USER_ID_NOT_FOUND(HttpStatus.NOT_FOUND, "회원정보가 일치한 아이디가 존재하지 않습니다."),
+    MEMBER_NOT_ADMIN(HttpStatus.BAD_REQUEST, "관리자 권한이 없습니다."),
   
     //recommendation
     RECOMMENDATION_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 추천 도서는 존재하지 않습니다"),
@@ -49,7 +50,10 @@ public enum CustomErrorCode {
     //penalty
     PENALTY_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 패널티에 대해서 존재하지 않습니다."),
     ALREADY_RELEASE(HttpStatus.BAD_REQUEST,"이미 해제된 패널티입니다."),
-    NOT_RELEASE(HttpStatus.BAD_REQUEST, "해제되지 않은 패널티입니다.");
+    NOT_RELEASE(HttpStatus.BAD_REQUEST, "해제되지 않은 패널티입니다."),
+
+    //board
+    INVALID_BOARD_TYPE(HttpStatus.BAD_REQUEST, "잘못된 타입입니다.");
 
 
     private final HttpStatus httpStatus;
