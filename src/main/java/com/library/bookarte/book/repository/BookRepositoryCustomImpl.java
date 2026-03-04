@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,6 +47,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         String author = searchFilterDto.getBookAuthor();
         LocalDate start = searchFilterDto.getPublicationDateStart();
         LocalDate end = searchFilterDto.getPublicationDateEnd();
+        LocalDate createAtStart = searchFilterDto.getCreatedAtStart();
+        LocalDate createAtEnd = searchFilterDto.getCreatedAtEnd();
 
         //조건 메서드들 분리
         BooleanExpression[] predicates = {
@@ -54,7 +57,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 isbnContains(bookIsbn),
                 publisherContains(publisherName),
                 authorContains(author),
-                publicationDateBetween(start,end)
+                publicationDateBetween(start,end),
+                createAtBetween(createAtStart,createAtEnd)
         };
 
         //도서 id만 선 조회
@@ -267,6 +271,11 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         });
 
         return orders.toArray(new OrderSpecifier[0]);
+    }
+
+    private BooleanExpression createAtBetween(LocalDate start, LocalDate end){
+        if(start == null || end == null) return null;
+        return book.createdAt.between(start.atStartOfDay(), end.atTime(LocalTime.MAX));
     }
 
 }

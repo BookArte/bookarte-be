@@ -22,4 +22,9 @@ public class SearchFilterDto {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private final LocalDate publicationDateEnd;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private final LocalDate createdAtStart;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private final LocalDate createdAtEnd;
 }
