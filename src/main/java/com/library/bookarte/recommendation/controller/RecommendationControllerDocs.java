@@ -83,14 +83,6 @@ public interface RecommendationControllerDocs {
     ResponseEntity<GlobalResponseDto<String>> updateRecommend(@PathVariable Long recommendationId,
                                                              @RequestBody UpdateRecommendDto updateRecommendDto);
 
-    @Operation(summary = "추천 목록 내 도서 존재 확인", description = "**성공 응답 데이터:** 존재 유무에 대한 `boolean`값")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "추천 목록 내 유무에 대한 응답 성공"),
-            @ApiResponse(responseCode = "401", description = "권한없음"),
-            @ApiResponse(responseCode = "500", description = "서버 에러"),
-    })
-    @GetMapping("/is-recommend")
-    ResponseEntity<GlobalResponseDto<Boolean>> isRecommend(@RequestParam Long bookId);
 
     @Operation(summary = "진행 및 예약된 추천 도서 목록 조회 요청", description = "**성공 응답 데이터:** 진행 및 예약된 추천 도서 목록 ")
     @ApiResponses(value = {
