@@ -47,7 +47,8 @@ public class BoardController implements BoardControllerDocs {
     public ResponseEntity<GlobalResponseDto<BoardResponse>> getBoard(
             @PathVariable("boardId") Long boardId
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(GlobalResponseDto.success(HttpStatus.CREATED, null));
+        BoardResponse result = boardService.getBoard(boardId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(GlobalResponseDto.success(HttpStatus.CREATED, result));
     }
 
 

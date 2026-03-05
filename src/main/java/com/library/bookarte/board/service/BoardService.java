@@ -2,6 +2,7 @@ package com.library.bookarte.board.service;
 
 import com.library.bookarte.board.dto.request.BoardSaveRequest;
 import com.library.bookarte.board.dto.request.BoardUpdateRequest;
+import com.library.bookarte.board.dto.response.BoardResponse;
 import com.library.bookarte.board.dto.response.BoardSaveResponse;
 import com.library.bookarte.board.dto.response.BoardUpdateResponse;
 import com.library.bookarte.board.entity.Board;
@@ -41,12 +42,28 @@ public class BoardService {
     public BoardUpdateResponse updateBoard(String type, Long memberId, Long boardId, BoardUpdateRequest request) {
         Member member = validateAndGetMember(memberId);
         BoardType boardType = getBoardType(type);
-        Board board = getBoard(boardId);
+        Board board = getBoardData(boardId);
 
         validateTypeAndModify(board, boardType, request, member);
 
         return BoardUpdateResponse.builder()
                 .id(board.getBoardId())
+                .build();
+    }
+
+    public BoardResponse getBoard(Long boardId) {
+        Board board = getBoardData(boardId);
+
+        return BoardResponse.builder()
+                .id(board.getBoardId())
+                .category(board.getCategory())
+                .title(board.getTitle())
+                .contents(board.getContents())
+                .noticeYn(board.getNoticeYn())
+                .orderNum(board.getOrderNum())
+                .regMemberId(board.getRegMember().getMemberId())
+                .modMemberId((board.getModMember() != null) ? board.getModMember().getMemberId() : null)
+                .createDate(board.getCreatedAt())
                 .build();
     }
 
@@ -71,7 +88,7 @@ public class BoardService {
         }
     }
 
-    private Board getBoard(Long boardId) {
+    private Board getBoardData(Long boardId) {
         if (boardId == null) throw new CustomException(CustomErrorCode.BOARD_NOT_FOUND);
 
         return boardRepository.findById(boardId)
