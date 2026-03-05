@@ -34,11 +34,15 @@ public abstract class Board extends BaseEntity {
     private Long orderNum = 0L;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    @JoinColumn(name = "reg_member_id", nullable = false)
+    private Member regMember;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mod_member_id", nullable = true)
+    private Member modMember;
 
     protected Board(Long boardId, String category, String title, String contents,
-                    Long viewCnt, String noticeYn, Long orderNum, Member member) {
+                    Long viewCnt, String noticeYn, Long orderNum, Member regMember, Member modMember) {
         this.boardId = boardId;
         this.category = category;
         this.title = title;
@@ -46,6 +50,16 @@ public abstract class Board extends BaseEntity {
         this.viewCnt = viewCnt != null ? viewCnt : 0L;
         this.noticeYn = noticeYn != null ? noticeYn : "N";
         this.orderNum = orderNum != null ? orderNum : 0L;
-        this.member = member;
+        this.regMember = regMember;
+        this.modMember = modMember;
+    }
+
+    protected void updateBoard(String category, String title, String contents, String noticeYn, Long orderNum, Member modMember) {
+        if (category != null) this.category = category;
+        if (title != null) this.title = title;
+        if (contents != null) this.contents = contents;
+        if (noticeYn != null) this.noticeYn = noticeYn;
+        if (orderNum != null) this.orderNum = orderNum;
+        if (modMember != null) this.modMember = modMember;
     }
 }

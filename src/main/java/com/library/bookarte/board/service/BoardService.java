@@ -1,6 +1,9 @@
 package com.library.bookarte.board.service;
 
 import com.library.bookarte.board.dto.request.BoardSaveRequest;
+import com.library.bookarte.board.dto.request.BoardUpdateRequest;
+import com.library.bookarte.board.dto.response.BoardSaveResponse;
+import com.library.bookarte.board.dto.response.BoardUpdateResponse;
 import com.library.bookarte.board.entity.Board;
 import com.library.bookarte.board.entity.News;
 import com.library.bookarte.board.entity.Notice;
@@ -22,17 +25,33 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
 
-    public void save(String type, BoardSaveRequest request, Long memberId) {
-        if (memberId == null) {
-            throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);
-        }
+    public BoardSaveResponse save(String type, BoardSaveRequest request, Long memberId) {
+        Member member = validateAndGetMember(memberId);
+        BoardType boardType = getBoardType(type);
 
-        BoardType boardType;
-        try {
-            boardType = BoardType.valueOf(type.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new CustomException(CustomErrorCode.INVALID_BOARD_TYPE);
-        }
+        Board board = createBoard(boardType, request, member);
+
+        Board resultBoard = boardRepository.save(board);
+
+        return BoardSaveResponse.builder()
+                .id(resultBoard.getBoardId())
+                .build();
+    }
+
+    public BoardUpdateResponse updateBoard(String type, Long memberId, Long boardId, BoardUpdateRequest request) {
+        Member member = validateAndGetMember(memberId);
+        BoardType boardType = getBoardType(type);
+        Board board = getBoard(boardId);
+
+        validateTypeAndModify(board, boardType, request, member);
+
+        return BoardUpdateResponse.builder()
+                .id(board.getBoardId())
+                .build();
+    }
+
+    private Member validateAndGetMember(Long memberId) {
+        if (memberId == null) throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
@@ -41,26 +60,55 @@ public class BoardService {
             throw new CustomException(CustomErrorCode.MEMBER_NOT_ADMIN);
         }
 
-        Board board = switch (boardType) {
+        return member;
+    }
+
+    private BoardType getBoardType(String type) {
+        try {
+            return BoardType.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new CustomException(CustomErrorCode.INVALID_BOARD_TYPE);
+        }
+    }
+
+    private Board getBoard(Long boardId) {
+        if (boardId == null) throw new CustomException(CustomErrorCode.BOARD_NOT_FOUND);
+
+        return boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOARD_NOT_FOUND));
+    }
+
+    private void validateTypeAndModify(Board board, BoardType boardType, BoardUpdateRequest request, Member member) {
+        if (boardType == BoardType.NOTICE && board instanceof Notice notice) {
+            notice.modify(request, member);
+        } else if (boardType == BoardType.NEWS && board instanceof News news) {
+            news.modify(request, member);
+        } else {
+            throw new CustomException(CustomErrorCode.INVALID_BOARD_TYPE);
+        }
+    }
+
+    private Board createBoard(BoardType boardType, BoardSaveRequest request, Member member) {
+
+        return switch (boardType) {
             case NOTICE -> Notice.builder()
-                    .category("TEST")
+                    .category(request.getCategory())
                     .title(request.getTitle())
                     .contents(request.getContents())
                     .noticeYn(request.getNoticeYn())
                     .orderNum(request.getOrderNum())
-                    .member(member)
+                    .regMember(member)
                     .build();
             case NEWS -> News.builder()
-                    .category("TEST")
+                    .category(request.getCategory())
                     .title(request.getTitle())
                     .contents(request.getContents())
                     .noticeYn(request.getNoticeYn())
                     .orderNum(request.getOrderNum())
-                    .member(member)
+                    .regMember(member)
                     .build();
         };
 
-        boardRepository.save(board);
     }
 
 }

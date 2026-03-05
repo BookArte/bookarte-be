@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class BoardSaveRequest {
+public class BoardUpdateRequest {
+    @NotBlank
     private String category;
 
     @NotBlank
@@ -15,7 +16,9 @@ public class BoardSaveRequest {
     @NotBlank
     private String contents;
 
+    @NotBlank
     private String noticeYn;
 
+    @NotBlank
     private Long orderNum;
 }
