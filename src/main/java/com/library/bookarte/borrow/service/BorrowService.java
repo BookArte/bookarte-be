@@ -4,6 +4,7 @@ import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
 import com.library.bookarte.borrow.dto.response.MonthlyData;
+import com.library.bookarte.borrow.dto.response.PopularBookResDto;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
 import com.library.bookarte.borrow.entity.Borrow;
@@ -84,6 +85,7 @@ public class BorrowService {
         book.updateCanBorrow(false);
     }
     //전체 대출 이력 조회
+    @Transactional(readOnly = true)
     public Page<TotalBorrowResDto> getTotalBorrows(BorrowSearchFilterDto borrowSearchFilterDto,
                                                    Pageable pageable){
         Page<Borrow> borrows = borrowRepository.findAllBorrowByBorrowSearchFilter(borrowSearchFilterDto,
@@ -93,6 +95,7 @@ public class BorrowService {
     }
 
     //유저 대출 이력
+    @Transactional(readOnly = true)
     public Page<UserBorrowResDto> getUserBorrows(BorrowSearchFilterDto borrowSearchFilterDto,
                                                  @AuthenticationPrincipal Long memberId,
                                                  Pageable pageable){
@@ -177,6 +180,7 @@ public class BorrowService {
     }
 
     // 현재 달 기준으로 이전 1년까지 특정 도서의 월 별 대출 횟수 조회
+    @Transactional(readOnly = true)
     public List<MonthlyData> getRollingYearHistory(Long bookId){
         List<MonthlyData> result = borrowRepository.getRollingYearlyStatistics(bookId);
 
@@ -198,6 +202,11 @@ public class BorrowService {
             cursor = cursor.plusMonths(1); // 한 달씩 앞으로
         }
         return  fullList;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PopularBookResDto> getPopularBooks(String period, Pageable pageable){
+        return borrowRepository.findPopularBooks(period, pageable);
     }
 
 }

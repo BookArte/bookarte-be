@@ -2,6 +2,7 @@ package com.library.bookarte.borrow.controller;
 
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
 import com.library.bookarte.borrow.dto.response.MonthlyData;
+import com.library.bookarte.borrow.dto.response.PopularBookResDto;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
 import com.library.bookarte.global.response.GlobalResponseDto;
@@ -95,5 +96,15 @@ public interface BorrowControllerDocs {
     })
     @PatchMapping("/admin/{borrowId}")
     ResponseEntity<GlobalResponseDto<String>> approveReturn(@PathVariable Long borrowId);
+
+    /*Read: 인기 대출 도서 목록 조회*/
+    @Operation(summary = "인기 대출 도서 목록 조회", description = "**성공 응답 데이터:** 인기 대출 도서 ")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "도서 반납 신청 요청 성공"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/popular")
+    ResponseEntity<GlobalResponseDto<Page<PopularBookResDto>>> getPopularBooks(@RequestParam("period") String period,
+                                                                         @ParameterObject Pageable pageable);
 
 }

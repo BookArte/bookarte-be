@@ -2,6 +2,7 @@ package com.library.bookarte.book.entity;
 
 import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.entity.type.ParticipantType;
+import com.library.bookarte.borrow.dto.response.PopularBookResDto;
 import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.global.base.BaseEntity;
 import com.library.bookarte.recommendation.entity.Recommendation;
@@ -152,6 +153,32 @@ public class Book extends BaseEntity {
                 .bookThumbnail(this.bookThumbnail)
                 .bookCategory(this.category.getCategoryName())
                 .canBorrow(this.canBorrow)
+                .build();
+    }
+
+    public PopularBookResDto toPopularBookResDto(Long borrowCount){
+        String authors = this.participants.stream()
+                .filter(p -> p.getType() == ParticipantType.AUTHOR)
+                .map(Book.Participant::getName)
+                .collect(Collectors.joining(", "));
+
+        String translators = this.participants.stream()
+                .filter(p -> p.getType() == ParticipantType.TRANSLATOR)
+                .map(Participant::getName)
+                .collect(Collectors.joining(", "));
+
+
+        return PopularBookResDto.builder()
+                .bookId(this.bookId)
+                .bookTitle(this.bookTitle)
+                .publisherName(this.publisherName)
+                .publicationDate(this.publicationDate)
+                .bookAuthor(authors)
+                .bookTranslator(translators)
+                .bookCategory(this.category.getCategoryName())
+                .bookIsbn(this.bookIsbn)
+                .bookThumbnail(this.bookThumbnail)
+                .borrowCount(borrowCount)
                 .build();
     }
 
