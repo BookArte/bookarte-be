@@ -22,6 +22,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "Book")
@@ -121,4 +122,12 @@ public interface BookControllerDocs {
     })
     @GetMapping("/{bookId}/related")
     ResponseEntity<GlobalResponseDto<List<BookResDto>>> listRelatedBook(@PathVariable Long bookId);
+
+    @Operation(summary = "최근 등록된 도서 등록일 조회 요청", description = "**성공 응답 데이터:** 최근 등록된 도서 등록일")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "도서 목록 조회 성공"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/latest-registration-date")
+    ResponseEntity<GlobalResponseDto<LocalDate>> getLatestRegistrationDate();
 }

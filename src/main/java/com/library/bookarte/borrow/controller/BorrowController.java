@@ -2,15 +2,18 @@ package com.library.bookarte.borrow.controller;
 
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
 import com.library.bookarte.borrow.dto.response.MonthlyData;
+import com.library.bookarte.borrow.dto.response.PopularBookResDto;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
 import com.library.bookarte.borrow.service.BorrowService;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,8 +43,9 @@ public class BorrowController implements BorrowControllerDocs {
 
     @Override
     public ResponseEntity<GlobalResponseDto<Page<UserBorrowResDto>>> getUserBorrows(@ModelAttribute BorrowSearchFilterDto borrowSearchFilterDto,
+                                                                                    @AuthenticationPrincipal Long memberId,
                                                                                     Pageable pageable) {
-        Page<UserBorrowResDto> result = borrowService.getUserBorrows(borrowSearchFilterDto, pageable);
+        Page<UserBorrowResDto> result = borrowService.getUserBorrows(borrowSearchFilterDto, memberId ,pageable);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
@@ -73,6 +77,14 @@ public class BorrowController implements BorrowControllerDocs {
     @Override
     public ResponseEntity<GlobalResponseDto<List<MonthlyData>>> rollingYear(@PathVariable Long bookId){
         List<MonthlyData> result = borrowService.getRollingYearHistory(bookId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<Page<PopularBookResDto>>> getPopularBooks(@RequestParam("period") String period,
+                                                                                      @ParameterObject Pageable pageable) {
+        Page<PopularBookResDto> result = borrowService.getPopularBooks(period, pageable);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }

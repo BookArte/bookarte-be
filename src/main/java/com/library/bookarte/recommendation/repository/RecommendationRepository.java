@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface RecommendationRepository extends JpaRepository<Recommendation, Long>,RecommendationRepositoryCustom {
 
@@ -29,8 +30,6 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     @Modifying
     @Query("UPDATE Recommendation r SET r.priority = :priority WHERE r.id = :id")
     void updatePriority(@Param("id") Long id, @Param("priority") int priority);
-
-    boolean existsByBook_BookIdAndEndDateAfter(Long bookId, LocalDate now);
 
     //특정 기간 내 최대 우선순위 조회 (값이 없으면 0 반환)
     @Query("SELECT COALESCE(MAX(r.priority), 0) FROM Recommendation r " +
@@ -77,5 +76,11 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     Page<Recommendation> findHistory(
             @Param("today") LocalDate today,
             Pageable pageable
+    );
+
+    //등록 기간 내 중복 도서 조회
+    Optional<Recommendation> findFirstByBook_BookIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual( Long bookId,
+                                                                                                        LocalDate endDate,
+                                                                                                        LocalDate startDate
     );
 }

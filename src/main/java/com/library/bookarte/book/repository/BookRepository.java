@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface BookRepository extends JpaRepository<Book, Long>, BookRepositoryCustom {
@@ -15,4 +16,7 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select b from Book b where b.bookId = :id")
     Optional<Book> findByIdWithLock(@Param("id") Long id);
+
+    @Query("SELECT MAX(b.createdAt) FROM Book b")
+    Optional<LocalDateTime> findLatestCreatedAt();
 }

@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -106,6 +107,13 @@ public class BookController implements BookControllerDocs {
     @Override
     public ResponseEntity<GlobalResponseDto<List<BookResDto>>> listRelatedBook(@PathVariable Long bookId){
         List<BookResDto> result = bookService.getRelatedBooks(bookId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<LocalDate>> getLatestRegistrationDate() {
+        LocalDate result = bookService.getLatestRegistrationDate();
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }

@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -37,13 +38,15 @@ public class RecommendationService {
         LocalDate newEndDate = recommendationReqDto.getEndDate();
         RecommendType type = RecommendType.ADMIN_PICK;
 
-        if (newStartDate.isAfter(newEndDate)) {
-            throw new CustomException(CustomErrorCode.INVALID_DATE_RANGE);
-        }
 
-        validateDailyRecommendationLimit(type,newStartDate,newEndDate,null);
 
         Book recommendationBook = bookService.findBook(recommendationReqDto.getBookId());
+
+        Long bookId = recommendationBook.getBookId();
+
+        validateDailyRecommendationLimit(type,newStartDate,newEndDate,null);
+        validateRecommendationPeriod(bookId, newStartDate, newEndDate);
+
 
         int nextPriority = recommendationRepository.findMaxPriorityInPeriod(
                 RecommendType.ADMIN_PICK,
@@ -125,12 +128,6 @@ public class RecommendationService {
                 updateRecommendDto.getEndDate());
     }
 
-    //추천 도서 존재 유무
-    public boolean existByBookId(Long bookId){
-        LocalDate today = LocalDate.now();
-        return recommendationRepository.existsByBook_BookIdAndEndDateAfter(bookId, today);
-    }
-
     //추천 도서 현재 활성화 혹은 활성화 예정 이력 조회
     @Transactional(readOnly = true)
     public List<RecommendationBookResDto> findActiveRecommendations(){
@@ -173,4 +170,29 @@ public class RecommendationService {
             }
         }
     }
+
+    @Transactional(readOnly = true)
+    private void validateRecommendationPeriod(Long bookId, LocalDate newStartDate,LocalDate newEndDate ){
+        if (newStartDate.isAfter(newEndDate)) {
+            throw new CustomException(CustomErrorCode.INVALID_DATE_RANGE);
+        }
+
+        Optional<Recommendation> duplicate = recommendationRepository.findFirstByBook_BookIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                bookId,
+                newEndDate,
+                newStartDate
+        );
+
+        if (duplicate.isPresent()){
+            Recommendation exist = duplicate.get();
+
+            String detailMessage = String.format(
+                    "해당 도서는 이미 [%s ~ %s] 기간에 추천 도서로 등록되어 있습니다.",
+                    exist.getStartDate(),
+                    exist.getEndDate()
+            );
+            throw new CustomException(CustomErrorCode.DUPLICATE_RECOMMENDATION_PERIOD, detailMessage);
+        }
+    }
+
 }
