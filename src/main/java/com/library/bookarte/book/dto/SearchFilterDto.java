@@ -26,8 +26,8 @@ public class SearchFilterDto {
     private LocalDate publicationDateEnd;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private final LocalDate createdAtStart;
+    private LocalDate createdAtStart;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private final LocalDate createdAtEnd;
+    private LocalDate createdAtEnd;
 }
