@@ -6,6 +6,7 @@ import com.library.bookarte.board.dto.response.BoardResponse;
 import com.library.bookarte.board.dto.response.BoardSaveResponse;
 import com.library.bookarte.board.dto.response.BoardUpdateResponse;
 import com.library.bookarte.global.response.GlobalResponseDto;
+import com.library.bookarte.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -73,5 +74,19 @@ public interface BoardControllerDocs {
             @PathVariable("type") String type,
             @AuthenticationPrincipal Long memberId,
             @PathVariable("boardId") Long boardId
+    );
+
+    /* Read: 게시글 리스트 조회 */
+    @Operation(summary = "게시글 리스트 조회", description = "**성공 응답 데이터:** 게시글 리스트 조회 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "게시글 리스트 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @GetMapping("/list")
+    ResponseEntity<GlobalResponseDto<PageResponse<BoardResponse>>> getBoardList(
+            @PathVariable("type") String type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     );
 }

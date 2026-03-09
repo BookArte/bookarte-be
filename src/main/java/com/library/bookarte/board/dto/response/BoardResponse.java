@@ -1,5 +1,6 @@
 package com.library.bookarte.board.dto.response;
 
+import com.library.bookarte.board.entity.Board;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,4 +18,18 @@ public class BoardResponse {
     private String regMemberUserId;
     private String modMemberUserId;
     private LocalDateTime createDate;
+
+    public static BoardResponse from(Board board) {
+        return BoardResponse.builder()
+                .id(board.getBoardId())
+                .category(board.getCategory())
+                .title(board.getTitle())
+                .contents(board.getContents())
+                .noticeYn(board.getNoticeYn())
+                .orderNum(board.getOrderNum())
+                .regMemberUserId(board.getRegMember().getMemberUserId())
+                .modMemberUserId(board.getModMember() != null ? board.getModMember().getMemberUserId() : null)
+                .createDate(board.getCreatedAt())
+                .build();
+    }
 }

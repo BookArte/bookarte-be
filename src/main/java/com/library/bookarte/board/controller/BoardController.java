@@ -7,14 +7,12 @@ import com.library.bookarte.board.dto.response.BoardSaveResponse;
 import com.library.bookarte.board.dto.response.BoardUpdateResponse;
 import com.library.bookarte.board.service.BoardService;
 import com.library.bookarte.global.response.GlobalResponseDto;
+import com.library.bookarte.global.response.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/board/{type}")
@@ -60,6 +58,16 @@ public class BoardController implements BoardControllerDocs {
     ) {
         boardService.deleteBoard(type, memberId, boardId);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, null));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<PageResponse<BoardResponse>>> getBoardList(
+            @PathVariable("type") String type,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        PageResponse<BoardResponse> result = boardService.getBoardList(type, page, size);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
 }

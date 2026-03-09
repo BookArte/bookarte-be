@@ -12,10 +12,15 @@ import com.library.bookarte.board.entity.type.BoardType;
 import com.library.bookarte.board.repository.BoardRepository;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
+import com.library.bookarte.global.response.PageResponse;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.entity.type.MemberType;
 import com.library.bookarte.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,6 +89,22 @@ public class BoardService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
+    public PageResponse<BoardResponse> getBoardList(String type, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size,
+                Sort.by(Sort.Order.desc("noticeYn"),
+                        Sort.Order.desc("orderNum"),
+                        Sort.Order.desc("boardId")));
+
+        BoardType boardType = getBoardType(type);
+
+        Page<Board> boardPage = boardRepository.findAllByType(boardType.getEntityClass(), pageable);
+
+        Page<BoardResponse> responsePage = boardPage.map(BoardResponse::from);
+
+        return PageResponse.from(responsePage);
+
+    }
 
     private Member validateAndGetMember(Long memberId) {
         if (memberId == null) throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);

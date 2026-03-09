@@ -1,13 +1,21 @@
 package com.library.bookarte.board.entity.type;
 
+import com.library.bookarte.board.entity.Board;
+import com.library.bookarte.board.entity.News;
+import com.library.bookarte.board.entity.Notice;
+import lombok.Getter;
+
+@Getter
 public enum BoardType {
-    NOTICE(Constants.NOTICE),
-    NEWS(Constants.NEWS);
+    NOTICE(Constants.NOTICE, Notice.class),
+    NEWS(Constants.NEWS, News.class);
 
     private final String value;
+    private final Class<? extends Board> entityClass;
 
-    BoardType(String value) {
+    BoardType(String value, Class<? extends Board> entityClass) {
         this.value = value;
+        this.entityClass = entityClass;
     }
 
     public static class Constants {
