@@ -6,6 +6,7 @@ import com.library.bookarte.borrow.dto.response.PopularBookResDto;
 import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.global.base.BaseEntity;
 import com.library.bookarte.recommendation.entity.Recommendation;
+import com.library.bookarte.wish.entity.Wish;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -76,6 +77,9 @@ public class Book extends BaseEntity {
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Recommendation> recommendations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Wish> wishes = new ArrayList<>();
 
     @Builder
     public Book(String bookTitle,
