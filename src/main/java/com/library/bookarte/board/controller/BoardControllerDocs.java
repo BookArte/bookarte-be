@@ -59,4 +59,19 @@ public interface BoardControllerDocs {
     ResponseEntity<GlobalResponseDto<BoardResponse>> getBoard(
             @PathVariable("boardId") Long boardId
     );
+
+    /* Delete: 게시글 삭제 */
+    @Operation(summary = "게시글 삭제", description = "**성공 응답 데이터:** 게시글 삭제 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "게시글 삭제 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "게시글이 존재하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @DeleteMapping("/{boardId}")
+    ResponseEntity<GlobalResponseDto<Void>> deleteBoard(
+            @PathVariable("type") String type,
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable("boardId") Long boardId
+    );
 }

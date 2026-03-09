@@ -14,7 +14,7 @@ public class BoardResponse {
     private String contents;
     private String noticeYn;
     private Long orderNum;
-    private Long regMemberId;
-    private Long modMemberId;
+    private String regMemberUserId;
+    private String modMemberUserId;
     private LocalDateTime createDate;
 }

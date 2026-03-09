@@ -44,13 +44,30 @@ public class BoardService {
         BoardType boardType = getBoardType(type);
         Board board = getBoardData(boardId);
 
-        validateTypeAndModify(board, boardType, request, member);
+        validateBoardType(board, boardType);
+
+        if (board instanceof Notice notice) {
+            notice.modify(request, member);
+        } else if (board instanceof News news) {
+            news.modify(request, member);
+        }
 
         return BoardUpdateResponse.builder()
                 .id(board.getBoardId())
                 .build();
     }
 
+    public void deleteBoard(String type, Long memberId, Long boardId) {
+        Member member = validateAndGetMember(memberId);
+        BoardType boardType = getBoardType(type);
+        Board board = getBoardData(boardId);
+
+        validateBoardType(board, boardType);
+
+        boardRepository.delete(board);
+    }
+
+    @Transactional(readOnly = true)
     public BoardResponse getBoard(Long boardId) {
         Board board = getBoardData(boardId);
 
@@ -61,11 +78,12 @@ public class BoardService {
                 .contents(board.getContents())
                 .noticeYn(board.getNoticeYn())
                 .orderNum(board.getOrderNum())
-                .regMemberId(board.getRegMember().getMemberId())
-                .modMemberId((board.getModMember() != null) ? board.getModMember().getMemberId() : null)
+                .regMemberUserId(board.getRegMember().getMemberUserId())
+                .modMemberUserId((board.getModMember() != null) ? board.getModMember().getMemberUserId() : null)
                 .createDate(board.getCreatedAt())
                 .build();
     }
+
 
     private Member validateAndGetMember(Long memberId) {
         if (memberId == null) throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);
@@ -78,6 +96,17 @@ public class BoardService {
         }
 
         return member;
+    }
+
+    private void validateBoardType(Board board, BoardType boardType) {
+        boolean isValid = switch (boardType) {
+            case NOTICE -> board instanceof Notice;
+            case NEWS -> board instanceof News;
+        };
+
+        if (!isValid) {
+            throw new CustomException(CustomErrorCode.INVALID_BOARD_TYPE);
+        }
     }
 
     private BoardType getBoardType(String type) {
@@ -93,16 +122,6 @@ public class BoardService {
 
         return boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BOARD_NOT_FOUND));
-    }
-
-    private void validateTypeAndModify(Board board, BoardType boardType, BoardUpdateRequest request, Member member) {
-        if (boardType == BoardType.NOTICE && board instanceof Notice notice) {
-            notice.modify(request, member);
-        } else if (boardType == BoardType.NEWS && board instanceof News news) {
-            news.modify(request, member);
-        } else {
-            throw new CustomException(CustomErrorCode.INVALID_BOARD_TYPE);
-        }
     }
 
     private Board createBoard(BoardType boardType, BoardSaveRequest request, Member member) {

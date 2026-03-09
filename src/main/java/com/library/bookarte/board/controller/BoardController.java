@@ -40,7 +40,7 @@ public class BoardController implements BoardControllerDocs {
             @RequestBody BoardUpdateRequest boardUpdateRequest
     ) {
         BoardUpdateResponse result = boardService.updateBoard(type, memberId, boardId, boardUpdateRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(GlobalResponseDto.success(HttpStatus.CREATED, result));
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
     @Override
@@ -48,8 +48,18 @@ public class BoardController implements BoardControllerDocs {
             @PathVariable("boardId") Long boardId
     ) {
         BoardResponse result = boardService.getBoard(boardId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(GlobalResponseDto.success(HttpStatus.CREATED, result));
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    @Override
+    public ResponseEntity<GlobalResponseDto<Void>> deleteBoard(
+            @PathVariable("type") String type,
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable("boardId") Long boardId
+
+    ) {
+        boardService.deleteBoard(type, memberId, boardId);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, null));
+    }
 
 }
