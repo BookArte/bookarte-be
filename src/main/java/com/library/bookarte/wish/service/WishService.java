@@ -6,10 +6,12 @@ import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.repository.MemberRepository;
+import com.library.bookarte.wish.dto.response.WishResDto;
 import com.library.bookarte.wish.entity.Wish;
 import com.library.bookarte.wish.repository.WishRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,4 +37,10 @@ public class WishService {
 
         wishRepository.save(wish);
     }
+
+    public Page<WishResDto> getWishList(Long memberId, Pageable pageable){
+        Page<Wish> wishes = wishRepository.findByMember_MemberId(memberId, pageable);
+        return wishes.map(Wish::toWishResDto);
+    }
+
 }
