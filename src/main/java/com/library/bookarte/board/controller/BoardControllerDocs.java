@@ -2,6 +2,7 @@ package com.library.bookarte.board.controller;
 
 import com.library.bookarte.board.dto.request.BoardSaveRequest;
 import com.library.bookarte.board.dto.request.BoardUpdateRequest;
+import com.library.bookarte.board.dto.request.FileUploadTest;
 import com.library.bookarte.board.dto.response.BoardResponse;
 import com.library.bookarte.board.dto.response.BoardSaveResponse;
 import com.library.bookarte.board.dto.response.BoardUpdateResponse;
@@ -11,9 +12,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Board")
 public interface BoardControllerDocs {
@@ -88,5 +91,17 @@ public interface BoardControllerDocs {
             @PathVariable("type") String type,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
+    );
+
+    /* 파일 업로드 테스트 */
+    @Operation(summary = "파일 업로드", description = "**성공 응답 데이터:** 파일 업로드 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "파일 업로드 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @PostMapping(value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<GlobalResponseDto<String>> fileUpload(
+            @ModelAttribute FileUploadTest fileUploadTest
     );
 }

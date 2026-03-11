@@ -2,23 +2,28 @@ package com.library.bookarte.board.controller;
 
 import com.library.bookarte.board.dto.request.BoardSaveRequest;
 import com.library.bookarte.board.dto.request.BoardUpdateRequest;
+import com.library.bookarte.board.dto.request.FileUploadTest;
 import com.library.bookarte.board.dto.response.BoardResponse;
 import com.library.bookarte.board.dto.response.BoardSaveResponse;
 import com.library.bookarte.board.dto.response.BoardUpdateResponse;
 import com.library.bookarte.board.service.BoardService;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import com.library.bookarte.global.response.PageResponse;
+import com.library.bookarte.global.util.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/board/{type}")
 @RequiredArgsConstructor
 public class BoardController implements BoardControllerDocs {
     private final BoardService boardService;
+
+    private final S3Service s3Service;
 
     @Override
     public ResponseEntity<GlobalResponseDto<BoardSaveResponse>> save(
@@ -70,4 +75,19 @@ public class BoardController implements BoardControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    @Override
+    public ResponseEntity<GlobalResponseDto<String>> fileUpload(
+            @ModelAttribute FileUploadTest fileUploadTest
+    ) {
+        MultipartFile file = fileUploadTest.getFile();
+
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(GlobalResponseDto.fail(HttpStatus.BAD_REQUEST, "파일이 없습니다."));
+        }
+
+        String result = s3Service.uploadFile(file);
+
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
 }
