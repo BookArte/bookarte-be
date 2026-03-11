@@ -24,7 +24,7 @@ public class WishController implements WishControllerDocs {
     public ResponseEntity<GlobalResponseDto<String>> addWishBook(@PathVariable Long bookId,
                                                                  @AuthenticationPrincipal Long memberId) {
         wishService.addWishBook(bookId,memberId);
-        String result = "관심 도서 추가";
+        String result = "관심 도서 추가 완료";
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(GlobalResponseDto.success(HttpStatus.CREATED, result));
     }
@@ -34,5 +34,13 @@ public class WishController implements WishControllerDocs {
         Page<WishResDto> results = wishService.getWishList(memberId,pageable);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, results));
-}
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<String>> deleteWish(@AuthenticationPrincipal Long memberId,@PathVariable Long wishId) {
+        wishService.deleteWish(memberId,wishId);
+        String result =  "관심 도서 삭제 완료";
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
 }

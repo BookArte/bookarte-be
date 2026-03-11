@@ -15,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(rollbackFor = CustomException.class)
@@ -41,6 +43,17 @@ public class WishService {
     public Page<WishResDto> getWishList(Long memberId, Pageable pageable){
         Page<Wish> wishes = wishRepository.findByMember_MemberId(memberId, pageable);
         return wishes.map(Wish::toWishResDto);
+    }
+
+    public void deleteWish(Long memeberId ,Long wishId){
+        Wish wish = wishRepository.findById(wishId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.WISH_NOT_FOUND));
+
+        if(!Objects.equals(wish.getMember().getMemberId(), memeberId)){
+            throw new CustomException(CustomErrorCode.MEMBER_NOT_MATCH);
+        }
+
+        wishRepository.delete(wish);
     }
 
 }
