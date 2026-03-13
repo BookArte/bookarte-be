@@ -59,7 +59,7 @@ public class PenaltyService {
     }
 
     //관리자 권한 도서 연체 패널티 해제
-    public Long releasePenalty(Long penaltyId, ReleaseReqDto releaseReqDto){
+    public Long releasePenalty(Long penaltyId, Long memberId,ReleaseReqDto releaseReqDto){
         Penalty penalty = penaltyRepository.findById(penaltyId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PENALTY_NOT_FOUND));
 
@@ -67,7 +67,6 @@ public class PenaltyService {
             throw new CustomException(CustomErrorCode.ALREADY_RELEASE);
         }
 
-        Long memberId = Long.parseLong(Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName());
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public interface PenaltyControllerDocs {
     })
     @PatchMapping("/admin/{penaltyId}/release")
     ResponseEntity<GlobalResponseDto<Long>> release(@PathVariable Long penaltyId,
+                                                    @AuthenticationPrincipal Long memeberId,
                                                     @RequestBody ReleaseReqDto releaseReqDto);
 
     /*Update: 패널티 해제 철회*/
