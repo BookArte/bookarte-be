@@ -49,8 +49,8 @@ public interface WishControllerDocs {
             @ApiResponse(responseCode = "403", description = "사용자 불일치"),
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
-    @DeleteMapping("/{wishId}")
-    ResponseEntity<GlobalResponseDto<String>> deleteWish(@AuthenticationPrincipal Long memberId,@PathVariable Long wishId);
+    @DeleteMapping("/{bookId}")
+    ResponseEntity<GlobalResponseDto<String>> deleteWish(@AuthenticationPrincipal Long memberId,@PathVariable Long bookId);
 
 
 }

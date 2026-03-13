@@ -37,8 +37,8 @@ public class WishController implements WishControllerDocs {
     }
 
     @Override
-    public ResponseEntity<GlobalResponseDto<String>> deleteWish(@AuthenticationPrincipal Long memberId,@PathVariable Long wishId) {
-        wishService.deleteWish(memberId,wishId);
+    public ResponseEntity<GlobalResponseDto<String>> deleteWish(@AuthenticationPrincipal Long memberId,@PathVariable Long bookId) {
+        wishService.deleteWish(memberId,bookId);
         String result =  "관심 도서 삭제 완료";
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));

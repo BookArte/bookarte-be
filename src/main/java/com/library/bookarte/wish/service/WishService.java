@@ -45,15 +45,8 @@ public class WishService {
         return wishes.map(Wish::toWishResDto);
     }
 
-    public void deleteWish(Long memeberId ,Long wishId){
-        Wish wish = wishRepository.findById(wishId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.WISH_NOT_FOUND));
-
-        if(!Objects.equals(wish.getMember().getMemberId(), memeberId)){
-            throw new CustomException(CustomErrorCode.MEMBER_NOT_MATCH);
-        }
-
-        wishRepository.delete(wish);
+    public void deleteWish(Long memeberId ,Long bookId){
+        wishRepository.deleteByMember_MemberIdAndBook_BookId(memeberId, bookId);
     }
 
 }

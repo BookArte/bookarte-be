@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface WishRepository extends JpaRepository<Wish, Long> {
     Page<Wish> findByMember_MemberId(Long memberId, Pageable pageable);
+    void deleteByMember_MemberIdAndBook_BookId(Long memberId, Long bookId);
 }
