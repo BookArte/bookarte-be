@@ -2,6 +2,7 @@ package com.library.bookarte.book.entity;
 
 import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.entity.type.ParticipantType;
+import com.library.bookarte.book.utils.BookParticipantUtils;
 import com.library.bookarte.borrow.dto.response.PopularBookResDto;
 import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.global.base.BaseEntity;
@@ -134,15 +135,9 @@ public class Book extends BaseEntity {
     }
 
     public BookResDto toBookResDto(){
-        String authors = this.participants.stream()
-                .filter(p -> p.getType() == ParticipantType.AUTHOR)
-                .map(Participant::getName)
-                .collect(Collectors.joining(", "));
+        String authors = BookParticipantUtils.extractAuthors(this.getParticipants());
 
-        String translators = this.participants.stream()
-                .filter(p -> p.getType() == ParticipantType.TRANSLATOR)
-                .map(Participant::getName)
-                .collect(Collectors.joining(", "));
+        String translators = BookParticipantUtils.extractTranslators(this.getParticipants());
 
         return  BookResDto.builder()
                 .bookId(this.bookId)
@@ -161,15 +156,9 @@ public class Book extends BaseEntity {
     }
 
     public PopularBookResDto toPopularBookResDto(Long borrowCount){
-        String authors = this.participants.stream()
-                .filter(p -> p.getType() == ParticipantType.AUTHOR)
-                .map(Book.Participant::getName)
-                .collect(Collectors.joining(", "));
+        String authors = BookParticipantUtils.extractAuthors(this.getParticipants());
 
-        String translators = this.participants.stream()
-                .filter(p -> p.getType() == ParticipantType.TRANSLATOR)
-                .map(Participant::getName)
-                .collect(Collectors.joining(", "));
+        String translators = BookParticipantUtils.extractTranslators(this.getParticipants());
 
 
         return PopularBookResDto.builder()
