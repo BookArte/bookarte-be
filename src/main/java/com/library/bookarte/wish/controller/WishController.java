@@ -4,7 +4,6 @@ import com.library.bookarte.global.response.GlobalResponseDto;
 import com.library.bookarte.wish.dto.response.WishResDto;
 import com.library.bookarte.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
