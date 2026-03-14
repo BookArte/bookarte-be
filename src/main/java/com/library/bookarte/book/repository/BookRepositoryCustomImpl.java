@@ -4,9 +4,11 @@ import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
-import com.querydsl.core.types.Order;
-import com.querydsl.core.types.OrderSpecifier;
+import com.library.bookarte.book.utils.BookParticipantUtils;
+import com.library.bookarte.wish.entity.QWish;
+import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,16 +21,14 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.library.bookarte.book.entity.QBook.book;
 import static com.library.bookarte.book.entity.QBook_Participant.participant;
 import static com.library.bookarte.category.entity.QCategory.category;
 import static com.library.bookarte.borrow.entity.QBorrow.borrow;
+import static com.library.bookarte.wish.entity.QWish.wish;
 
 @RequiredArgsConstructor
 @Repository
@@ -184,6 +184,43 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .fetch();
     }
 
+    @Override
+    public Optional<BookResDto> findBookDetailWithWish(Long bookId, Long memberId){
+        Book result = jpaQueryFactory
+                .selectFrom(book)
+                .leftJoin(book.participants).fetchJoin()
+                .leftJoin(book.category).fetchJoin()
+                .where(book.bookId.eq(bookId))
+                .fetchOne();
+
+        if (result == null) {
+            return Optional.empty();
+        }
+
+        boolean isWish = checkWishStatus(bookId, memberId);
+
+        String authors = BookParticipantUtils.extractAuthors(result.getParticipants());
+        String translators = BookParticipantUtils.extractTranslators(result.getParticipants());
+
+        return Optional.of(
+                BookResDto.builder()
+                        .bookId(result.getBookId())
+                        .bookTitle(result.getBookTitle())
+                        .bookAuthor(authors)
+                        .bookTranslator(translators)
+                        .publisherName(result.getPublisherName())
+                        .publicationDate(result.getPublicationDate())
+                        .bookIsbn(result.getBookIsbn())
+                        .bookContents(result.getBookContents())
+                        .bookThumbnail(result.getBookThumbnail())
+                        .bookCallNumber(result.getBookCallNumber())
+                        .bookCategory(result.getCategory().getCategoryName())
+                        .canBorrow(result.isCanBorrow())
+                        .isWish(isWish)
+                .build()
+        );
+    }
+
     // ===== 조건 메서드 =====
 
     //카테고리 조건 메서드
@@ -278,4 +315,16 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return book.createdAt.between(start.atStartOfDay(), end.atTime(LocalTime.MAX));
     }
 
+    private boolean checkWishStatus(Long bookId, Long memberId) {
+        if (memberId == null) return false;
+
+        Integer fetchWish = jpaQueryFactory
+                .selectOne()
+                .from(wish)
+                .where(wish.book.bookId.eq(bookId)
+                        .and(wish.member.memberId.eq(memberId)))
+                .fetchFirst();
+
+        return fetchWish != null;
+    }
 }
