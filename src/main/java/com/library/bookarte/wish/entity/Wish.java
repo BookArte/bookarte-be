@@ -44,7 +44,8 @@ public class Wish extends BaseEntity {
                 .bookAuthor(authors)
                 .bookTranslator(translators)
                 .bookThumbnail(this.book.getBookThumbnail())
+                .publisherName(this.book.getPublisherName())
+                .category(this.book.getCategory().getCategoryName())
                 .build();
     }
-
 }

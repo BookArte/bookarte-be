@@ -22,4 +22,8 @@ public class WishResDto {
     private String bookTranslator;
 
     private String bookThumbnail;
+
+    private String publisherName;
+
+    private String category;
 }
