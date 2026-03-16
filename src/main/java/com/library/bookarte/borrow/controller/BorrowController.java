@@ -26,8 +26,9 @@ public class BorrowController implements BorrowControllerDocs {
     private final BorrowService borrowService;
 
     @Override
-    public ResponseEntity<GlobalResponseDto<String>> borrowBook(@PathVariable Long bookId){
-        borrowService.borrowBook(bookId);
+    public ResponseEntity<GlobalResponseDto<String>> borrowBook(@PathVariable Long bookId,
+                                                                @AuthenticationPrincipal Long memberId){
+        borrowService.borrowBook(bookId,memberId);
         String result = "대출 완료";
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(GlobalResponseDto.success(HttpStatus.CREATED,result));

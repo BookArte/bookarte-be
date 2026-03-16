@@ -1,5 +1,7 @@
 package com.library.bookarte.member.service;
 
+import com.library.bookarte.borrow.entity.type.Status;
+import com.library.bookarte.borrow.repository.BorrowRepository;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.global.util.StringUtils;
@@ -7,6 +9,7 @@ import com.library.bookarte.member.dto.request.*;
 import com.library.bookarte.member.dto.response.*;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.repository.MemberRepository;
+import com.library.bookarte.wish.repository.WishRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,8 @@ import java.util.List;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BorrowRepository borrowRepository;
+    private final WishRepository wishRepository;
 
     public MemberJoinResponse join(MemberJoinRequest memberJoinRequest) {
         LocalDateTime now = LocalDateTime.now();
@@ -77,6 +82,13 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
+        //대출 + 연체 도서 카운팅
+        Long borrowedCount = borrowRepository.countBorrowByMember_MemberIdAndStatus(memberId, Status.BORROWED);
+        Long overdueCount = borrowRepository.countBorrowByMember_MemberIdAndStatus(memberId, Status.OVERDUE);
+
+        //관심 도서 카운팅
+        Long wishCount = wishRepository.countWishByMember_MemberId(memberId);
+
         return MemberResponse.builder()
                 .id(member.getMemberId())
                 .userId(member.getMemberUserId())
@@ -84,6 +96,8 @@ public class MemberService {
                 .email(member.getMemberEmail())
                 .tel(member.getMemberTel())
                 .point(member.getMemberPoint())
+                .borrowingCount(borrowedCount + overdueCount)
+                .wishCount(wishCount)
                 .build();
     }
 

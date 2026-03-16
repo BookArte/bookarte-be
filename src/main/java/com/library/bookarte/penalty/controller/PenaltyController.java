@@ -7,6 +7,7 @@ import com.library.bookarte.penalty.service.PenaltyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,8 +21,9 @@ public class PenaltyController implements PenaltyControllerDocs {
 
     @Override
     public ResponseEntity<GlobalResponseDto<Long>> release(@PathVariable Long penaltyId,
+                                                      @AuthenticationPrincipal Long memeberId,
                                                       @RequestBody ReleaseReqDto releaseReqDto){
-        Long result = penaltyService.releasePenalty(penaltyId,releaseReqDto);
+        Long result = penaltyService.releasePenalty(penaltyId, memeberId,releaseReqDto);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }

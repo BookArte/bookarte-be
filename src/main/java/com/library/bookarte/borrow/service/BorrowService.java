@@ -45,8 +45,7 @@ public class BorrowService {
     private final PenaltyService penaltyService;
 
     //도서 대출 등록
-    public void borrowBook(Long bookId){
-        Long memberId = Long.parseLong(Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName());
+    public void borrowBook(Long bookId, Long memberId){
 
         //패널티 여부 존재 시 대출 불가
         if (penaltyRepository.existsByMember_MemberIdAndEndDateAfterAndIsReleasedFalse(memberId, LocalDate.now())) {

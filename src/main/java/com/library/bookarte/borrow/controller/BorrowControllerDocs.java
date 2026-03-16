@@ -32,7 +32,7 @@ public interface BorrowControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @PostMapping("/{bookId}")
-    ResponseEntity<GlobalResponseDto<String>> borrowBook(@PathVariable Long bookId);
+    ResponseEntity<GlobalResponseDto<String>> borrowBook(@PathVariable Long bookId,@AuthenticationPrincipal Long memberId);
 
     /*Read: 사용자용 전체 대출 정보 목록 조회*/
     @Operation(summary = "사용자 전체 정보 목록 조회", description = "**성공 응답 데이터:** 사용자 대출 정보 목록")
