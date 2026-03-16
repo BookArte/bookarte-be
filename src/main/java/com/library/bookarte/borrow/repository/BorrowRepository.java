@@ -9,4 +9,6 @@ import java.util.List;
 
 public interface BorrowRepository extends JpaRepository<Borrow, Long>, BorrowRepositoryCustom {
     List<Borrow> findAllByStatusInAndReturnDueDateBefore(List<Status> statusList, LocalDate today);
+
+    long countBorrowByMember_MemberIdAndStatus(Long memberId, Status status);
 }
