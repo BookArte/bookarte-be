@@ -47,6 +47,11 @@ public class BorrowService {
     //도서 대출 등록
     public void borrowBook(Long bookId, Long memberId){
 
+        //연체 중인 도서 존재 시 대출 불가
+        if (borrowRepository.existsByMember_MemberIdAndStatus(memberId, Status.OVERDUE)) {
+            throw new CustomException(CustomErrorCode.USER_BORROW_RESTRICTED);
+        }
+
         //패널티 여부 존재 시 대출 불가
         if (penaltyRepository.existsByMember_MemberIdAndEndDateAfterAndIsReleasedFalse(memberId, LocalDate.now())) {
             throw new CustomException(CustomErrorCode.USER_BORROW_RESTRICTED);
