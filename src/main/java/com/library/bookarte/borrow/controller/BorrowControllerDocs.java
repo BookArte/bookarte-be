@@ -64,7 +64,7 @@ public interface BorrowControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @PatchMapping("/extend/{borrowId}")
-    ResponseEntity<GlobalResponseDto<String>> extendReturn(@PathVariable Long borrowId);
+    ResponseEntity<GlobalResponseDto<String>> extendReturn(@PathVariable Long borrowId, @AuthenticationPrincipal Long memberId);
 
     /*Read: 조회 시점 1년 단위 대출 횟수 조회*/
     @Operation(summary = "도서별 1년 간 대출 횟수", description = "**성공 응답 데이터:** 도서별 1년 간 대출 횟수 데이터")

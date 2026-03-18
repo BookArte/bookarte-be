@@ -68,8 +68,8 @@ public class BorrowController implements BorrowControllerDocs {
     }
 
     @Override
-    public ResponseEntity<GlobalResponseDto<String>> extendReturn(@PathVariable Long borrowId) {
-        borrowService.extendReturnDate(borrowId);
+    public ResponseEntity<GlobalResponseDto<String>> extendReturn(@PathVariable Long borrowId, @AuthenticationPrincipal Long memberId) {
+        borrowService.extendReturnDate(borrowId,memberId);
         String result = "도서 대출 기간 연장 완료";
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));

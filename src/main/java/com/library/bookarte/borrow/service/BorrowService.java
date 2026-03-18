@@ -47,15 +47,7 @@ public class BorrowService {
     //도서 대출 등록
     public void borrowBook(Long bookId, Long memberId){
 
-        //연체 중인 도서 존재 시 대출 불가
-        if (borrowRepository.existsByMember_MemberIdAndStatus(memberId, Status.OVERDUE)) {
-            throw new CustomException(CustomErrorCode.USER_BORROW_RESTRICTED);
-        }
-
-        //패널티 여부 존재 시 대출 불가
-        if (penaltyRepository.existsByMember_MemberIdAndEndDateAfterAndIsReleasedFalse(memberId, LocalDate.now())) {
-            throw new CustomException(CustomErrorCode.USER_BORROW_RESTRICTED);
-        }
+        checkBorrowRestricted(memberId);
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
@@ -130,6 +122,7 @@ public class BorrowService {
 
         Status status = Status.RETURN_REQUESTED;
         borrow.updateStatus(status);
+        borrow.updateCanExtend(false);
     }
 
     //도서 반납 승인
@@ -158,9 +151,14 @@ public class BorrowService {
     }
 
     //도서 대출 연장
-    public void extendReturnDate(Long borrowId){
+    public void extendReturnDate(Long borrowId,Long memberId){
+
+        checkBorrowRestricted(memberId);
+
         Borrow borrow = borrowRepository.findById(borrowId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BORROW_NOT_FOUND));
+
+
         if(!borrow.isCanExtend()) throw new CustomException(CustomErrorCode.CAN_NOT_EXTEND);
 
         Status borrowStatus = borrow.getStatus();
@@ -180,6 +178,7 @@ public class BorrowService {
         overdueBorrows.forEach(borrow -> {
             borrow.updateOverdueStatus();
             borrow.updateOverdueDays(borrow.calculateOverdueDays());
+            borrow.updateCanExtend(false);
         });
     }
 
@@ -211,6 +210,19 @@ public class BorrowService {
     @Transactional(readOnly = true)
     public Page<PopularBookResDto> getPopularBooks(String period, Pageable pageable){
         return borrowRepository.findPopularBooks(period, pageable);
+    }
+
+
+    private void checkBorrowRestricted(Long memberId){
+        //연체 중인 도서 존재 시 대출 불가
+        if (borrowRepository.existsByMember_MemberIdAndStatus(memberId, Status.OVERDUE)) {
+            throw new CustomException(CustomErrorCode.USER_BORROW_RESTRICTED);
+        }
+
+        //패널티 여부 존재 시 대출 불가
+        if (penaltyRepository.existsByMember_MemberIdAndEndDateAfterAndIsReleasedFalse(memberId, LocalDate.now())) {
+            throw new CustomException(CustomErrorCode.USER_BORROW_RESTRICTED);
+        }
     }
 
 }
