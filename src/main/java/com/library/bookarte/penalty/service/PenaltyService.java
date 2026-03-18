@@ -123,4 +123,13 @@ public class PenaltyService {
                 .map(Penalty::toResDto)
                 .toList();
     }
+
+    //로그인한 유저 본인 패널티 확인
+    public List<PenaltyResDto> getMyPenaltyList(Long memberId){
+        List<Penalty> penalties = penaltyRepository.findByMember_MemberIdAndIsReleasedFalse(memberId);
+
+        return penalties.stream()
+                .map(Penalty::toResDto)
+                .toList();
+    }
 }

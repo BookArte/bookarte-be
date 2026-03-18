@@ -61,4 +61,13 @@ public interface PenaltyControllerDocs {
     @GetMapping("/admin/list")
     ResponseEntity<GlobalResponseDto<List<PenaltyResDto>>> getMemberPenaltys(@RequestParam String memberUserId);
 
+    @Operation(summary = "본인의 패널티 목록 확인", description = "**성공 응답 데이터:** 패널티 목록 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "패널티 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping
+    ResponseEntity<GlobalResponseDto<List<PenaltyResDto>>> getMyPenaltys(@AuthenticationPrincipal Long memberId);
+
 }
