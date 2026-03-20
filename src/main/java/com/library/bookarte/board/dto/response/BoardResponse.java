@@ -17,7 +17,7 @@ public class BoardResponse {
     private Long orderNum;
     private String regMemberUserId;
     private String modMemberUserId;
-    private LocalDateTime createDate;
+    private LocalDateTime createdAt;
 
     public static BoardResponse from(Board board) {
         return BoardResponse.builder()
@@ -29,7 +29,7 @@ public class BoardResponse {
                 .orderNum(board.getOrderNum())
                 .regMemberUserId(board.getRegMember().getMemberUserId())
                 .modMemberUserId(board.getModMember() != null ? board.getModMember().getMemberUserId() : null)
-                .createDate(board.getCreatedAt())
+                .createdAt(board.getCreatedAt())
                 .build();
     }
 }

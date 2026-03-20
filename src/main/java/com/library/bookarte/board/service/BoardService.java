@@ -1,5 +1,6 @@
 package com.library.bookarte.board.service;
 
+import com.library.bookarte.board.dto.request.BoardDelsRequest;
 import com.library.bookarte.board.dto.request.BoardSaveRequest;
 import com.library.bookarte.board.dto.request.BoardUpdateRequest;
 import com.library.bookarte.board.dto.response.BoardResponse;
@@ -23,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -62,14 +65,22 @@ public class BoardService {
                 .build();
     }
 
-    public void deleteBoard(String type, Long memberId, Long boardId) {
+    public void deleteBoard(String type, Long memberId, BoardDelsRequest boardDelsRequest) {
         Member member = validateAndGetMember(memberId);
         BoardType boardType = getBoardType(type);
-        Board board = getBoardData(boardId);
+        List<Long> boardIds = boardDelsRequest.getBoardIds();
 
-        validateBoardType(board, boardType);
+        List<Board> targets = boardRepository.findAllById(boardIds);
 
-        boardRepository.delete(board);
+        if (targets.size() != boardIds.size()) {
+            throw new CustomException(CustomErrorCode.BOARD_NOT_FOUND);
+        }
+
+        for (Board board : targets) {
+            validateBoardType(board, boardType);
+        }
+
+        boardRepository.deleteAllInBatch(targets);
     }
 
     @Transactional(readOnly = true)
@@ -85,7 +96,7 @@ public class BoardService {
                 .orderNum(board.getOrderNum())
                 .regMemberUserId(board.getRegMember().getMemberUserId())
                 .modMemberUserId((board.getModMember() != null) ? board.getModMember().getMemberUserId() : null)
-                .createDate(board.getCreatedAt())
+                .createdAt(board.getCreatedAt())
                 .build();
     }
 

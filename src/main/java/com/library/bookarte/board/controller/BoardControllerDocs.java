@@ -1,5 +1,6 @@
 package com.library.bookarte.board.controller;
 
+import com.library.bookarte.board.dto.request.BoardDelsRequest;
 import com.library.bookarte.board.dto.request.BoardSaveRequest;
 import com.library.bookarte.board.dto.request.BoardUpdateRequest;
 import com.library.bookarte.board.dto.request.FileUploadTest;
@@ -72,11 +73,11 @@ public interface BoardControllerDocs {
             @ApiResponse(responseCode = "404", description = "게시글이 존재하지 않음"),
             @ApiResponse(responseCode = "500", description = "서버 에러")
     })
-    @DeleteMapping("/{boardId}")
+    @DeleteMapping
     ResponseEntity<GlobalResponseDto<Void>> deleteBoard(
             @PathVariable("type") String type,
             @AuthenticationPrincipal Long memberId,
-            @PathVariable("boardId") Long boardId
+            @RequestBody BoardDelsRequest boardDelsRequest
     );
 
     /* Read: 게시글 리스트 조회 */

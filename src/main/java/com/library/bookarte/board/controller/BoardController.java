@@ -1,5 +1,6 @@
 package com.library.bookarte.board.controller;
 
+import com.library.bookarte.board.dto.request.BoardDelsRequest;
 import com.library.bookarte.board.dto.request.BoardSaveRequest;
 import com.library.bookarte.board.dto.request.BoardUpdateRequest;
 import com.library.bookarte.board.dto.request.FileUploadTest;
@@ -58,10 +59,10 @@ public class BoardController implements BoardControllerDocs {
     public ResponseEntity<GlobalResponseDto<Void>> deleteBoard(
             @PathVariable("type") String type,
             @AuthenticationPrincipal Long memberId,
-            @PathVariable("boardId") Long boardId
+            @RequestBody BoardDelsRequest boardDelsRequest
 
     ) {
-        boardService.deleteBoard(type, memberId, boardId);
+        boardService.deleteBoard(type, memberId, boardDelsRequest);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, null));
     }
 
@@ -69,7 +70,7 @@ public class BoardController implements BoardControllerDocs {
     public ResponseEntity<GlobalResponseDto<PageResponse<BoardResponse>>> getBoardList(
             @PathVariable("type") String type,
             @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size
+            @RequestParam(name = "size", defaultValue = "1") int size
     ) {
         PageResponse<BoardResponse> result = boardService.getBoardList(type, page, size);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));

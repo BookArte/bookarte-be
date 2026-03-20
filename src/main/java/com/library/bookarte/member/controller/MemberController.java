@@ -80,7 +80,7 @@ public class MemberController implements MemberControllerDocs {
     }
 
     @Override
-    public ResponseEntity<GlobalResponseDto<List<MemberResponse>>> getMemberList(@RequestParam(required = false) String userId){
+    public ResponseEntity<GlobalResponseDto<List<MemberResponse>>> getMemberList(@RequestParam(name = "userId", required = false) String userId){
         List<MemberResponse> result = memberService.findListByMemberUserID(userId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
