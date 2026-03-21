@@ -42,9 +42,17 @@ public class PenaltyController implements PenaltyControllerDocs {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
+
     @Override
     public ResponseEntity<GlobalResponseDto<List<PenaltyResDto>>> getMemberPenaltys(@RequestParam String memberUserId){
         List<PenaltyResDto> result = penaltyService.getPenaltyList(memberUserId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK,result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<List<PenaltyResDto>>> getMyPenaltys(@AuthenticationPrincipal Long memberId){
+        List<PenaltyResDto> result = penaltyService.getMyPenaltyList(memberId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK,result));
     }
