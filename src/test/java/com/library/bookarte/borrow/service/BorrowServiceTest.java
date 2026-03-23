@@ -26,8 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -125,6 +124,36 @@ public class BorrowServiceTest {
         System.out.println("전체 소요 시간: " + (totalEndTime - totalStartTime) + "ms");
         System.out.println("평균 응답 시간: " + averageLatency + "ms");
         System.out.println("최대 응답 시간(락 대기 포함): " + maxLatency + "ms");
+    }
+
+    @Test
+    @DisplayName("트랜잭션 원자성 검증을 위한 의도적 예외 발생 테스트")
+    void atomicityTest(){
+
+        //Given
+        Long bookId = savedBookId;
+        Long memberId = memberIds.get(0);
+
+        long initialBorrowCount = borrowRepository.count();
+        Book bookBefore = bookRepository.findById(bookId).orElseThrow();
+        assertTrue(bookBefore.isCanBorrow(), "처음에는 대출 가능 상태여야 함");
+
+
+        //When
+        assertThrows(RuntimeException.class, () -> {
+            borrowService.borrowBookWithFailure(bookId, memberId);
+        });
+
+
+        //Then: 결과 검증
+        long finalBorrowCount = borrowRepository.count();
+        Book bookAfter = bookRepository.findById(bookId).orElseThrow();
+
+        // 대출 이력이 생성되지 않았어야 함
+        assertEquals(initialBorrowCount, finalBorrowCount, "에러 발생 시 대출 이력이 저장되면 안 됨");
+
+        // 도서 상태가 여전히 '대출 가능(true)'이어야 함
+        assertTrue(bookAfter.isCanBorrow(), "에러 발생 시 도서 상태가 false로 변하면 안 됨");
     }
 
 }

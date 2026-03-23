@@ -247,4 +247,10 @@ public class BorrowService {
         }
     }
 
+    //테스트용 코드
+    @Transactional
+    public void borrowBookWithFailure(Long bookId, Long memberId){
+        borrowBook(bookId,memberId);
+        throw new RuntimeException("의도적인 트랜잭션 실패 발생");
+    }
 }
