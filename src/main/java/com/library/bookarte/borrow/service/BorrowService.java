@@ -16,6 +16,8 @@ import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.repository.MemberRepository;
 import com.library.bookarte.penalty.repository.PenaltyRepository;
 import com.library.bookarte.penalty.service.PenaltyService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -44,6 +46,9 @@ public class BorrowService {
     private final PenaltyRepository penaltyRepository;
     private final PenaltyService penaltyService;
 
+    @PersistenceContext
+    private EntityManager em;
+
     //도서 대출 등록
     public void borrowBook(Long bookId, Long memberId){
 
@@ -57,9 +62,21 @@ public class BorrowService {
          * 2. 해당 도서에 대해서 다른 트랜잭션은 이 도서 정보를 수정할 수 없음
          * 3. 트랜잭션이 종료되면 자물쇠가 해제
          */
-
-        Book book = bookRepository.findByIdWithLock(bookId)
+          Book book = bookRepository.findByIdWithPessimisticLock(bookId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+
+        /**
+         * 1. 낙관적 릭을 적용하여 도서 조회
+         * 2. 별도의 DB 락 없이 엔티티의 버전(@Version)을 이용하여 조회
+         * 3. 수정 시점에 조회했던 버전과 DB의 현재 버전이 일치하는지 확인
+         * 4. 버전이 불일치할 경우(동시 수정 발생) 예외를 발생시켜 정합성 유지
+         */
+
+/*          Book book = bookRepository.findByIdWithOptimisticLock(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));*/
+
+/*        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));*/
 
         //도서 대출 가능 상태 확인
         if(!book.isCanBorrow()){
@@ -72,14 +89,19 @@ public class BorrowService {
                 .canExtend(true)
                 .isOverdue(false)
                 .member(member)
-                .book(book)
+                .book(em.getReference(Book.class, bookId))
                 .status(Status.BORROWED)
                 .build();
 
+        book.updateCanBorrow(false);
+
         borrowRepository.save(borrow);
 
-        book.updateCanBorrow(false);
+
     }
+
+
+
     //전체 대출 이력 조회
     @Transactional(readOnly = true)
     public Page<TotalBorrowResDto> getTotalBorrows(BorrowSearchFilterDto borrowSearchFilterDto,

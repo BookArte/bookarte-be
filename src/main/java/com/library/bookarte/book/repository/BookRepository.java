@@ -13,9 +13,14 @@ import java.util.Optional;
 public interface BookRepository extends JpaRepository<Book, Long>, BookRepositoryCustom {
     boolean existsByBookIsbn(String isbn);
 
+    //비관적 락
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select b from Book b where b.bookId = :id")
-    Optional<Book> findByIdWithLock(@Param("id") Long id);
+    Optional<Book> findByIdWithPessimisticLock(@Param("id") Long id);
+
+    //낙관적 락
+/*    @Query("select b from Book b where b.bookId = :id")
+    Optional<Book> findByIdWithOptimisticLock(@Param("id") Long id);*/
 
     @Query("SELECT MAX(b.createdAt) FROM Book b")
     Optional<LocalDateTime> findLatestCreatedAt();
