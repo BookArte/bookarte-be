@@ -198,4 +198,31 @@ public class BorrowServiceTest {
         assertEquals(0, updatedNormal.getOverdueDays(), "연체 일수는 0일이어야 함");
     }
 
+    @Test
+    @DisplayName("멱등성 테스트: 동일한 연체 처리를 여러 번 실행해도 결과가 같아야 한다")
+    void idempotencyTest(){
+        // Given: 예정일이 2일 전인 데이터 (이미 연체 상태여야 함)
+        LocalDate twoDaysAgo = LocalDate.now().minusDays(2);
+
+        Book book1 = FixtureFactory.createBook("테스트1",savedCategory);
+        bookRepository.save(book1);
+
+        Member member = FixtureFactory.createMember("test");
+        memberRepository.save(member);
+
+        Borrow target = borrowRepository.save(FixtureFactory.createBorrow(member, book1, twoDaysAgo, Status.BORROWED));
+
+        // When: 연체 처리 로직을 2번 연속 호출
+        borrowService.processOverdue();
+        int firstOverdueDays = borrowRepository.findById(target.getBorrowId()).get().getOverdueDays();
+
+        borrowService.processOverdue();
+        int secondOverdueDays = borrowRepository.findById(target.getBorrowId()).get().getOverdueDays();
+
+        // Then: 연체 일수가 중복 합산되지 않고 동일해야 함
+        assertEquals(2, firstOverdueDays);
+        assertEquals(secondOverdueDays, firstOverdueDays, "여러 번 실행해도 연체 일수는 동일하게 유지되어야 함");
+    }
+
+
 }
