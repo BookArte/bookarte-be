@@ -2,6 +2,8 @@ package com.library.bookarte.borrow.service;
 
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.repository.BookRepository;
+import com.library.bookarte.borrow.entity.Borrow;
+import com.library.bookarte.borrow.entity.type.Status;
 import com.library.bookarte.borrow.repository.BorrowRepository;
 import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.category.reposiotry.CategoryRepository;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,13 +45,14 @@ public class BorrowServiceTest {
     private Long savedBookId;
     private List<Long> memberIds = new ArrayList<>();
     private final int testCount = 100;
+    private Category savedCategory;
 
     @BeforeEach
     void setUp(){
-        Category category = new Category("002","문학");
-        categoryRepository.save(category);
+        savedCategory = new Category("002","문학");
+        categoryRepository.save(savedCategory);
 
-        Book book = FixtureFactory.createBook("테스트",category);
+        Book book = FixtureFactory.createBook("테스트",savedCategory);
         bookRepository.save(book);
         savedBookId = book.getBookId();
 
@@ -154,6 +158,44 @@ public class BorrowServiceTest {
 
         // 도서 상태가 여전히 '대출 가능(true)'이어야 함
         assertTrue(bookAfter.isCanBorrow(), "에러 발생 시 도서 상태가 false로 변하면 안 됨");
+    }
+
+    @Test
+    @DisplayName("경계값 테스트: 반납 예정일이 어제인 도서만 연체 처리되어야 한다")
+    void boundaryDateTest() {
+        // Given
+        LocalDate today = LocalDate.now();
+        Book book1 = FixtureFactory.createBook("테스트1",savedCategory);
+        Book book2 = FixtureFactory.createBook("테스트2",savedCategory);
+        Member member = FixtureFactory.createMember("test");
+
+        bookRepository.save(book1);
+        bookRepository.save(book2);
+        memberRepository.save(member);
+
+
+        // 1. 연체 대상 (예정일: 어제)
+        Borrow overdueTarget = FixtureFactory.createBorrow(member, book1, today.minusDays(1),Status.BORROWED);
+        System.out.println("반납일: " + overdueTarget.getReturnDate());
+        System.out.println("반납 예정일: " + overdueTarget.getReturnDueDate());
+        // 2. 정상 대상 (예정일: 오늘)
+        Borrow normalTarget = FixtureFactory.createBorrow(member, book2, today,Status.BORROWED);
+
+        borrowRepository.saveAll(List.of(overdueTarget, normalTarget));
+
+        // When
+        borrowService.processOverdue();
+        System.out.println("연체 일수" + overdueTarget.getOverdueDays());
+
+        // Then
+        Borrow updatedOverdue = borrowRepository.findById(overdueTarget.getBorrowId()).orElseThrow();
+        Borrow updatedNormal = borrowRepository.findById(normalTarget.getBorrowId()).orElseThrow();
+
+        assertTrue(updatedOverdue.isOverdue(), "어제가 예정일인 도서는 연체 상태여야 함");
+        assertEquals(1, updatedOverdue.getOverdueDays(), "연체 일수는 1일이어야 함");
+
+        assertFalse(updatedNormal.isOverdue(), "오늘이 예정일인 도서는 아직 연체가 아니어야 함");
+        assertEquals(0, updatedNormal.getOverdueDays(), "연체 일수는 0일이어야 함");
     }
 
 }

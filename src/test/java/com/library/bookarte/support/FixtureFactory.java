@@ -1,6 +1,8 @@
 package com.library.bookarte.support;
 
 import com.library.bookarte.book.entity.Book;
+import com.library.bookarte.borrow.entity.Borrow;
+import com.library.bookarte.borrow.entity.type.Status;
 import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.member.entity.Member;
 
@@ -33,6 +35,21 @@ public class FixtureFactory {
                 .canBorrow(true)
                 .bookThumbnail("https://test.com/img.jpg")
                 .category(category)
+                .build();
+    }
+
+    public static Borrow createBorrow(Member member,
+                                      Book book,
+                                      LocalDate dueDate,
+                                      Status status) {
+        return Borrow.builder()
+                .member(member)
+                .book(book)
+                .returnDueDate(dueDate)
+                .status(status)
+                .isOverdue(false)
+                .overdueDays(0)
+                .canExtend(true)
                 .build();
     }
 }
