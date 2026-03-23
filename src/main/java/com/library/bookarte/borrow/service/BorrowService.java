@@ -195,7 +195,9 @@ public class BorrowService {
         LocalDate today = LocalDate.now();
 
         List<Borrow> overdueBorrows = borrowRepository
-                .findAllByStatusInAndReturnDueDateBefore(List.of(Status.BORROWED, Status.RETURN_REQUESTED), today);
+                .findAllByStatusAndReturnDueDateBefore(Status.BORROWED, today);
+
+        log.info("연체 대상 건수: {}", overdueBorrows.size());
 
         overdueBorrows.forEach(borrow -> {
             borrow.updateOverdueStatus();
