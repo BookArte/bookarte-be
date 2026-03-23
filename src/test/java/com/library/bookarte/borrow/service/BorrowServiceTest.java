@@ -224,5 +224,30 @@ public class BorrowServiceTest {
         assertEquals(secondOverdueDays, firstOverdueDays, "여러 번 실행해도 연체 일수는 동일하게 유지되어야 함");
     }
 
+    @Test
+    @DisplayName("성능 테스트: 5,000건의 연체 데이터를 처리하는 소요 시간을 측정한다")
+    void bulkPerformanceTest() {
+        // Given: 5,000건의 연체 대상 데이터 생성
+        List<Borrow> bulkBorrows = new ArrayList<>();
+        LocalDate yesterday = LocalDate.now().minusDays(1);
 
+        Book book1 = FixtureFactory.createBook("테스트1",savedCategory);
+        bookRepository.save(book1);
+
+        Member member = FixtureFactory.createMember("test");
+        memberRepository.save(member);
+
+        for (int i = 0; i < 5000; i++) {
+            bulkBorrows.add(FixtureFactory.createBorrow(member, book1, yesterday, Status.BORROWED));
+        }
+        borrowRepository.saveAll(bulkBorrows);
+
+        // When
+        long startTime = System.currentTimeMillis();
+        borrowService.processOverdue();
+        long endTime = System.currentTimeMillis();
+
+        // Then
+        System.out.println("5,000건 처리 소요 시간: " + (endTime - startTime) + "ms");
+    }
 }
