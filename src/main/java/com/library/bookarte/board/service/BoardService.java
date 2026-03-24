@@ -11,9 +11,11 @@ import com.library.bookarte.board.entity.News;
 import com.library.bookarte.board.entity.Notice;
 import com.library.bookarte.board.entity.type.BoardType;
 import com.library.bookarte.board.repository.BoardRepository;
+import com.library.bookarte.global.entity.UploadFile;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.global.response.PageResponse;
+import com.library.bookarte.global.util.S3Service;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.entity.type.MemberType;
 import com.library.bookarte.member.repository.MemberRepository;
@@ -24,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -33,17 +36,30 @@ import java.util.List;
 public class BoardService {
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
+    private final S3Service s3Service;
 
     public BoardSaveResponse save(String type, BoardSaveRequest request, Long memberId) {
         Member member = validateAndGetMember(memberId);
         BoardType boardType = getBoardType(type);
 
-        Board board = createBoard(boardType, request, member);
 
+        Board board = createBoard(boardType, request, member);
         Board resultBoard = boardRepository.save(board);
 
+        Long refId = resultBoard.getBoardId();
+
+        if (request.getThumbnailFile() != null && !request.getThumbnailFile().isEmpty()) {
+            s3Service.uploadAndSave(refId, boardType.getValue(), request.getThumbnailFile(), "THUM");
+        }
+
+        if (request.getFiles() != null && !request.getFiles().isEmpty()) {
+            for (MultipartFile file : request.getFiles()) {
+                s3Service.uploadAndSave(refId, boardType.getValue(), file, "FILE");
+            }
+        }
+
         return BoardSaveResponse.builder()
-                .id(resultBoard.getBoardId())
+                .id(refId)
                 .build();
     }
 

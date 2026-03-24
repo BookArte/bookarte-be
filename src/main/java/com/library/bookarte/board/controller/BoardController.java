@@ -29,7 +29,7 @@ public class BoardController implements BoardControllerDocs {
     @Override
     public ResponseEntity<GlobalResponseDto<BoardSaveResponse>> save(
             @PathVariable("type") String type,
-            @RequestBody BoardSaveRequest boardSaveRequest,
+            @ModelAttribute BoardSaveRequest boardSaveRequest,
             @AuthenticationPrincipal Long memberId
     ) {
         BoardSaveResponse result = boardService.save(type, boardSaveRequest, memberId);

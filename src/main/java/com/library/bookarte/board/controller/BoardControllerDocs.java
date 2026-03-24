@@ -32,7 +32,7 @@ public interface BoardControllerDocs {
     @PostMapping
     ResponseEntity<GlobalResponseDto<BoardSaveResponse>> save(
             @PathVariable("type") String type,
-            @RequestBody BoardSaveRequest boardSaveRequest,
+            @ModelAttribute BoardSaveRequest boardSaveRequest,
             @AuthenticationPrincipal Long memberId
     );
 
