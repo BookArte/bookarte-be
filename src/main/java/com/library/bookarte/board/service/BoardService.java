@@ -11,11 +11,11 @@ import com.library.bookarte.board.entity.News;
 import com.library.bookarte.board.entity.Notice;
 import com.library.bookarte.board.entity.type.BoardType;
 import com.library.bookarte.board.repository.BoardRepository;
-import com.library.bookarte.global.entity.UploadFile;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.global.response.PageResponse;
 import com.library.bookarte.global.util.S3Service;
+import com.library.bookarte.global.util.XssUtils;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.entity.type.MemberType;
 import com.library.bookarte.member.repository.MemberRepository;
@@ -37,11 +37,17 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
     private final S3Service s3Service;
+    private final XssUtils xssUtils;
 
     public BoardSaveResponse save(String type, BoardSaveRequest request, Long memberId) {
         Member member = validateAndGetMember(memberId);
         BoardType boardType = getBoardType(type);
 
+        String safeContents = xssUtils.filterEditor(request.getEditor());
+        String safeTitle = xssUtils.escapeText(request.getTitle());
+
+        request.setEditor(safeContents);
+        request.setTitle(safeTitle);
 
         Board board = createBoard(boardType, request, member);
         Board resultBoard = boardRepository.save(board);
@@ -178,7 +184,7 @@ public class BoardService {
             case NOTICE -> Notice.builder()
                     .category(request.getCategory())
                     .title(request.getTitle())
-                    .contents(request.getContents())
+                    .contents(request.getEditor())
                     .noticeYn(request.getNoticeYn())
                     .orderNum(request.getOrderNum())
                     .regMember(member)
@@ -186,7 +192,7 @@ public class BoardService {
             case NEWS -> News.builder()
                     .category(request.getCategory())
                     .title(request.getTitle())
-                    .contents(request.getContents())
+                    .contents(request.getEditor())
                     .noticeYn(request.getNoticeYn())
                     .orderNum(request.getOrderNum())
                     .regMember(member)
