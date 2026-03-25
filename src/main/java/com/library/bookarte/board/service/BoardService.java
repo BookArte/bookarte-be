@@ -1,6 +1,7 @@
 package com.library.bookarte.board.service;
 
 import com.library.bookarte.board.dto.request.BoardDelsRequest;
+import com.library.bookarte.board.dto.request.BoardListRequest;
 import com.library.bookarte.board.dto.request.BoardSaveRequest;
 import com.library.bookarte.board.dto.request.BoardUpdateRequest;
 import com.library.bookarte.board.dto.response.BoardResponse;
@@ -11,6 +12,8 @@ import com.library.bookarte.board.entity.News;
 import com.library.bookarte.board.entity.Notice;
 import com.library.bookarte.board.entity.type.BoardType;
 import com.library.bookarte.board.repository.BoardRepository;
+import com.library.bookarte.global.entity.UploadFile;
+import com.library.bookarte.global.entity.type.FileType;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.global.response.PageResponse;
@@ -28,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -43,26 +47,14 @@ public class BoardService {
         Member member = validateAndGetMember(memberId);
         BoardType boardType = getBoardType(type);
 
-        String safeContents = xssUtils.filterEditor(request.getEditor());
-        String safeTitle = xssUtils.escapeText(request.getTitle());
-
-        request.setEditor(safeContents);
-        request.setTitle(safeTitle);
+        sanitizeRequest(request);
 
         Board board = createBoard(boardType, request, member);
         Board resultBoard = boardRepository.save(board);
 
         Long refId = resultBoard.getBoardId();
 
-        if (request.getThumbnailFile() != null && !request.getThumbnailFile().isEmpty()) {
-            s3Service.uploadAndSave(refId, boardType.getValue(), request.getThumbnailFile(), "THUM");
-        }
-
-        if (request.getFiles() != null && !request.getFiles().isEmpty()) {
-            for (MultipartFile file : request.getFiles()) {
-                s3Service.uploadAndSave(refId, boardType.getValue(), file, "FILE");
-            }
-        }
+        handleFileUpload(refId, boardType.getValue(), request);
 
         return BoardSaveResponse.builder()
                 .id(refId)
@@ -76,11 +68,11 @@ public class BoardService {
 
         validateBoardType(board, boardType);
 
-        if (board instanceof Notice notice) {
-            notice.modify(request, member);
-        } else if (board instanceof News news) {
-            news.modify(request, member);
-        }
+        sanitizeRequest(request);
+
+        updateBoardContent(board, request, member);
+
+        handleFileUpdate(boardId, boardType.getValue(), request);
 
         return BoardUpdateResponse.builder()
                 .id(board.getBoardId())
@@ -100,42 +92,48 @@ public class BoardService {
 
         for (Board board : targets) {
             validateBoardType(board, boardType);
+
+            s3Service.deleteAllFilesByRef(board.getBoardId(), boardType.getValue());
         }
 
         boardRepository.deleteAllInBatch(targets);
     }
 
     @Transactional(readOnly = true)
-    public BoardResponse getBoard(Long boardId) {
+    public BoardResponse getBoard(Long boardId, String type) {
         Board board = getBoardData(boardId);
 
-        return BoardResponse.builder()
-                .id(board.getBoardId())
-                .category(board.getCategory())
-                .title(board.getTitle())
-                .contents(board.getContents())
-                .noticeYn(board.getNoticeYn())
-                .orderNum(board.getOrderNum())
-                .regMemberUserId(board.getRegMember().getMemberUserId())
-                .modMemberUserId((board.getModMember() != null) ? board.getModMember().getMemberUserId() : null)
-                .createdAt(board.getCreatedAt())
-                .build();
+        List<UploadFile> files = s3Service.getAllFileList(boardId, type);
+
+        return BoardResponse.from(board, files);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<BoardResponse> getBoardList(String type, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size,
+    public PageResponse<BoardResponse> getBoardList(String type, BoardListRequest boardListRequest) {
+        Pageable pageable = PageRequest.of(boardListRequest.getPage(), boardListRequest.getSize(),
                 Sort.by(Sort.Order.desc("noticeYn"),
                         Sort.Order.desc("orderNum"),
                         Sort.Order.desc("boardId")));
 
         BoardType boardType = getBoardType(type);
 
-        Page<Board> boardPage = boardRepository.findAllByType(boardType.getEntityClass(), pageable);
+        String searchText = (boardListRequest.getSearchText() != null && !boardListRequest.getSearchText().isEmpty())
+                ? boardListRequest.getSearchText() : null;
 
-        Page<BoardResponse> responsePage = boardPage.map(BoardResponse::from);
+        LocalDateTime startDateTime = (boardListRequest.getSearchStartDate() != null)
+                ? boardListRequest.getSearchStartDate().atStartOfDay() : null;
+        LocalDateTime endDateTime = (boardListRequest.getSearchEndDate() != null)
+                ? boardListRequest.getSearchEndDate().atTime(23, 59, 59) : null;
 
-        return PageResponse.from(responsePage);
+        Page<Board> boardPage = boardRepository.findAllByTypeAndSearch(
+                boardType.getEntityClass(),
+                searchText,
+                startDateTime,
+                endDateTime,
+                pageable
+        );
+
+        return PageResponse.from(boardPage.map(BoardResponse::from));
 
     }
 
@@ -199,6 +197,56 @@ public class BoardService {
                     .build();
         };
 
+    }
+
+    private void updateBoardContent(Board board, BoardUpdateRequest request, Member member) {
+        if (board instanceof Notice notice) {
+            notice.modify(request, member);
+        } else if (board instanceof News news) {
+            news.modify(request, member);
+        }
+    }
+
+    private void sanitizeRequest(BoardSaveRequest request) {
+        request.setEditor(xssUtils.filterEditor(request.getEditor()));
+        request.setTitle(xssUtils.escapeText(request.getTitle()));
+    }
+
+    private void sanitizeRequest(BoardUpdateRequest request) {
+        request.setEditor(xssUtils.filterEditor(request.getEditor()));
+        request.setTitle(xssUtils.escapeText(request.getTitle()));
+    }
+
+    private void handleFileUpload(Long refId, String refType, BoardSaveRequest request) {
+        uploadThumbnail(refId, refType, request.getThumbnailFile());
+        uploadFiles(refId, refType, request.getFiles());
+    }
+
+    private void handleFileUpdate(Long refId, String refType, BoardUpdateRequest request) {
+        if (request.getDeletedFileIds() != null && !request.getDeletedFileIds().isEmpty()) {
+            request.getDeletedFileIds().forEach(s3Service::deleteFile);
+        }
+
+        if (request.getThumbnailFile() != null && !request.getThumbnailFile().isEmpty()) {
+            s3Service.deleteOldThumbnail(refId, refType);
+            uploadThumbnail(refId, refType, request.getThumbnailFile());
+        }
+
+        uploadFiles(refId, refType, request.getFiles());
+    }
+
+    private void uploadThumbnail(Long refId, String refType, MultipartFile thumbnailFile) {
+        if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+            s3Service.uploadAndSave(refId, refType, thumbnailFile, FileType.THUMBNAIL);
+        }
+    }
+
+    private void uploadFiles(Long refId, String refType, List<MultipartFile> files) {
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                s3Service.uploadAndSave(refId, refType, file, FileType.FILE);
+            }
+        }
     }
 
 }

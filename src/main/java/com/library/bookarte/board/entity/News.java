@@ -25,7 +25,7 @@ public class News extends Board {
         super.updateBoard(
                 request.getCategory(),
                 request.getTitle(),
-                request.getContents(),
+                request.getEditor(),
                 request.getNoticeYn(),
                 request.getOrderNum(),
                 modMember

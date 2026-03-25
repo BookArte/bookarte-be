@@ -1,9 +1,6 @@
 package com.library.bookarte.board.controller;
 
-import com.library.bookarte.board.dto.request.BoardDelsRequest;
-import com.library.bookarte.board.dto.request.BoardSaveRequest;
-import com.library.bookarte.board.dto.request.BoardUpdateRequest;
-import com.library.bookarte.board.dto.request.FileUploadTest;
+import com.library.bookarte.board.dto.request.*;
 import com.library.bookarte.board.dto.response.BoardResponse;
 import com.library.bookarte.board.dto.response.BoardSaveResponse;
 import com.library.bookarte.board.dto.response.BoardUpdateResponse;
@@ -41,7 +38,7 @@ public class BoardController implements BoardControllerDocs {
             @PathVariable("type") String type,
             @AuthenticationPrincipal Long memberId,
             @PathVariable("boardId") Long boardId,
-            @RequestBody BoardUpdateRequest boardUpdateRequest
+            @ModelAttribute BoardUpdateRequest boardUpdateRequest
     ) {
         BoardUpdateResponse result = boardService.updateBoard(type, memberId, boardId, boardUpdateRequest);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
@@ -49,9 +46,10 @@ public class BoardController implements BoardControllerDocs {
 
     @Override
     public ResponseEntity<GlobalResponseDto<BoardResponse>> getBoard(
+            @PathVariable("type") String type,
             @PathVariable("boardId") Long boardId
     ) {
-        BoardResponse result = boardService.getBoard(boardId);
+        BoardResponse result = boardService.getBoard(boardId, type);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
@@ -69,10 +67,9 @@ public class BoardController implements BoardControllerDocs {
     @Override
     public ResponseEntity<GlobalResponseDto<PageResponse<BoardResponse>>> getBoardList(
             @PathVariable("type") String type,
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "1") int size
+            @ModelAttribute BoardListRequest boardListRequest
     ) {
-        PageResponse<BoardResponse> result = boardService.getBoardList(type, page, size);
+        PageResponse<BoardResponse> result = boardService.getBoardList(type, boardListRequest);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 

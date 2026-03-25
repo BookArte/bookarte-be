@@ -1,9 +1,6 @@
 package com.library.bookarte.board.controller;
 
-import com.library.bookarte.board.dto.request.BoardDelsRequest;
-import com.library.bookarte.board.dto.request.BoardSaveRequest;
-import com.library.bookarte.board.dto.request.BoardUpdateRequest;
-import com.library.bookarte.board.dto.request.FileUploadTest;
+import com.library.bookarte.board.dto.request.*;
 import com.library.bookarte.board.dto.response.BoardResponse;
 import com.library.bookarte.board.dto.response.BoardSaveResponse;
 import com.library.bookarte.board.dto.response.BoardUpdateResponse;
@@ -49,7 +46,7 @@ public interface BoardControllerDocs {
             @PathVariable("type") String type,
             @AuthenticationPrincipal Long memberId,
             @PathVariable("boardId") Long boardId,
-            @RequestBody BoardUpdateRequest boardUpdateRequest
+            @ModelAttribute BoardUpdateRequest boardUpdateRequest
     );
 
     /* Read: 게시글 조회 */
@@ -62,6 +59,7 @@ public interface BoardControllerDocs {
     })
     @GetMapping("/view/{boardId}")
     ResponseEntity<GlobalResponseDto<BoardResponse>> getBoard(
+            @PathVariable("type") String type,
             @PathVariable("boardId") Long boardId
     );
 
@@ -90,8 +88,7 @@ public interface BoardControllerDocs {
     @GetMapping("/list")
     ResponseEntity<GlobalResponseDto<PageResponse<BoardResponse>>> getBoardList(
             @PathVariable("type") String type,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @ModelAttribute BoardListRequest boardListRequest
     );
 
     /* 파일 업로드 테스트 */

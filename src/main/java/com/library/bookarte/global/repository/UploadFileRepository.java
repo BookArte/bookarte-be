@@ -11,6 +11,7 @@ public interface UploadFileRepository extends JpaRepository<UploadFile, Long> {
     List<UploadFile> findByRefIdAndRefType(Long refId, String refType);
 
     Optional<UploadFile> findByRefIdAndRefTypeAndFileRole(Long refId, String refType, String fileRole);
+    List<UploadFile> findAllByRefIdAndRefTypeAndFileRole(Long refId, String refType, String fileRole);
 
     void deleteByRefIdAndRefType(Long refId, String refType);
 }

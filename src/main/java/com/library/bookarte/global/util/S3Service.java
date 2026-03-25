@@ -1,6 +1,7 @@
 package com.library.bookarte.global.util;
 
 import com.library.bookarte.global.entity.UploadFile;
+import com.library.bookarte.global.entity.type.FileType;
 import com.library.bookarte.global.repository.UploadFileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
@@ -29,7 +31,11 @@ public class S3Service {
 
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-    public void uploadAndSave(Long refId, String refType, MultipartFile file, String role) {
+    public List<UploadFile> getAllFileList(Long refId, String refType) {
+        return uploadFileRepository.findByRefIdAndRefType(refId, refType);
+    }
+
+    public void uploadAndSave(Long refId, String refType, MultipartFile file, FileType fileType) {
         if (file == null || file.isEmpty()) return;
 
         String fileUrl = uploadFile(file);
@@ -44,7 +50,7 @@ public class S3Service {
                 .originalName(originalName)
                 .fileSize(file.getSize())
                 .extension(extension)
-                .fileRole(role)
+                .fileRole(fileType.getValue())
                 .build();
 
         uploadFileRepository.save(uploadFile);
@@ -90,5 +96,51 @@ public class S3Service {
             return filename.substring(filename.lastIndexOf(".")).toLowerCase();
         }
         return "";
+    }
+
+    public void deleteFile(Long fileId) {
+        uploadFileRepository.findById(fileId).ifPresent(uploadFile -> {
+            deleteFromS3(uploadFile.getFileUrl());
+            uploadFileRepository.delete(uploadFile);
+        });
+    }
+
+    public void deleteOldThumbnail(Long refId, String refType) {
+        uploadFileRepository.findByRefIdAndRefTypeAndFileRole(
+                refId,
+                refType,
+                FileType.Constants.THUMBNAIL
+        ).ifPresent(oldThumb -> {
+            deleteFromS3(oldThumb.getFileUrl());
+            uploadFileRepository.delete(oldThumb);
+        });
+    }
+
+    public void deleteAllFilesByRef(Long refId, String refType) {
+        List<UploadFile> files = uploadFileRepository.findByRefIdAndRefType(refId, refType);
+
+        if (files != null && !files.isEmpty()) {
+            for (UploadFile file : files) {
+                deleteFromS3(file.getFileUrl());
+            }
+            uploadFileRepository.deleteAll(files);
+        }
+    }
+
+    private void deleteFromS3(String fileUrl) {
+        if (fileUrl == null || fileUrl.isEmpty()) return;
+
+        String key = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+
+        try {
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+        } catch (Exception e) {
+            System.err.println("S3 파일 삭제 중 오류 발생: " + e.getMessage());
+        }
     }
 }
