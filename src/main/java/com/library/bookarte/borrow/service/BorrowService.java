@@ -4,6 +4,7 @@ import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
 import com.library.bookarte.borrow.dto.response.MonthlyData;
+import com.library.bookarte.borrow.dto.response.PopularBookResDto;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
 import com.library.bookarte.borrow.entity.Borrow;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,13 +45,9 @@ public class BorrowService {
     private final PenaltyService penaltyService;
 
     //도서 대출 등록
-    public void borrowBook(Long bookId){
-        Long memberId = Long.parseLong(Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName());
+    public void borrowBook(Long bookId, Long memberId){
 
-        //패널티 여부 존재 시 대출 불가
-        if (penaltyRepository.existsByMember_MemberIdAndEndDateAfterAndIsReleasedFalse(memberId, LocalDate.now())) {
-            throw new CustomException(CustomErrorCode.USER_BORROW_RESTRICTED);
-        }
+        checkBorrowRestricted(memberId);
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
@@ -83,6 +81,7 @@ public class BorrowService {
         book.updateCanBorrow(false);
     }
     //전체 대출 이력 조회
+    @Transactional(readOnly = true)
     public Page<TotalBorrowResDto> getTotalBorrows(BorrowSearchFilterDto borrowSearchFilterDto,
                                                    Pageable pageable){
         Page<Borrow> borrows = borrowRepository.findAllBorrowByBorrowSearchFilter(borrowSearchFilterDto,
@@ -92,9 +91,10 @@ public class BorrowService {
     }
 
     //유저 대출 이력
+    @Transactional(readOnly = true)
     public Page<UserBorrowResDto> getUserBorrows(BorrowSearchFilterDto borrowSearchFilterDto,
+                                                 @AuthenticationPrincipal Long memberId,
                                                  Pageable pageable){
-        Long memberId = Long.parseLong(Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName());
         borrowSearchFilterDto.setMemberId(memberId);
 
         Page<Borrow> borrows = borrowRepository.findAllBorrowByBorrowSearchFilter(borrowSearchFilterDto, pageable);
@@ -122,6 +122,7 @@ public class BorrowService {
 
         Status status = Status.RETURN_REQUESTED;
         borrow.updateStatus(status);
+        borrow.updateCanExtend(false);
     }
 
     //도서 반납 승인
@@ -150,9 +151,14 @@ public class BorrowService {
     }
 
     //도서 대출 연장
-    public void extendReturnDate(Long borrowId){
+    public void extendReturnDate(Long borrowId,Long memberId){
+
+        checkBorrowRestricted(memberId);
+
         Borrow borrow = borrowRepository.findById(borrowId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BORROW_NOT_FOUND));
+
+
         if(!borrow.isCanExtend()) throw new CustomException(CustomErrorCode.CAN_NOT_EXTEND);
 
         Status borrowStatus = borrow.getStatus();
@@ -172,10 +178,12 @@ public class BorrowService {
         overdueBorrows.forEach(borrow -> {
             borrow.updateOverdueStatus();
             borrow.updateOverdueDays(borrow.calculateOverdueDays());
+            borrow.updateCanExtend(false);
         });
     }
 
     // 현재 달 기준으로 이전 1년까지 특정 도서의 월 별 대출 횟수 조회
+    @Transactional(readOnly = true)
     public List<MonthlyData> getRollingYearHistory(Long bookId){
         List<MonthlyData> result = borrowRepository.getRollingYearlyStatistics(bookId);
 
@@ -197,6 +205,24 @@ public class BorrowService {
             cursor = cursor.plusMonths(1); // 한 달씩 앞으로
         }
         return  fullList;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PopularBookResDto> getPopularBooks(String period, Pageable pageable){
+        return borrowRepository.findPopularBooks(period, pageable);
+    }
+
+
+    private void checkBorrowRestricted(Long memberId){
+        //연체 중인 도서 존재 시 대출 불가
+        if (borrowRepository.existsByMember_MemberIdAndStatus(memberId, Status.OVERDUE)) {
+            throw new CustomException(CustomErrorCode.USER_BORROW_RESTRICTED);
+        }
+
+        //패널티 여부 존재 시 대출 불가
+        if (penaltyRepository.existsByMember_MemberIdAndEndDateAfterAndIsReleasedFalse(memberId, LocalDate.now())) {
+            throw new CustomException(CustomErrorCode.USER_BORROW_RESTRICTED);
+        }
     }
 
 }

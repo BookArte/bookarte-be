@@ -28,11 +28,13 @@ public enum CustomErrorCode {
     MEMBER_DELETE_STATUS_ERROR(HttpStatus.BAD_REQUEST, "이미 탈퇴된 회원입니다."),
     MEMBER_USER_ID_NOT_FOUND(HttpStatus.NOT_FOUND, "회원정보가 일치한 아이디가 존재하지 않습니다."),
     MEMBER_NOT_ADMIN(HttpStatus.UNAUTHORIZED, "관리자 권한이 없습니다."),
+    MEMBER_NOT_MATCH(HttpStatus.BAD_REQUEST, "회원정보가 일치하지 않습니다."),
   
     //recommendation
     RECOMMENDATION_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 추천 도서는 존재하지 않습니다"),
     RECOMMENDATION_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "해당 기간 내 추천 도서는 최대 10권까지만 등록 가능합니다."),
     INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST,"적합하지 않은 날짜 범위입니다"),
+    DUPLICATE_RECOMMENDATION_PERIOD(HttpStatus.CONFLICT, "해당 도서는 이미 등록된 기간과 중복됩니다."),
 
     //server
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다"),
@@ -45,7 +47,7 @@ public enum CustomErrorCode {
     CAN_NOT_EXTEND(HttpStatus.BAD_REQUEST, "연장이 불가능한 도서입니다"),
     NOT_STATUS_BORROW(HttpStatus.BAD_REQUEST, "반납 처리 중이거나 연체 중인 도서는 연장 불가능합니다."),
     BORROW_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 대출 내역은 존재하지 않습니다."),
-    USER_BORROW_RESTRICTED(HttpStatus.BAD_REQUEST,"연체 패널티가 존재하여 도서 대출이 불가합니다."),
+    USER_BORROW_RESTRICTED(HttpStatus.BAD_REQUEST,"연체 중인 도서가 존재하거나 패널티가 존재하여 도서 대출이 불가합니다."),
 
     //penalty
     PENALTY_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 패널티에 대해서 존재하지 않습니다."),
@@ -55,6 +57,8 @@ public enum CustomErrorCode {
     //board
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시판입니다."),
     INVALID_BOARD_TYPE(HttpStatus.BAD_REQUEST, "잘못된 타입입니다.");
+    //wish
+    WISH_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 관심 도서는 존재하지 않습니다");
 
 
     private final HttpStatus httpStatus;

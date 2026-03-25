@@ -12,4 +12,7 @@ public class MemberResponse {
     private String email;
     private String tel;
     private Long point;
+
+    private Long borrowingCount;
+    private Long wishCount;
 }

@@ -81,14 +81,6 @@ public class RecommendationController implements RecommendationControllerDocs {
     }
 
     @Override
-    public ResponseEntity<GlobalResponseDto<Boolean>> isRecommend(@RequestParam Long bookId) {
-        boolean result = recommendationService.existByBookId(bookId);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(GlobalResponseDto.success(HttpStatus.OK, result));
-    }
-
-    @Override
     public ResponseEntity<GlobalResponseDto<List<RecommendationBookResDto>>> getActiveRecommendationList(){
         List<RecommendationBookResDto> result = recommendationService.findActiveRecommendations();
 

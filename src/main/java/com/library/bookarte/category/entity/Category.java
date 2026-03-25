@@ -32,7 +32,7 @@ public class Category {
     private String categoryName;
 
     @OneToMany(mappedBy = "category")
-    private List<Book> books = new ArrayList<>();
+    private List<Book> books;
 
 
     public CategoryResDto toCategoryResDto(){

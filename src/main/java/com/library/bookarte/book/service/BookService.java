@@ -18,12 +18,13 @@ import com.library.bookarte.category.service.CategoryService;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.recommendation.repository.RecommendationRepository;
-import com.library.bookarte.recommendation.service.RecommendationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -78,11 +79,9 @@ public class BookService {
 
     /*도서 상세 조회 api*/
     @Transactional(readOnly = true)
-    public BookResDto findBookById(Long bookId) {
-        Book book = bookRepository.findById(bookId)
+    public BookResDto findBookWithWish(Long bookId,Long memberId) {
+        return bookRepository.findBookDetailWithWish(bookId, memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
-
-        return book.toBookResDto();
     }
 
     @Transactional(readOnly = true)
@@ -247,6 +246,12 @@ public class BookService {
         return finalRelatedBooks.stream()
                 .map(Book::toBookResDto)
                 .toList();
+    }
+
+    public LocalDate getLatestRegistrationDate() {
+        return bookRepository.findLatestCreatedAt()
+                .map(LocalDateTime::toLocalDate)
+                .orElse(LocalDate.now());
     }
 
     private void addBooksToList(List<Book> targetList, List<Book> sourceList, Set<Long> excludeIds) {

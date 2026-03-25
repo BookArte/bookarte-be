@@ -17,8 +17,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -40,8 +42,8 @@ public class BookController implements BookControllerDocs {
 
     //도서 상제 조회
     @Override
-    public ResponseEntity<GlobalResponseDto<BookResDto>> findBookById(@PathVariable("bookId") Long bookId){
-        BookResDto result = bookService.findBookById(bookId);
+    public ResponseEntity<GlobalResponseDto<BookResDto>> findBookWithWish(@PathVariable("bookId") Long bookId, @AuthenticationPrincipal Long memberId){
+        BookResDto result = bookService.findBookWithWish(bookId,memberId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
@@ -106,6 +108,13 @@ public class BookController implements BookControllerDocs {
     @Override
     public ResponseEntity<GlobalResponseDto<List<BookResDto>>> listRelatedBook(@PathVariable Long bookId){
         List<BookResDto> result = bookService.getRelatedBooks(bookId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<LocalDate>> getLatestRegistrationDate() {
+        LocalDate result = bookService.getLatestRegistrationDate();
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
