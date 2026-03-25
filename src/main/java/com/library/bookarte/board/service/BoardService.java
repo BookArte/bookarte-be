@@ -1,0 +1,252 @@
+package com.library.bookarte.board.service;
+
+import com.library.bookarte.board.dto.request.BoardDelsRequest;
+import com.library.bookarte.board.dto.request.BoardListRequest;
+import com.library.bookarte.board.dto.request.BoardSaveRequest;
+import com.library.bookarte.board.dto.request.BoardUpdateRequest;
+import com.library.bookarte.board.dto.response.BoardResponse;
+import com.library.bookarte.board.dto.response.BoardSaveResponse;
+import com.library.bookarte.board.dto.response.BoardUpdateResponse;
+import com.library.bookarte.board.entity.Board;
+import com.library.bookarte.board.entity.News;
+import com.library.bookarte.board.entity.Notice;
+import com.library.bookarte.board.entity.type.BoardType;
+import com.library.bookarte.board.repository.BoardRepository;
+import com.library.bookarte.global.entity.UploadFile;
+import com.library.bookarte.global.entity.type.FileType;
+import com.library.bookarte.global.exception.CustomErrorCode;
+import com.library.bookarte.global.exception.CustomException;
+import com.library.bookarte.global.response.PageResponse;
+import com.library.bookarte.global.util.S3Service;
+import com.library.bookarte.global.util.XssUtils;
+import com.library.bookarte.member.entity.Member;
+import com.library.bookarte.member.entity.type.MemberType;
+import com.library.bookarte.member.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(rollbackFor = CustomException.class)
+public class BoardService {
+    private final BoardRepository boardRepository;
+    private final MemberRepository memberRepository;
+    private final S3Service s3Service;
+    private final XssUtils xssUtils;
+
+    public BoardSaveResponse save(String type, BoardSaveRequest request, Long memberId) {
+        Member member = validateAndGetMember(memberId);
+        BoardType boardType = getBoardType(type);
+
+        sanitizeRequest(request);
+
+        Board board = createBoard(boardType, request, member);
+        Board resultBoard = boardRepository.save(board);
+
+        Long refId = resultBoard.getBoardId();
+
+        handleFileUpload(refId, boardType.getValue(), request);
+
+        return BoardSaveResponse.builder()
+                .id(refId)
+                .build();
+    }
+
+    public BoardUpdateResponse updateBoard(String type, Long memberId, Long boardId, BoardUpdateRequest request) {
+        Member member = validateAndGetMember(memberId);
+        BoardType boardType = getBoardType(type);
+        Board board = getBoardData(boardId);
+
+        validateBoardType(board, boardType);
+
+        sanitizeRequest(request);
+
+        updateBoardContent(board, request, member);
+
+        handleFileUpdate(boardId, boardType.getValue(), request);
+
+        return BoardUpdateResponse.builder()
+                .id(board.getBoardId())
+                .build();
+    }
+
+    public void deleteBoard(String type, Long memberId, BoardDelsRequest boardDelsRequest) {
+        Member member = validateAndGetMember(memberId);
+        BoardType boardType = getBoardType(type);
+        List<Long> boardIds = boardDelsRequest.getBoardIds();
+
+        List<Board> targets = boardRepository.findAllById(boardIds);
+
+        if (targets.size() != boardIds.size()) {
+            throw new CustomException(CustomErrorCode.BOARD_NOT_FOUND);
+        }
+
+        for (Board board : targets) {
+            validateBoardType(board, boardType);
+
+            s3Service.deleteAllFilesByRef(board.getBoardId(), boardType.getValue());
+        }
+
+        boardRepository.deleteAllInBatch(targets);
+    }
+
+    @Transactional(readOnly = true)
+    public BoardResponse getBoard(Long boardId, String type) {
+        Board board = getBoardData(boardId);
+
+        List<UploadFile> files = s3Service.getAllFileList(boardId, type);
+
+        return BoardResponse.from(board, files);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<BoardResponse> getBoardList(String type, BoardListRequest boardListRequest) {
+        Pageable pageable = PageRequest.of(boardListRequest.getPage(), boardListRequest.getSize(),
+                Sort.by(Sort.Order.desc("noticeYn"),
+                        Sort.Order.desc("orderNum"),
+                        Sort.Order.desc("boardId")));
+
+        BoardType boardType = getBoardType(type);
+
+        String searchText = (boardListRequest.getSearchText() != null && !boardListRequest.getSearchText().isEmpty())
+                ? boardListRequest.getSearchText() : null;
+
+        LocalDateTime startDateTime = (boardListRequest.getSearchStartDate() != null)
+                ? boardListRequest.getSearchStartDate().atStartOfDay() : null;
+        LocalDateTime endDateTime = (boardListRequest.getSearchEndDate() != null)
+                ? boardListRequest.getSearchEndDate().atTime(23, 59, 59) : null;
+
+        Page<Board> boardPage = boardRepository.findAllByTypeAndSearch(
+                boardType.getEntityClass(),
+                searchText,
+                startDateTime,
+                endDateTime,
+                pageable
+        );
+
+        return PageResponse.from(boardPage.map(BoardResponse::from));
+
+    }
+
+    private Member validateAndGetMember(Long memberId) {
+        if (memberId == null) throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        if (!MemberType.Constants.ROLE_ADMIN.equals(member.getMemberRole())) {
+            throw new CustomException(CustomErrorCode.MEMBER_NOT_ADMIN);
+        }
+
+        return member;
+    }
+
+    private void validateBoardType(Board board, BoardType boardType) {
+        boolean isValid = switch (boardType) {
+            case NOTICE -> board instanceof Notice;
+            case NEWS -> board instanceof News;
+        };
+
+        if (!isValid) {
+            throw new CustomException(CustomErrorCode.INVALID_BOARD_TYPE);
+        }
+    }
+
+    private BoardType getBoardType(String type) {
+        try {
+            return BoardType.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new CustomException(CustomErrorCode.INVALID_BOARD_TYPE);
+        }
+    }
+
+    private Board getBoardData(Long boardId) {
+        if (boardId == null) throw new CustomException(CustomErrorCode.BOARD_NOT_FOUND);
+
+        return boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOARD_NOT_FOUND));
+    }
+
+    private Board createBoard(BoardType boardType, BoardSaveRequest request, Member member) {
+
+        return switch (boardType) {
+            case NOTICE -> Notice.builder()
+                    .category(request.getCategory())
+                    .title(request.getTitle())
+                    .contents(request.getEditor())
+                    .noticeYn(request.getNoticeYn())
+                    .orderNum(request.getOrderNum())
+                    .regMember(member)
+                    .build();
+            case NEWS -> News.builder()
+                    .category(request.getCategory())
+                    .title(request.getTitle())
+                    .contents(request.getEditor())
+                    .noticeYn(request.getNoticeYn())
+                    .orderNum(request.getOrderNum())
+                    .regMember(member)
+                    .build();
+        };
+
+    }
+
+    private void updateBoardContent(Board board, BoardUpdateRequest request, Member member) {
+        if (board instanceof Notice notice) {
+            notice.modify(request, member);
+        } else if (board instanceof News news) {
+            news.modify(request, member);
+        }
+    }
+
+    private void sanitizeRequest(BoardSaveRequest request) {
+        request.setEditor(xssUtils.filterEditor(request.getEditor()));
+        request.setTitle(xssUtils.escapeText(request.getTitle()));
+    }
+
+    private void sanitizeRequest(BoardUpdateRequest request) {
+        request.setEditor(xssUtils.filterEditor(request.getEditor()));
+        request.setTitle(xssUtils.escapeText(request.getTitle()));
+    }
+
+    private void handleFileUpload(Long refId, String refType, BoardSaveRequest request) {
+        uploadThumbnail(refId, refType, request.getThumbnailFile());
+        uploadFiles(refId, refType, request.getFiles());
+    }
+
+    private void handleFileUpdate(Long refId, String refType, BoardUpdateRequest request) {
+        if (request.getDeletedFileIds() != null && !request.getDeletedFileIds().isEmpty()) {
+            request.getDeletedFileIds().forEach(s3Service::deleteFile);
+        }
+
+        if (request.getThumbnailFile() != null && !request.getThumbnailFile().isEmpty()) {
+            s3Service.deleteOldThumbnail(refId, refType);
+            uploadThumbnail(refId, refType, request.getThumbnailFile());
+        }
+
+        uploadFiles(refId, refType, request.getFiles());
+    }
+
+    private void uploadThumbnail(Long refId, String refType, MultipartFile thumbnailFile) {
+        if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+            s3Service.uploadAndSave(refId, refType, thumbnailFile, FileType.THUMBNAIL);
+        }
+    }
+
+    private void uploadFiles(Long refId, String refType, List<MultipartFile> files) {
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                s3Service.uploadAndSave(refId, refType, file, FileType.FILE);
+            }
+        }
+    }
+
+}

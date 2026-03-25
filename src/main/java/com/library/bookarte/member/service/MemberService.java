@@ -8,6 +8,7 @@ import com.library.bookarte.global.util.StringUtils;
 import com.library.bookarte.member.dto.request.*;
 import com.library.bookarte.member.dto.response.*;
 import com.library.bookarte.member.entity.Member;
+import com.library.bookarte.member.entity.type.MemberType;
 import com.library.bookarte.member.repository.MemberRepository;
 import com.library.bookarte.wish.repository.WishRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,9 +36,9 @@ public class MemberService {
                 .memberTel(memberJoinRequest.getMemberTel())
                 .memberPwd(passwordEncoder.encode(memberJoinRequest.getMemberPassword()))
                 .memberEmail(memberJoinRequest.getMemberEmail())
-                .memberRole("ROLE01")               // 상수 ENUM 작업
-                .memberSocialType("SOCIAL01")       // 상수 ENUM 작업
-                .memberStatus("STATUS01")           // 상수 ENUM 작업
+                .memberRole(MemberType.Constants.ROLE_ADMIN)
+                .memberSocialType(MemberType.Constants.SOCIAL_NONE)
+                .memberStatus(MemberType.Constants.STATUS_ACTIVE)
                 .memberPoint(0L)
                 .usePrivacyYn(memberJoinRequest.getAgreePrivacy() ? "Y" : "N")
                 .useServiceYn(memberJoinRequest.getAgreeService() ? "Y" : "N")
@@ -115,7 +116,7 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
-        if ("STATUS02".equals(member.getMemberStatus())) {
+        if (MemberType.Constants.STATUS_WITHDRAWN.equals(member.getMemberStatus())) {
             throw new CustomException(CustomErrorCode.MEMBER_DELETE_STATUS_ERROR);
         }
 
@@ -150,10 +151,10 @@ public class MemberService {
         member.updatePassword(encodedNewPassword);
     }
 
-    public List<MemberResponse> findListByMemberUserID(String userId){
+    public List<MemberResponse> findListByMemberUserID(String userId) {
         List<Member> members;
 
-        if(userId == null || userId.trim().isEmpty()){
+        if (userId == null || userId.trim().isEmpty()) {
             members = memberRepository.findALlByOrderByMemberNameAsc();
         } else {
             members = memberRepository.findMembersByMemberUserId(userId);

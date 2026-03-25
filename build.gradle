@@ -91,6 +91,11 @@ dependencies {
 	//swagger
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0")
 
+	// AWS S3
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1'
+
+	// Lucy XSS Filter
+	implementation 'com.navercorp.lucy:lucy-xss:1.6.3'
 }
 
 tasks.named('test') {
