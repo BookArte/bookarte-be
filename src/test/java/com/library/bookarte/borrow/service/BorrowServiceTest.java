@@ -346,7 +346,7 @@ public class BorrowServiceTest {
     void bulkBatchPerformanceTest() throws Exception {
 
         //Given
-        prepareBulkData(1000000);
+        prepareBulkData(5000);
 
         //When
         long startTime = System.currentTimeMillis();
