@@ -3,6 +3,7 @@ package com.library.bookarte.borrow.service;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
+import com.library.bookarte.borrow.dto.cache.PopularBookCacheDto;
 import com.library.bookarte.borrow.dto.response.MonthlyData;
 import com.library.bookarte.borrow.dto.response.PopularBookResDto;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
@@ -20,6 +21,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -96,11 +98,7 @@ public class BorrowService {
         book.updateCanBorrow(false);
 
         borrowRepository.save(borrow);
-
-
     }
-
-
 
     //전체 대출 이력 조회
     @Transactional(readOnly = true)
@@ -234,6 +232,18 @@ public class BorrowService {
     @Transactional(readOnly = true)
     public Page<PopularBookResDto> getPopularBooks(String period, Pageable pageable){
         return borrowRepository.findPopularBooks(period, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(
+            value = "popularBooks",
+            key = "#period + ':p' + #pageable.pageNumber + ':s' + #pageable.pageSize",
+            unless = "#result == null"
+    )
+    public PopularBookCacheDto getPopularBooksWithCache(String period, Pageable pageable) {
+        log.info(">>>> [Cache Miss] DB에서 인기 도서 조회 중... period: {}", period);
+        Page<PopularBookResDto> page = borrowRepository.findPopularBooks(period, pageable);
+        return new PopularBookCacheDto(page.getContent(), page.getTotalElements());
     }
 
 
