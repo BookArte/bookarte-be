@@ -79,7 +79,28 @@ public class BorrowCacheServiceTest {
         // 결과 출력
         log.info(stopWatch.prettyPrint());
         log.info("평균 소요 시간: {}ms",(stopWatch.getTotalTimeMillis() / 6.0));
+    }
 
+    @Test
+    @DisplayName("캐싱 적용 코드:  인기 도서 조회 성능 측정")
+    void measureGetPopularBooksWithCachePerformance(){
+        StopWatch stopWatch = new StopWatch("인기 도서 조회 성능 테스트");
+
+        // 1. 첫 번째 실행 (Cold Start: DB 인덱스나 캐시가 전혀 없는 상태)
+        stopWatch.start("First Request (Cold)");
+        borrowService.getPopularBooksWithCache("WEEK", PageRequest.of(0, 10));
+        stopWatch.stop();
+
+        // 2. 반복 실행 (평균 성능 측정)
+        for (int i = 1; i <= 5; i++) {
+            stopWatch.start("Repeat Request - " + i);
+            borrowService.getPopularBooksWithCache("WEEK", PageRequest.of(0, 10));
+            stopWatch.stop();
+        }
+
+        // 결과 출력
+        log.info(stopWatch.prettyPrint());
+        log.info("평균 소요 시간: {}ms",(stopWatch.getTotalTimeMillis() / 6.0));
     }
 
     private void prepareBulkData(int count) {
