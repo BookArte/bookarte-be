@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -96,7 +95,7 @@ public class BorrowBatchServiceTest {
         borrowService.processOverdue();
         em.flush();
         em.clear();
-        System.out.println("연체 일수" + overdueTarget.getOverdueDays());
+        log.info("연체 일수: {}", overdueTarget.getOverdueDays());
 
         // Then
         Borrow updatedOverdue = borrowRepository.findById(overdueTarget.getBorrowId()).orElseThrow();
@@ -148,7 +147,7 @@ public class BorrowBatchServiceTest {
         long endTime = System.currentTimeMillis();
 
         // Then
-        System.out.println("5,000건 처리 소요 시간: " + (endTime - startTime) + "ms");
+        log.info("5,000건 처리 소요 시간: {}ms",  (endTime - startTime) );
     }
 
     @Test
@@ -251,7 +250,7 @@ public class BorrowBatchServiceTest {
         long endTime = System.currentTimeMillis();
 
         //Then
-        System.out.println("5,000건 처리 소요 시간: " + (endTime - startTime) + "ms");
+        log.info("5,000건 처리 소요 시간: {}ms",  (endTime - startTime));
     }
 
     private void prepareBulkData(int count) {

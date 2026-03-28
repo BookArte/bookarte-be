@@ -2,8 +2,6 @@ package com.library.bookarte.borrow.service;
 
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.repository.BookRepository;
-import com.library.bookarte.borrow.entity.Borrow;
-import com.library.bookarte.borrow.entity.type.Status;
 import com.library.bookarte.borrow.repository.BorrowRepository;
 import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.category.reposiotry.CategoryRepository;
@@ -16,18 +14,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.batch.core.job.Job;
-import org.springframework.batch.core.job.JobExecution;
-import org.springframework.batch.core.job.parameters.JobParameters;
-import org.springframework.batch.core.job.parameters.JobParametersBuilder;
-import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,9 +42,6 @@ public class BorrowServiceTest {
     @Autowired private BorrowRepository borrowRepository;
     @Autowired private CategoryRepository categoryRepository;
     @Autowired private EntityManager em;
-
-    @Autowired private JobOperator jobOperator;
-    @Autowired private Job overdueCheckJob;
 
     private Long savedBookId;
     private List<Long> memberIds = new ArrayList<>();
@@ -138,10 +126,12 @@ public class BorrowServiceTest {
         // 최종 도서 상태 확인
         Book book = bookRepository.findById(savedBookId).orElseThrow();
         assertFalse(book.isCanBorrow(), "도서 상태는 대출 불가능(false)이어야 합니다.");
-        System.out.println("=== 성능 테스트 결과 ===");
-        System.out.println("전체 소요 시간: " + (totalEndTime - totalStartTime) + "ms");
-        System.out.println("평균 응답 시간: " + averageLatency + "ms");
-        System.out.println("최대 응답 시간(락 대기 포함): " + maxLatency + "ms");
+
+        log.info("=== 성능 테스트 결과 ===");
+        log.info("전체 소요 시간: {}ms", (totalEndTime - totalStartTime));
+        log.info("평균 응답 시간: {}ms", averageLatency);
+        log.info("최대 응답 시간(락 대기 포함): {}ms", maxLatency);
+
     }
 
     @Test
