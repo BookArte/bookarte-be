@@ -241,6 +241,7 @@ public class BorrowService {
             unless = "#result == null"
     )
     public PopularBookCacheDto getPopularBooksWithCache(String period, Pageable pageable) {
+        log.info(">>>> [Cache Miss] DB에서 인기 도서 조회 중... period: {}", period);
         Page<PopularBookResDto> page = borrowRepository.findPopularBooks(period, pageable);
         return new PopularBookCacheDto(page.getContent(), page.getTotalElements());
     }

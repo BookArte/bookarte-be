@@ -46,7 +46,7 @@ public class BorrowCacheServiceTest {
     void setUp(){
         savedCategory = new Category("002","문학");
         categoryRepository.save(savedCategory);
-        prepareBulkData(50000);
+        prepareBulkData(500000);
         em.clear();
     }
 
