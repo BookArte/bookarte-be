@@ -152,6 +152,44 @@ public class BorrowRepositoryCustomImpl implements BorrowRepositoryCustom{
         };
     }
 
+    @Override
+    public List<PopularBookResDto> findTopPopularBooks(String period, int limit) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startDate = calculateStartDate(period, now);
+
+        // 1. 통계 데이터 집계 (Top N)
+        List<BookIdCountDto> stats = jpaQueryFactory
+                .select(Projections.constructor(BookIdCountDto.class,
+                        borrow.book.bookId,
+                        borrow.count()
+                ))
+                .from(borrow)
+                .where(borrow.createdAt.after(startDate))
+                .groupBy(borrow.book.bookId)
+                .orderBy(borrow.count().desc(), borrow.book.bookId.asc())
+                .limit(limit) // 50만 건 중 상위 N개만 추출
+                .fetch();
+
+        if (stats.isEmpty()) return Collections.emptyList();
+
+        List<Long> bookIds = stats.stream().map(BookIdCountDto::getBookId).toList();
+        Map<Long, Long> countMap = stats.stream()
+                .collect(Collectors.toMap(BookIdCountDto::getBookId, BookIdCountDto::getBorrowCount));
+
+        // 2. 상세 정보 조회 (In-query 및 Fetch Join)
+        List<Book> books = jpaQueryFactory
+                .selectFrom(book)
+                .leftJoin(book.participants).fetchJoin()
+                .where(book.bookId.in(bookIds))
+                .fetch();
+
+        // 3. 결과 매핑 및 정렬 (무거운 countDistinct 제거)
+        return books.stream()
+                .map(book -> book.toPopularBookResDto(countMap.getOrDefault(book.getBookId(), 0L)))
+                .sorted(Comparator.comparing(PopularBookResDto::getBorrowCount).reversed())
+                .toList();
+    }
+
 
     // ===== 조건 메서드 =====
 

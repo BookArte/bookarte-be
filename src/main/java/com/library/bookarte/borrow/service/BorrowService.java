@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,10 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -47,6 +45,7 @@ public class BorrowService {
     private final BookRepository bookRepository;
     private final PenaltyRepository penaltyRepository;
     private final PenaltyService penaltyService;
+    private final BorrowCacheService borrowCacheService;
 
     @PersistenceContext
     private EntityManager em;
@@ -229,11 +228,13 @@ public class BorrowService {
         return  fullList;
     }
 
+    //기본 조회
     @Transactional(readOnly = true)
     public Page<PopularBookResDto> getPopularBooks(String period, Pageable pageable){
         return borrowRepository.findPopularBooks(period, pageable);
     }
 
+    //캐싱 적용
     @Transactional(readOnly = true)
     @Cacheable(
             value = "popularBooks",
@@ -245,6 +246,30 @@ public class BorrowService {
         Page<PopularBookResDto> page = borrowRepository.findPopularBooks(period, pageable);
         return new PopularBookCacheDto(page.getContent(), page.getTotalElements());
     }
+
+    //Top-N 적용
+    @Transactional(readOnly = true)
+    public Page<PopularBookResDto> getPopularBooksWithTopN(String period, Pageable pageable) {
+        // 1. 캐시 서비스로부터 래퍼 DTO를 가져옴
+        PopularBookCacheDto cacheData = borrowCacheService.getTop100Cache(period);
+
+        // 2. DTO 내부의 리스트 추출
+        List<PopularBookResDto> allTopBooks = cacheData.getContent();
+
+        // 3. 인메모리 페이징 처리 (subList)
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), allTopBooks.size());
+
+        if (start > allTopBooks.size()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, allTopBooks.size());
+        }
+
+        List<PopularBookResDto> pagedContent = allTopBooks.subList(start, end);
+
+        // 4. Spring Data Page 객체로 반환
+        return new PageImpl<>(pagedContent, pageable, allTopBooks.size());
+    }
+
 
 
     private void checkBorrowRestricted(Long memberId){

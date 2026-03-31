@@ -3,6 +3,7 @@ package com.library.bookarte.borrow.controller;
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
 import com.library.bookarte.borrow.dto.cache.PopularBookCacheDto;
 import com.library.bookarte.borrow.dto.response.MonthlyData;
+import com.library.bookarte.borrow.dto.response.PopularBookResDto;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
 import com.library.bookarte.borrow.service.BorrowService;
@@ -83,9 +84,9 @@ public class BorrowController implements BorrowControllerDocs {
     }
 
     @Override
-    public ResponseEntity<GlobalResponseDto<PopularBookCacheDto>> getPopularBooks(@RequestParam("period") String period,
+    public ResponseEntity<GlobalResponseDto<Page<PopularBookResDto>>> getPopularBooks(@RequestParam("period") String period,
                                                                                       @ParameterObject Pageable pageable) {
-        PopularBookCacheDto result = borrowService.getPopularBooksWithCache(period, pageable);
+        Page<PopularBookResDto> result = borrowService.getPopularBooksWithTopN(period, pageable);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }

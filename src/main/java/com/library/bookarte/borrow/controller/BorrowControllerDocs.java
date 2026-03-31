@@ -3,6 +3,7 @@ package com.library.bookarte.borrow.controller;
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
 import com.library.bookarte.borrow.dto.cache.PopularBookCacheDto;
 import com.library.bookarte.borrow.dto.response.MonthlyData;
+import com.library.bookarte.borrow.dto.response.PopularBookResDto;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
 import com.library.bookarte.global.response.GlobalResponseDto;
@@ -104,7 +105,7 @@ public interface BorrowControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @GetMapping("/popular")
-    ResponseEntity<GlobalResponseDto<PopularBookCacheDto>> getPopularBooks(@RequestParam("period") String period,
-                                                                           @ParameterObject Pageable pageable);
+    ResponseEntity<GlobalResponseDto<Page<PopularBookResDto>>> getPopularBooks(@RequestParam("period") String period,
+                                                                               @ParameterObject Pageable pageable);
 
 }
