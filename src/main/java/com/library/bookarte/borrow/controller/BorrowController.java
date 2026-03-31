@@ -1,7 +1,6 @@
 package com.library.bookarte.borrow.controller;
 
 import com.library.bookarte.borrow.dto.BorrowSearchFilterDto;
-import com.library.bookarte.borrow.dto.cache.PopularBookCacheDto;
 import com.library.bookarte.borrow.dto.response.MonthlyData;
 import com.library.bookarte.borrow.dto.response.PopularBookResDto;
 import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
