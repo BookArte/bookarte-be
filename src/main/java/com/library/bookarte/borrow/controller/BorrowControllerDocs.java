@@ -105,6 +105,6 @@ public interface BorrowControllerDocs {
     })
     @GetMapping("/popular")
     ResponseEntity<GlobalResponseDto<Page<PopularBookResDto>>> getPopularBooks(@RequestParam("period") String period,
-                                                                         @ParameterObject Pageable pageable);
+                                                                               @ParameterObject Pageable pageable);
 
 }

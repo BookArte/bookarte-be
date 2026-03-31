@@ -29,6 +29,10 @@ public class Book extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bookId;
 
+    //낙관적 락을 위한 엔티티 버전
+/*    @Version
+    private Long version;*/
+
     //도서명, book_title
     @Column(nullable = false)
     private String bookTitle;

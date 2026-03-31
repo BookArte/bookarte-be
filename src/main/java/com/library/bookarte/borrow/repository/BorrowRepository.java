@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface BorrowRepository extends JpaRepository<Borrow, Long>, BorrowRepositoryCustom {
-    List<Borrow> findAllByStatusInAndReturnDueDateBefore(List<Status> statusList, LocalDate today);
+    List<Borrow> findAllByStatusAndReturnDueDateBefore(Status status, LocalDate today);
     boolean existsByMember_MemberIdAndStatus(Long memberId, Status status);
     long countBorrowByMember_MemberIdAndStatus(Long memberId, Status status);
 }

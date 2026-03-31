@@ -13,4 +13,5 @@ public interface BorrowRepositoryCustom {
     Page<Borrow> findAllBorrowByBorrowSearchFilter(BorrowSearchFilterDto borrowSearchFilterDto, Pageable pageable);
     List<MonthlyData> getRollingYearlyStatistics(Long bookId);
     Page<PopularBookResDto> findPopularBooks(String period, Pageable pageable);
+    List<PopularBookResDto> findTopPopularBooks(String period, int limit);
 }

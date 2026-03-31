@@ -85,7 +85,7 @@ public class BorrowController implements BorrowControllerDocs {
     @Override
     public ResponseEntity<GlobalResponseDto<Page<PopularBookResDto>>> getPopularBooks(@RequestParam("period") String period,
                                                                                       @ParameterObject Pageable pageable) {
-        Page<PopularBookResDto> result = borrowService.getPopularBooks(period, pageable);
+        Page<PopularBookResDto> result = borrowService.getPopularBooksWithTopN(period, pageable);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
