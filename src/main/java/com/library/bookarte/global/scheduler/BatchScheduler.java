@@ -1,6 +1,5 @@
-package com.library.bookarte.borrow.scheduler;
+package com.library.bookarte.global.scheduler;
 
-import com.library.bookarte.borrow.service.BorrowService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.job.Job;
@@ -8,42 +7,46 @@ import org.springframework.batch.core.job.JobExecution;
 import org.springframework.batch.core.job.parameters.JobParameters;
 import org.springframework.batch.core.job.parameters.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
-@Component
 @Slf4j
+@Component
 @RequiredArgsConstructor
-public class BorrowBatchScheduler {
-    private final BorrowService borrowService;
+public class BatchScheduler {
+
     private final JobOperator jobOperator;
-    private final Job overdueCheckJob;
+    private final Job libraryMasterJob;
+
+    @EventListener(ApplicationReadyEvent.class)
+    public  void onApplicationReady(){
+        log.info(">>>> [System Startup] 서버 구동 완료. 초기 배치 실행 및 캐시 워밍을 시작합니다.");
+        runLibraryMasterJob();
+    }
 
     @Scheduled(cron = "0 0 0 * * *")
-    public void runOverdueJob() {
+    public void scheduleLibraryMasterJob() {
+        log.info(">>>> [Scheduled] 정기 자정 배치를 실행합니다.");
+        runLibraryMasterJob();
+    }
+
+    public void runLibraryMasterJob() {
         try {
             JobParameters params = new JobParametersBuilder()
                     .addLong("run.id", System.currentTimeMillis())
                     .addString("today", LocalDate.now().toString())
                     .toJobParameters();
 
-            JobExecution executionId = jobOperator.start(overdueCheckJob, params);
-
+            JobExecution executionId = jobOperator.start(libraryMasterJob, params);
+            log.info(">>>> [Scheduler] 도서관 관리 마스터 배치 시작...");
             log.info("배치 실행 성공, executionId={}", executionId);
-
-        } catch (Exception e) {
+            log.info(">>>> [Scheduler] 도서관 관리 마스터 배치 종료.");
+        } catch (Exception e){
             log.error("배치 실행 실패", e);
         }
     }
-
-/*    @Scheduled(cron = "0 0 0 * * *")
-    // 서버가 시작되고 5초 뒤에 실행, 그 이후 1분마다 반복 실행 -> 테스트 용
-    @Scheduled(initialDelay = 5000, fixedRate = 60000)
-    public void runOverdueCheck() {
-        log.info("스케줄러 작동 확인 - 시간: {}", LocalDateTime.now());
-        borrowService.processOverdue();
-    }*/
 }
-
