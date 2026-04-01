@@ -57,6 +57,11 @@ public enum CustomErrorCode {
     //board
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시판입니다."),
     INVALID_BOARD_TYPE(HttpStatus.BAD_REQUEST, "잘못된 타입입니다."),
+
+    //file
+    FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "파일이 존재하지 않습니다."),
+    INVALID_FILE_PATH(HttpStatus.BAD_REQUEST, "파일 경로가 일치하지 않습니다."),
+
     //wish
     WISH_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 관심 도서는 존재하지 않습니다");
 

@@ -18,8 +18,11 @@ public class BoardUpdateRequest {
     @NotBlank
     private String title;
 
-    @NotBlank
     private String editor;
+
+    private String contents;
+
+    private String admAnswer;
 
     @NotBlank
     private String noticeYn;

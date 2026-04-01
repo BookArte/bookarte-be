@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -91,15 +92,13 @@ public interface BoardControllerDocs {
             @ModelAttribute BoardListRequest boardListRequest
     );
 
-    /* 파일 업로드 테스트 */
-    @Operation(summary = "파일 업로드", description = "**성공 응답 데이터:** 파일 업로드 성공")
+    /* 파일 다운로드 */
+    @Operation(summary = "파일 다운로드", description = "**성공 응답 데이터:** 파일 다운로드 성공")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "파일 업로드 성공"),
+            @ApiResponse(responseCode = "200", description = "파일 다운로드 성공"),
             @ApiResponse(responseCode = "401", description = "권한 없음"),
             @ApiResponse(responseCode = "500", description = "서버 에러")
     })
-    @PostMapping(value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<GlobalResponseDto<String>> fileUpload(
-            @ModelAttribute FileUploadTest fileUploadTest
-    );
+    @GetMapping(value = "/download/{fileId}")
+    ResponseEntity<Resource> downloadFile(@PathVariable("fileId") Long fileId);
 }

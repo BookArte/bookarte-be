@@ -7,9 +7,7 @@ import com.library.bookarte.board.dto.request.BoardUpdateRequest;
 import com.library.bookarte.board.dto.response.BoardResponse;
 import com.library.bookarte.board.dto.response.BoardSaveResponse;
 import com.library.bookarte.board.dto.response.BoardUpdateResponse;
-import com.library.bookarte.board.entity.Board;
-import com.library.bookarte.board.entity.News;
-import com.library.bookarte.board.entity.Notice;
+import com.library.bookarte.board.entity.*;
 import com.library.bookarte.board.entity.type.BoardType;
 import com.library.bookarte.board.repository.BoardRepository;
 import com.library.bookarte.global.entity.UploadFile;
@@ -154,6 +152,8 @@ public class BoardService {
         boolean isValid = switch (boardType) {
             case NOTICE -> board instanceof Notice;
             case NEWS -> board instanceof News;
+            case FAQ -> board instanceof Faq;
+            case QNA -> board instanceof Qna;
         };
 
         if (!isValid) {
@@ -195,6 +195,20 @@ public class BoardService {
                     .orderNum(request.getOrderNum())
                     .regMember(member)
                     .build();
+            case FAQ -> Faq.builder()
+                    .category(request.getCategory())
+                    .title(request.getTitle())
+                    .contents(request.getEditor())
+                    .noticeYn(request.getNoticeYn())
+                    .orderNum(request.getOrderNum())
+                    .regMember(member)
+                    .build();
+            case QNA -> Qna.builder()
+                    .category(request.getCategory())
+                    .title(request.getTitle())
+                    .contents(request.getContents())
+                    .regMember(member)
+                    .build();
         };
 
     }
@@ -204,6 +218,10 @@ public class BoardService {
             notice.modify(request, member);
         } else if (board instanceof News news) {
             news.modify(request, member);
+        } else if (board instanceof Faq faq) {
+            faq.modify(request, member);
+        } else if (board instanceof Qna qna) {
+            qna.modify(request, member);
         }
     }
 

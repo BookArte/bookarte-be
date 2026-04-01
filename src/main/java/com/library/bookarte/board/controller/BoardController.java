@@ -9,6 +9,7 @@ import com.library.bookarte.global.response.GlobalResponseDto;
 import com.library.bookarte.global.response.PageResponse;
 import com.library.bookarte.global.util.S3Service;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -74,18 +75,8 @@ public class BoardController implements BoardControllerDocs {
     }
 
     @Override
-    public ResponseEntity<GlobalResponseDto<String>> fileUpload(
-            @ModelAttribute FileUploadTest fileUploadTest
-    ) {
-        MultipartFile file = fileUploadTest.getFile();
+    public ResponseEntity<Resource> downloadFile(@PathVariable("fileId") Long fileId) {
 
-        if (file == null || file.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(GlobalResponseDto.fail(HttpStatus.BAD_REQUEST, "파일이 없습니다."));
-        }
-
-        String result = s3Service.uploadFile(file);
-
-        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
+        return s3Service.downloadFile(fileId);
     }
 }
