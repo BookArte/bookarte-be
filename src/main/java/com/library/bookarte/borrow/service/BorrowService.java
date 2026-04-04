@@ -10,6 +10,7 @@ import com.library.bookarte.borrow.dto.response.TotalBorrowResDto;
 import com.library.bookarte.borrow.dto.response.UserBorrowResDto;
 import com.library.bookarte.borrow.entity.Borrow;
 import com.library.bookarte.borrow.entity.type.Status;
+import com.library.bookarte.borrow.repository.BookMonthlyStatsRepository;
 import com.library.bookarte.borrow.repository.BorrowRepository;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
@@ -21,15 +22,18 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,6 +50,10 @@ public class BorrowService {
     private final PenaltyRepository penaltyRepository;
     private final PenaltyService penaltyService;
     private final BorrowCacheService borrowCacheService;
+    private final BookMonthlyStatsRepository bookMonthlyStatsRepository;
+
+    @Qualifier("objectRedisTemplate")
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @PersistenceContext
     private EntityManager em;
@@ -228,13 +236,34 @@ public class BorrowService {
         return  fullList;
     }
 
-    //기본 조회
+    public List<MonthlyData> getRollingYearHistoryWithCache(Long bookId) {
+        String cacheKey = "book:stats:" + bookId;
+
+        // 1. Redis 캐시 확인 (Hit 시 즉시 반환)
+        List<MonthlyData> cachedData = (List<MonthlyData>) redisTemplate.opsForValue().get(cacheKey);
+        if (cachedData != null) return cachedData;
+
+        // 2. DB 조회 (이미 집계된 stats 테이블에서 딱 12건만 조회)
+        LocalDate startDate = LocalDate.now().minusMonths(12);
+        List<MonthlyData> dbData = bookMonthlyStatsRepository.findLastYearStats(
+                bookId, startDate.getYear(), startDate.getMonthValue());
+
+        // 3. 데이터 정제 (대출이 없어서 누락된 달을 0으로 채움)
+        List<MonthlyData> fullList = fillEmptyMonths(dbData, startDate);
+
+        // 4. Redis 저장 (24시간 동안 유지)
+        redisTemplate.opsForValue().set(cacheKey, fullList, Duration.ofHours(24));
+
+        return fullList;
+    }
+
+    //기본 조회 /*사용하지 않음*/
     @Transactional(readOnly = true)
     public Page<PopularBookResDto> getPopularBooks(String period, Pageable pageable){
         return borrowRepository.findPopularBooks(period, pageable);
     }
 
-    //캐싱 적용
+    //캐싱 적용 /*사용하지 않음*/
     @Transactional(readOnly = true)
     @Cacheable(
             value = "popularBooks",
@@ -247,7 +276,7 @@ public class BorrowService {
         return new PopularBookCacheDto(page.getContent(), page.getTotalElements());
     }
 
-    //Top-N 적용
+    //Top-N + 캐싱 적용
     @Transactional(readOnly = true)
     public Page<PopularBookResDto> getPopularBooksWithTopN(String period, Pageable pageable) {
         // 1. 캐시 서비스로부터 래퍼 DTO를 가져옴
@@ -289,5 +318,23 @@ public class BorrowService {
     public void borrowBookWithFailure(Long bookId, Long memberId){
         borrowBook(bookId,memberId);
         throw new RuntimeException("의도적인 트랜잭션 실패 발생");
+    }
+
+    private List<MonthlyData> fillEmptyMonths(List<MonthlyData> dbData, LocalDate startDate) {
+        Map<String, Long> resultMap = dbData.stream()
+                .collect(Collectors.toMap(d -> d.year() + "-" + d.month(), MonthlyData::count));
+
+        List<MonthlyData> fullList = new ArrayList<>();
+        LocalDate cursor = startDate;
+
+        for (int i = 0; i <= 12; i++) {
+            int y = cursor.getYear();
+            int m = cursor.getMonthValue();
+            long count = resultMap.getOrDefault(y + "-" + m, 0L);
+
+            fullList.add(new MonthlyData(y, m, count));
+            cursor = cursor.plusMonths(1);
+        }
+        return fullList;
     }
 }
