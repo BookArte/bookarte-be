@@ -20,11 +20,13 @@ public class LibararyBatchJobConfig {
     @Bean
     public Job libraryMasterJob(
             @Qualifier("overdueCheckStep") Step overdueCheckStep,
-            @Qualifier("popularBookStatStep") Step popularBookStatStep
+            @Qualifier("popularBookStatStep") Step popularBookStatStep,
+            @Qualifier("bookMonthlyStatStep") Step bookMonthlyStatStep
     ) {
         return new JobBuilder("libraryMasterJob", jobRepository)
                 .start(overdueCheckStep)      // 1. 연체 처리
-                .next(popularBookStatStep)   // 2. 인기 도서 집계
+                .next(popularBookStatStep)    // 2. 인기 도서 집계
+                .next(bookMonthlyStatStep)    // 3. 도서별 1년간 월별 대출 통계 집계
                 .build();
     }
 }

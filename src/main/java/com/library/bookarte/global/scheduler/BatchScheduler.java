@@ -22,11 +22,11 @@ public class BatchScheduler {
     private final JobOperator jobOperator;
     private final Job libraryMasterJob;
 
-    @EventListener(ApplicationReadyEvent.class)
+/*    @EventListener(ApplicationReadyEvent.class)
     public  void onApplicationReady(){
         log.info(">>>> [System Startup] 서버 구동 완료. 초기 배치 실행 및 캐시 워밍을 시작합니다.");
         runLibraryMasterJob();
-    }
+    }*/
 
     @Scheduled(cron = "0 0 0 * * *")
     public void scheduleLibraryMasterJob() {
