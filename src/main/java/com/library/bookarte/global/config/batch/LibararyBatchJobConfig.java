@@ -29,4 +29,31 @@ public class LibararyBatchJobConfig {
                 .next(bookMonthlyStatStep)    // 3. 도서별 1년간 월별 대출 통계 집계
                 .build();
     }
+
+    /**
+     * 1. 매일 실행되는 배치 (연체 체크, 인기 도서)
+     */
+    @Bean
+    public Job dailyLibraryJob(
+            @Qualifier("overdueCheckStep") Step overdueCheckStep,
+            @Qualifier("popularBookStatStep") Step popularBookStatStep
+    ) {
+        return new JobBuilder("dailyLibraryJob", jobRepository)
+                .start(overdueCheckStep) // 연체 처리
+                .next(popularBookStatStep) // 인기 도서
+                .build();
+    }
+
+    /**
+     * 2. 매달 1일 실행되는 배치
+     */
+    @Bean
+    public Job monthlyStatJob(
+            @Qualifier("bookMonthlyStatStep") Step bookMonthlyStatStep
+    ) {
+        return new JobBuilder("monthlyStatJob", jobRepository)
+                .start(bookMonthlyStatStep) // 월간 대출 통계
+                .build();
+    }
+
 }

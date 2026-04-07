@@ -244,15 +244,30 @@ public class BorrowService {
         if (cachedData != null) return cachedData;
 
         // 2. DB 조회 (이미 집계된 stats 테이블에서 딱 12건만 조회)
-        LocalDate startDate = LocalDate.now().minusMonths(12);
+        LocalDate now = LocalDate.now();
+        LocalDate startDate = now.minusMonths(12).withDayOfMonth(1);
+
         List<MonthlyData> dbData = bookMonthlyStatsRepository.findLastYearStats(
                 bookId, startDate.getYear(), startDate.getMonthValue());
 
         // 3. 데이터 정제 (대출이 없어서 누락된 달을 0으로 채움)
-        List<MonthlyData> fullList = fillEmptyMonths(dbData, startDate);
+        List<MonthlyData> fullList = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            LocalDate targetDate = startDate.plusMonths(i);
+            int year = targetDate.getYear();
+            int month = targetDate.getMonthValue();
+
+            // DB 데이터 중 해당 연/월이 있는지 확인
+            MonthlyData data = dbData.stream()
+                    .filter(d -> d.year() == year && d.month() == month)
+                    .findFirst()
+                    .orElse(new MonthlyData(year, month, 0L));
+
+            fullList.add(data);
+        }
 
         // 4. Redis 저장 (24시간 동안 유지)
-        redisTemplate.opsForValue().set(cacheKey, fullList, Duration.ofHours(24));
+        redisTemplate.opsForValue().set(cacheKey, fullList, Duration.ofDays(30));
 
         return fullList;
     }
