@@ -24,7 +24,7 @@ public class BaseBookServiceTest {
     @DisplayName("기존 LIKE 검색 성능 측정 - 제목 키워드")
     void baseLikeSearchTest() {
         SearchFilterDto filterDto = new SearchFilterDto();
-        filterDto.setBookTitle("테스트");
+        filterDto.setBookTitle("자바 개정");
 
         StopWatch stopWatch = new StopWatch();
         stopWatch.start("Title LIKE Search");
