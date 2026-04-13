@@ -74,7 +74,7 @@ public class BookController implements BookControllerDocs {
     @Override
     public ResponseEntity<GlobalResponseDto<Page<BookResDto>>> listBook(@ModelAttribute SearchFilterDto searchFilterDto,
                                                                         @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable){
-        Page<BookResDto> result = bookService.findBooksWithFilter(searchFilterDto, pageable);
+        Page<BookResDto> result = bookService.findBooksWithFilterAndFTS(searchFilterDto, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK,result));

@@ -11,16 +11,19 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Random;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 public class BulkDataGenerator {
 
     private final JdbcTemplate jdbcTemplate;
+    private static final String[] SUBJECTS = {"스프링", "자바", "객체지향", "알고리즘", "데이터베이스", "클라우드", "파이썬", "리액트", "도커", "MSA"};
+    private static final String[] ACTIONS = {"정석", "가이드", "입문", "실전 프로젝트", "고급 프로그래밍", "깊이 있게", "이해하기", "성능 최적화"};
+    private static final String[] SUFFIXES = {"1권", "2권", "개정판", "완성", "비결", "핵심 원리"};
 
     @Transactional
     public void bulkInsertBooks(int totalCount) {
-        // 1. 현재 마지막 ID 조회
         Long startMaxId = jdbcTemplate.queryForObject("SELECT IFNULL(MAX(book_id), 0) FROM book", Long.class);
 
         String bookSql = "INSERT INTO book (book_title, publisher_name, publication_date, book_isbn, " +
@@ -32,8 +35,7 @@ public class BulkDataGenerator {
         int batchSize = 1000;
         Random random = new Random();
 
-        // [Step A] Book 테이블만 먼저 전부 적재
-        System.out.println("Book 데이터 적재 시작...");
+        System.out.println("100만 건 Book 데이터 적재 시작...");
         for (int i = 0; i < totalCount; i += batchSize) {
             final int startIdx = i;
             final int currentBatchSize = Math.min(batchSize, totalCount - startIdx);
@@ -42,15 +44,21 @@ public class BulkDataGenerator {
                 @Override
                 public void setValues(PreparedStatement ps, int j) throws SQLException {
                     int idx = startIdx + j;
-                    ps.setString(1, "테스트 도서 제목 " + idx);
-                    ps.setString(2, "출판사 " + (idx % 50));
+
+                    // 랜덤한 제목 생성: 예) "자바 성능 최적화 핵심 원리"
+                    String randomTitle = SUBJECTS[random.nextInt(SUBJECTS.length)] + " " +
+                            ACTIONS[random.nextInt(ACTIONS.length)] + " " +
+                            SUFFIXES[random.nextInt(SUFFIXES.length)] + " " + idx;
+
+                    ps.setString(1, randomTitle);
+                    ps.setString(2, "출판사 " + (random.nextInt(100))); // 출판사도 무작위
                     ps.setObject(3, LocalDate.now().minusDays(random.nextInt(3650)));
-                    ps.setString(4, "ISBN-" + String.format("%08d", idx));
-                    ps.setString(5, "상세 내용 " + idx);
+                    ps.setString(4, "ISBN-" + UUID.randomUUID().toString().substring(0, 8) + idx);
+                    ps.setString(5, randomTitle + "에 대한 상세 상세 상세 내용입니다.");
                     ps.setBoolean(6, true);
-                    ps.setString(7, "CALL-" + idx);
+                    ps.setString(7, "CALL-" + UUID.randomUUID().toString().substring(0, 5).toUpperCase());
                     ps.setString(8, "https://example.com/" + idx + ".jpg");
-                    ps.setLong(9, 1L); // 에러 방지를 위해 카테고리 ID를 1로 고정 (실제 ID가 1번인지 확인 필수)
+                    ps.setLong(9, 1L);
                     ps.setObject(10, LocalDateTime.now());
                     ps.setObject(11, LocalDateTime.now());
                 }
@@ -59,8 +67,6 @@ public class BulkDataGenerator {
             });
         }
 
-        // [Step B] Book 적재 완료 후 Participant 데이터 적재
-        // Step A에서 생성된 정확한 ID 범위를 사용합니다.
         System.out.println("Participant 데이터 적재 시작...");
         for (int i = 0; i < totalCount; i += batchSize) {
             final int startIdx = i;

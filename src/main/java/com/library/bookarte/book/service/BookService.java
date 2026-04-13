@@ -172,6 +172,12 @@ public class BookService {
         return bookRepository.findBooks(searchFilterDto, pageable);
     }
 
+    /*도서 조건부 및 전체 조회 api*/
+    @Transactional(readOnly = true)
+    public Page<BookResDto> findBooksWithFilterAndFTS(SearchFilterDto searchFilterDto,Pageable pageable){
+        return bookRepository.findBooksWithFTS(searchFilterDto, pageable);
+    }
+
     /*카카오, 국립 중앙 도서관 api 호출*/
     public List<BookSearchResult> searchBooksWithApi(String query){
 

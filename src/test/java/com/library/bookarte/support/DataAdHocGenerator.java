@@ -16,9 +16,9 @@ public class DataAdHocGenerator {
 
     @Test
     @Commit // 테스트가 성공하면 롤백하지 않고 DB에 반영
-    @DisplayName("로컬 DB 성능 테스트를 위한 10만 건 데이터 적재")
+    @DisplayName("로컬 DB 성능 테스트를 위한 100만 건 데이터 적재")
     void generateLargeScaleData() {
-        int totalBooks = 100_000;
+        int totalBooks = 1000000;
 
         long startTime = System.currentTimeMillis();
         bulkDataGenerator.bulkInsertBooks(totalBooks);
