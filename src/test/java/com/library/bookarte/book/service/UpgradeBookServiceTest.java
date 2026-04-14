@@ -33,6 +33,40 @@ public class UpgradeBookServiceTest {
         printResult(stopWatch, result);
     }
 
+    @Test
+    @DisplayName("빈도 기반 캐싱 적용 후 성능 측정 - 인기 키워드 시나리오")
+    void cachedSearchPerformanceTest() {
+        SearchFilterDto filterDto = new SearchFilterDto();
+        filterDto.setBookTitle("자바 개정");
+        int threshold = 5; // 설정한 임계치
+        PageRequest pageRequest = PageRequest.of(0, 10);
+
+        StopWatch stopWatch = new StopWatch();
+
+        // [Step 1] Warm-up: 임계치 직전까지 검색 수행 (캐싱 전)
+        System.out.println("=== 1~4회차: 빈도 누적 단계 (DB 조회 예상) ===");
+        for (int i = 1; i < threshold; i++) {
+            bookService.findBooksWithFilterAndFTS(filterDto, pageRequest);
+        }
+
+        // [Step 2] Threshold 달성 회차 측정 (DB 조회 + 캐시 적재)
+        stopWatch.start("Threshold Reach (5th Search - DB + Cache Writing)");
+        Page<BookResDto> firstCacheResult = bookService.findBooksWithFilterAndFTS(filterDto, pageRequest);
+        stopWatch.stop();
+
+        // [Step 3] Cache Hit 측정 (완전한 캐시 데이터 반환)
+        stopWatch.start("Cache Hit (6th Search - Redis Only)");
+        Page<BookResDto> cachedResult = bookService.findBooksWithFilterAndFTS(filterDto, pageRequest);
+        stopWatch.stop();
+
+        // 결과 출력
+        printResult(stopWatch, cachedResult);
+
+        // 검증: 캐시 적중 시 소요 시간은 극단적으로 짧아야 함 (예: 10ms 내외)
+        long cachedTime = stopWatch.getLastTaskTimeMillis();
+        System.out.println("캐시 적중 시 응답 시간: " + cachedTime + "ms");
+    }
+
 
     private void printResult(StopWatch sw, Page<?> result) {
         System.out.println("\n-----------------------------------------");
