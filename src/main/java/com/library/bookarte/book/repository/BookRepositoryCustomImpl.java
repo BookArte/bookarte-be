@@ -4,6 +4,7 @@ import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
+import com.library.bookarte.book.service.SearchCacheService;
 import com.library.bookarte.book.utils.BookParticipantUtils;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -35,6 +37,7 @@ import static com.library.bookarte.wish.entity.QWish.wish;
 @Slf4j
 public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
+    private final SearchCacheService searchCacheService;
 
     @Override
     public Page<BookResDto> findBooks(SearchFilterDto searchFilterDto, Pageable pageable){
@@ -102,6 +105,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
     @Override
     public Page<BookResDto> findBooksWithFTS(SearchFilterDto searchFilterDto, Pageable pageable){
+
+        long startFetch = System.currentTimeMillis();
+
         //파라미터
         String categoryName = searchFilterDto.getCategory();
         String bookTitle = searchFilterDto.getBookTitle();
@@ -112,8 +118,6 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         LocalDate end = searchFilterDto.getPublicationDateEnd();
         LocalDate createAtStart = searchFilterDto.getCreatedAtStart();
         LocalDate createAtEnd = searchFilterDto.getCreatedAtEnd();
-
-        log.info("로그 포인트 1: {}",bookTitle);
 
         //조건 메서드들 분리
         BooleanExpression[] predicates = {
@@ -137,6 +141,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
+        long afterIds = System.currentTimeMillis();
+        System.out.println("Step 1 (ID 조회) 소요 시간: " + (afterIds - startFetch) + "ms");
+
         if (ids.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
@@ -155,24 +162,25 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .map(Book::toBookResDto)
                 .collect(Collectors.toList());
 
+        long afterFetch = System.currentTimeMillis();
+        System.out.println("Step 2 (Fetch Join) 소요 시간: " + (afterFetch - afterIds) + "ms");
 
+        String filterHash = generateFilterHash(searchFilterDto);
 
-        // 전체 카운트 조회
-        long total;
-        // 현재 페이지가 10,000건(혹은 특정 기준) 이하를 보고 있다면 실제 카운트를 수행하고,
-        // 그게 아니라면 대략적인 고정 수치를 반환하거나 조회를 제한합니다.
-        if (pageable.getOffset() >= 10000) {
-            total = 10000; // 10,000건 이상은 의미 없다고 판단하여 캡핑(Capping)
-        } else {
-            List<Long> countList = jpaQueryFactory
-                    .select(book.bookId)
-                    .from(book)
-                    .where(predicates)
-                    .limit(10001)
-                    .fetch();
+        long total = searchCacheService.getCachedTotalCount(
+                filterHash,
+                5,
+                () -> {
+                    return (long) jpaQueryFactory
+                            .select(book.bookId)
+                            .from(book)
+                            .where(predicates)
+                            .limit(10000)
+                            .fetch().size();
+                }
+        );
 
-            total = countList.size();
-        }
+        System.out.println("Step 3 (Count 조회) 소요 시간: " + (System.currentTimeMillis() - afterFetch) + "ms");
 
 
         // 아래 상황일 때 카운트 쿼리 x
@@ -415,7 +423,6 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
     //제목 조건 메서드
     private BooleanExpression titleFullText(String bookTitle){
-        log.info("로그 포인트 2: {}",bookTitle);
         if(!StringUtils.hasText(bookTitle)) return null;
 
         String formattedTitle = Arrays.stream(bookTitle.split(" "))
@@ -438,5 +445,29 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                         "function('match_against', {0}, {1})",
                         book.participants.any().name, formattedAuthor).gt(0)
                 .and(book.participants.any().type.eq(ParticipantType.AUTHOR));
+    }
+
+    private String generateFilterHash(SearchFilterDto searchFilterDto){
+
+        String bookTitle =  searchFilterDto.getBookTitle();
+        String category = searchFilterDto.getCategory();
+        String bookIsbn = searchFilterDto.getBookIsbn();
+        String pulisherName = searchFilterDto.getPublisherName();
+        String bookAuthor = searchFilterDto.getBookAuthor();
+
+        LocalDate publicationDateStart = searchFilterDto.getPublicationDateStart();
+        LocalDate publicationDateEnd = searchFilterDto.getPublicationDateEnd();
+        LocalDate createdAtStart = searchFilterDto.getCreatedAtStart();
+        LocalDate createdAtEnd = searchFilterDto.getCreatedAtEnd();
+
+        return DigestUtils.md5DigestAsHex((bookTitle +
+                        category +
+                        bookIsbn +
+                        pulisherName +
+                        bookAuthor +
+                        publicationDateStart +
+                        publicationDateEnd +
+                        createdAtStart +
+                        createdAtEnd).getBytes());
     }
 }
