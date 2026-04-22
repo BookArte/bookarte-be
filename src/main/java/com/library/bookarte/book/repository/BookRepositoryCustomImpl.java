@@ -3,12 +3,14 @@ package com.library.bookarte.book.repository;
 import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.entity.Book;
+import com.library.bookarte.book.entity.QBook_Participant;
 import com.library.bookarte.book.entity.type.ParticipantType;
 import com.library.bookarte.book.service.SearchCacheService;
 import com.library.bookarte.book.utils.BookParticipantUtils;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +43,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
     @Override
     public Page<BookResDto> findBooks(SearchFilterDto searchFilterDto, Pageable pageable){
+
+        long startFetch = System.currentTimeMillis();
 
         //파라미터
         String categoryName = searchFilterDto.getCategory();
@@ -75,6 +79,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
+        long afterIds = System.currentTimeMillis();
+        System.out.println("Step 1 (ID 조회) 소요 시간: " + (afterIds - startFetch) + "ms");
+
         if (ids.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
@@ -92,6 +99,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .map(Book::toBookResDto)
                 .collect(Collectors.toList());
 
+        long afterFetch = System.currentTimeMillis();
+        System.out.println("Step 2 (Fetch Join) 소요 시간: " + (afterFetch - afterIds) + "ms");
+
 
         // 전체 카운트 조회
         long total = jpaQueryFactory
@@ -99,6 +109,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .from(book)
                 .where(predicates)
                 .fetchOne();
+
+        System.out.println("Step 3 (Count 조회) 소요 시간: " + (System.currentTimeMillis() - afterFetch) + "ms");
 
         return new PageImpl<>(content, pageable, total);
     }
@@ -436,15 +448,11 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     }
 
     //저자 조건 메서드
-    private BooleanExpression authorFullText(String author){
-        if(!StringUtils.hasText(author)) return null;
+    private BooleanExpression authorFullText(String author) {
+        if (!StringUtils.hasText(author)) return null;
 
-        String formattedAuthor = "+" + author.trim() + "*";
-
-        return Expressions.numberTemplate(Double.class,
-                        "function('match_against', {0}, {1})",
-                        book.participants.any().name, formattedAuthor).gt(0)
-                .and(book.participants.any().type.eq(ParticipantType.AUTHOR));
+        return book.participants.any().type.eq(ParticipantType.AUTHOR)
+                .and(book.participants.any().name.contains(author));
     }
 
     private String generateFilterHash(SearchFilterDto searchFilterDto){
