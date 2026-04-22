@@ -42,7 +42,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     @Override
     public Page<BookResDto> findBooks(SearchFilterDto searchFilterDto, Pageable pageable){
 
-        long startFetch = System.currentTimeMillis();
+/*        long startFetch = System.currentTimeMillis();*/
 
         //파라미터
         String categoryName = searchFilterDto.getCategory();
@@ -77,8 +77,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        long afterIds = System.currentTimeMillis();
-        System.out.println("Step 1 (ID 조회) 소요 시간: " + (afterIds - startFetch) + "ms");
+/*        long afterIds = System.currentTimeMillis();
+        System.out.println("Step 1 (ID 조회) 소요 시간: " + (afterIds - startFetch) + "ms");*/
 
         if (ids.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
@@ -97,8 +97,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .map(Book::toBookResDto)
                 .collect(Collectors.toList());
 
-        long afterFetch = System.currentTimeMillis();
-        System.out.println("Step 2 (Fetch Join) 소요 시간: " + (afterFetch - afterIds) + "ms");
+/*        long afterFetch = System.currentTimeMillis();
+        System.out.println("Step 2 (Fetch Join) 소요 시간: " + (afterFetch - afterIds) + "ms");*/
 
 
         // 전체 카운트 조회
@@ -108,7 +108,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .where(predicates)
                 .fetchOne();
 
-        System.out.println("Step 3 (Count 조회) 소요 시간: " + (System.currentTimeMillis() - afterFetch) + "ms");
+/*        System.out.println("Step 3 (Count 조회) 소요 시간: " + (System.currentTimeMillis() - afterFetch) + "ms");*/
 
         return new PageImpl<>(content, pageable, total);
     }
@@ -116,7 +116,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     @Override
     public Page<BookResDto> findBooksWithFTS(SearchFilterDto searchFilterDto, Pageable pageable){
 
-        long startFetch = System.currentTimeMillis();
+/*        long startFetch = System.currentTimeMillis();*/
 
         //파라미터
         String categoryName = searchFilterDto.getCategory();
@@ -151,8 +151,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        long afterIds = System.currentTimeMillis();
-        System.out.println("Step 1 (ID 조회) 소요 시간: " + (afterIds - startFetch) + "ms");
+/*        long afterIds = System.currentTimeMillis();
+        System.out.println("Step 1 (ID 조회) 소요 시간: " + (afterIds - startFetch) + "ms");*/
 
         if (ids.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
@@ -172,8 +172,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .map(Book::toBookResDto)
                 .collect(Collectors.toList());
 
-        long afterFetch = System.currentTimeMillis();
-        System.out.println("Step 2 (Fetch Join) 소요 시간: " + (afterFetch - afterIds) + "ms");
+/*        long afterFetch = System.currentTimeMillis();
+        System.out.println("Step 2 (Fetch Join) 소요 시간: " + (afterFetch - afterIds) + "ms");*/
 
         String filterHash = generateFilterHash(searchFilterDto);
 
@@ -190,7 +190,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 }
         );
 
-        System.out.println("Step 3 (Count 조회) 소요 시간: " + (System.currentTimeMillis() - afterFetch) + "ms");
+/*        System.out.println("Step 3 (Count 조회) 소요 시간: " + (System.currentTimeMillis() - afterFetch) + "ms");*/
 
 
         // 아래 상황일 때 카운트 쿼리 x
