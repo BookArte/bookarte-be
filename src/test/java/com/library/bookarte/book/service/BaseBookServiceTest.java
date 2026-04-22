@@ -55,6 +55,22 @@ public class BaseBookServiceTest {
     }
 
     @Test
+    @DisplayName("기존 방식 성능 측정 - 저자 조건 검색")
+    void baselineAuthorSearch(){
+        SearchFilterDto filterDto = new SearchFilterDto();
+        filterDto.setBookAuthor("저자 80");
+
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start("Author LIKE Search");
+
+        Page<BookResDto> result = bookService.findBooksWithFilter(filterDto, PageRequest.of(0, 10));
+
+        stopWatch.stop();
+
+        printResult(stopWatch, result);
+    }
+
+    @Test
     @DisplayName("기존 방식 성능 측정 - 딥 페이징 (1000페이지)")
     void baselineDeepPagingSearch() {
         SearchFilterDto filter = new SearchFilterDto(); // 조건 없이 전체 조회
