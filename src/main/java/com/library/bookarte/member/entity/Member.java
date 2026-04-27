@@ -113,6 +113,7 @@ public class Member extends BaseEntity {
 
     public MemberResponse toResDto(){
         return MemberResponse.builder()
+                .id(this.memberId)
                 .userId(this.memberUserId)
                 .name(this.memberName)
                 .tel(this.memberTel)
