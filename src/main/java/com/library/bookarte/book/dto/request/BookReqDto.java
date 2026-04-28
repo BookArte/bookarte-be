@@ -1,6 +1,7 @@
 package com.library.bookarte.book.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.library.bookarte.book.validator.AtLeastOneThumbnail;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@AtLeastOneThumbnail
 public class BookReqDto {
 
     //책제목
