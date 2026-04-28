@@ -163,7 +163,6 @@ public class MemberService {
 
         // 3. 다음 페이지 존재 여부 및 다음 커서 계산
         Long lastCursor = content.isEmpty() ? null : content.get(content.size() - 1).getId();
-        System.out.println(content.get(content.size() - 1));
         boolean hasNext = content.size() >= pageSize;
 
         return new CursorResponse<>(content, lastCursor, hasNext);
