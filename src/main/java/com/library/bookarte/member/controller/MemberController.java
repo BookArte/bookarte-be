@@ -1,5 +1,6 @@
 package com.library.bookarte.member.controller;
 
+import com.library.bookarte.global.dto.response.CursorResponse;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import com.library.bookarte.member.dto.request.*;
 import com.library.bookarte.member.dto.response.*;
@@ -9,8 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/member")
@@ -80,8 +79,12 @@ public class MemberController implements MemberControllerDocs {
     }
 
     @Override
-    public ResponseEntity<GlobalResponseDto<List<MemberResponse>>> getMemberList(@RequestParam(name = "userId", required = false) String userId){
-        List<MemberResponse> result = memberService.findListByMemberUserID(userId);
+    public ResponseEntity<GlobalResponseDto<CursorResponse<MemberResponse>>> getMemberList(
+            @RequestParam(name = "lastMemberId", required = false) Long lastMemberId,
+            @RequestParam(name = "userId", required = false) String userId,
+            @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize
+    ){
+        CursorResponse<MemberResponse> result = memberService.findListByCursor(lastMemberId, userId, pageSize);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }

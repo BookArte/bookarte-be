@@ -77,7 +77,7 @@ public class BorrowController implements BorrowControllerDocs {
 
     @Override
     public ResponseEntity<GlobalResponseDto<List<MonthlyData>>> rollingYear(@PathVariable Long bookId){
-        List<MonthlyData> result = borrowService.getRollingYearHistory(bookId);
+        List<MonthlyData> result = borrowService.getRollingYearHistoryWithCache(bookId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }

@@ -12,6 +12,7 @@ import java.util.Set;
 
 public interface BookRepositoryCustom {
     Page<BookResDto> findBooks(SearchFilterDto searchFilterDto, Pageable pageable);
+    Page<BookResDto> findBooksWithFTS(SearchFilterDto searchFilterDto, Pageable pageable);
     Optional<BookResDto> findBookDetailWithWish(Long bookId, Long memberId);
     List<Book> findBooksAlsoBorrowed(Long bookId, Set<Long> excludeIds);
     List<Book> findBooksByAuthorOrderByBorrowCount(String authorName, Set<Long> excludeIds, int limit);

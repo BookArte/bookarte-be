@@ -1,5 +1,6 @@
 package com.library.bookarte.member.controller;
 
+import com.library.bookarte.global.dto.response.CursorResponse;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import com.library.bookarte.member.dto.request.*;
 import com.library.bookarte.member.dto.response.*;
@@ -8,12 +9,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "Member")
 public interface MemberControllerDocs {
@@ -108,6 +106,14 @@ public interface MemberControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러")
     })
     @GetMapping("/find_list")
-    ResponseEntity<GlobalResponseDto<List<MemberResponse>>> getMemberList(@Parameter(description = "검색할 유저 ID (공백일 경우 전체 조회)")
-                                                                          @RequestParam(required = false) String userId);
+    ResponseEntity<GlobalResponseDto<CursorResponse<MemberResponse>>> getMemberList(
+            @Parameter(description = "마지막으로 조회된 멤버의 ID (첫 페이지 조회 시 null)")
+            @RequestParam(name = "lastMemberId", required = false) Long lastMemberId,
+
+            @Parameter(description = "검색할 유저 ID (공백일 경우 전체 조회)")
+            @RequestParam(name = "userId", required = false) String userId,
+
+            @Parameter(description = "한 페이지당 가져올 데이터 수 (기본값: 10)")
+            @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize
+    );
 }

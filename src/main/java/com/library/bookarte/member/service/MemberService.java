@@ -2,6 +2,7 @@ package com.library.bookarte.member.service;
 
 import com.library.bookarte.borrow.entity.type.Status;
 import com.library.bookarte.borrow.repository.BorrowRepository;
+import com.library.bookarte.global.dto.response.CursorResponse;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.global.util.StringUtils;
@@ -151,17 +152,20 @@ public class MemberService {
         member.updatePassword(encodedNewPassword);
     }
 
-    public List<MemberResponse> findListByMemberUserID(String userId) {
-        List<Member> members;
+    public CursorResponse<MemberResponse> findListByCursor(Long lastMemberId, String userId, int pageSize) {
+        // 1. 커서 기반 조회
+        List<Member> members = memberRepository.findMembersByCursor(lastMemberId, userId, pageSize);
 
-        if (userId == null || userId.trim().isEmpty()) {
-            members = memberRepository.findALlByOrderByMemberNameAsc();
-        } else {
-            members = memberRepository.findMembersByMemberUserId(userId);
-        }
-
-        return members.stream()
+        // 2. 응답 DTO 변환
+        List<MemberResponse> content = members.stream()
                 .map(Member::toResDto)
                 .toList();
+
+        // 3. 다음 페이지 존재 여부 및 다음 커서 계산
+        Long lastCursor = content.isEmpty() ? null : content.get(content.size() - 1).getId();
+        System.out.println(content.get(content.size() - 1));
+        boolean hasNext = content.size() >= pageSize;
+
+        return new CursorResponse<>(content, lastCursor, hasNext);
     }
 }

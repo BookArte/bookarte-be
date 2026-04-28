@@ -167,7 +167,7 @@ public class BorrowRepositoryCustomImpl implements BorrowRepositoryCustom{
                 .where(borrow.createdAt.after(startDate))
                 .groupBy(borrow.book.bookId)
                 .orderBy(borrow.count().desc(), borrow.book.bookId.asc())
-                .limit(limit) // 50만 건 중 상위 N개만 추출
+                .limit(limit)
                 .fetch();
 
         if (stats.isEmpty()) return Collections.emptyList();
@@ -183,7 +183,7 @@ public class BorrowRepositoryCustomImpl implements BorrowRepositoryCustom{
                 .where(book.bookId.in(bookIds))
                 .fetch();
 
-        // 3. 결과 매핑 및 정렬 (무거운 countDistinct 제거)
+        // 3. 결과 매핑 및 정렬
         return books.stream()
                 .map(book -> book.toPopularBookResDto(countMap.getOrDefault(book.getBookId(), 0L)))
                 .sorted(Comparator.comparing(PopularBookResDto::getBorrowCount).reversed())

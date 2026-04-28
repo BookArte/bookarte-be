@@ -104,6 +104,10 @@ dependencies {
 
 	// Lucy XSS Filter
 	implementation 'com.navercorp.lucy:lucy-xss:1.6.3'
+
+	//Flyway
+	implementation 'org.springframework.boot:spring-boot-starter-flyway'
+	implementation 'org.flywaydb:flyway-mysql'
 }
 
 tasks.named('test') {

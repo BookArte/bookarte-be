@@ -4,11 +4,11 @@ import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
+import com.library.bookarte.book.service.SearchCacheService;
 import com.library.bookarte.book.utils.BookParticipantUtils;
-import com.library.bookarte.wish.entity.QWish;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -35,9 +37,12 @@ import static com.library.bookarte.wish.entity.QWish.wish;
 @Slf4j
 public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
+    private final SearchCacheService searchCacheService;
 
     @Override
     public Page<BookResDto> findBooks(SearchFilterDto searchFilterDto, Pageable pageable){
+
+/*        long startFetch = System.currentTimeMillis();*/
 
         //파라미터
         String categoryName = searchFilterDto.getCategory();
@@ -72,6 +77,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
+/*        long afterIds = System.currentTimeMillis();
+        System.out.println("Step 1 (ID 조회) 소요 시간: " + (afterIds - startFetch) + "ms");*/
+
         if (ids.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
@@ -89,6 +97,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .map(Book::toBookResDto)
                 .collect(Collectors.toList());
 
+/*        long afterFetch = System.currentTimeMillis();
+        System.out.println("Step 2 (Fetch Join) 소요 시간: " + (afterFetch - afterIds) + "ms");*/
+
 
         // 전체 카운트 조회
         long total = jpaQueryFactory
@@ -97,8 +108,97 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .where(predicates)
                 .fetchOne();
 
+/*        System.out.println("Step 3 (Count 조회) 소요 시간: " + (System.currentTimeMillis() - afterFetch) + "ms");*/
+
         return new PageImpl<>(content, pageable, total);
     }
+
+    @Override
+    public Page<BookResDto> findBooksWithFTS(SearchFilterDto searchFilterDto, Pageable pageable){
+
+/*        long startFetch = System.currentTimeMillis();*/
+
+        //파라미터
+        String categoryName = searchFilterDto.getCategory();
+        String bookTitle = searchFilterDto.getBookTitle();
+        String bookIsbn = searchFilterDto.getBookIsbn();
+        String publisherName = searchFilterDto.getPublisherName();
+        String author = searchFilterDto.getBookAuthor();
+        LocalDate start = searchFilterDto.getPublicationDateStart();
+        LocalDate end = searchFilterDto.getPublicationDateEnd();
+        LocalDate createAtStart = searchFilterDto.getCreatedAtStart();
+        LocalDate createAtEnd = searchFilterDto.getCreatedAtEnd();
+
+        //조건 메서드들 분리
+        BooleanExpression[] predicates = {
+                categoryNameEq(categoryName),
+                titleFullText(bookTitle),
+                isbnContains(bookIsbn),
+                publisherContains(publisherName),
+                authorFullText(author),
+                publicationDateBetween(start,end),
+                createAtBetween(createAtStart,createAtEnd)
+        };
+
+        //도서 id만 선 조회
+        List<Long> ids = jpaQueryFactory
+                .select(book.bookId)
+                .from(book)
+                .join(book.category, category)
+                .where(predicates)
+                .orderBy(getOrderSpecifiers(pageable.getSort()))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+/*        long afterIds = System.currentTimeMillis();
+        System.out.println("Step 1 (ID 조회) 소요 시간: " + (afterIds - startFetch) + "ms");*/
+
+        if (ids.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+
+        // 조회된 id들에 해당하는 데이터만 Fetch join으로 조회
+        List<Book> books = jpaQueryFactory
+                .selectFrom(book)
+                .join(book.category, category).fetchJoin()
+                .leftJoin(book.participants).fetchJoin()
+                .where(book.bookId.in(ids))
+                .orderBy(getOrderSpecifiers(pageable.getSort()))
+                .fetch();
+
+        List<BookResDto> content = books.stream()
+                .map(Book::toBookResDto)
+                .collect(Collectors.toList());
+
+/*        long afterFetch = System.currentTimeMillis();
+        System.out.println("Step 2 (Fetch Join) 소요 시간: " + (afterFetch - afterIds) + "ms");*/
+
+        String filterHash = generateFilterHash(searchFilterDto);
+
+        long total = searchCacheService.getCachedTotalCount(
+                filterHash,
+                5,
+                () -> {
+                    return (long) jpaQueryFactory
+                            .select(book.bookId)
+                            .from(book)
+                            .where(predicates)
+                            .limit(10000)
+                            .fetch().size();
+                }
+        );
+
+/*        System.out.println("Step 3 (Count 조회) 소요 시간: " + (System.currentTimeMillis() - afterFetch) + "ms");*/
+
+
+        // 아래 상황일 때 카운트 쿼리 x
+        // - 첫 페이지이면서 콘텐츠가 pageSize보다 작을 때 (전체 개수를 안 세어도 됨)
+        // - 마지막 페이지일 때 (offset + content size로 계산 가능)
+        return PageableExecutionUtils.getPage(content, pageable, () -> total);
+    }
+
 
     @Override
     public  List<Book> findBooksAlsoBorrowed(Long bookId, Set<Long> excludeIds){
@@ -250,6 +350,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 : null;
     }
 
+    //저자 조건 메서드
     private BooleanExpression authorContains(String author){
         if(!StringUtils.hasText(author)) {
             return null;
@@ -326,5 +427,53 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .fetchFirst();
 
         return fetchWish != null;
+    }
+
+    //조건 메서드 고도화 (Full-Text Search 적용)
+
+    //제목 조건 메서드
+    private BooleanExpression titleFullText(String bookTitle){
+        if(!StringUtils.hasText(bookTitle)) return null;
+
+        String formattedTitle = Arrays.stream(bookTitle.split(" "))
+                .filter(word -> word.length() > 1)
+                .map(word -> "+" + word)
+                .collect(Collectors.joining(" "));
+
+        return Expressions.numberTemplate(Double.class,
+                "function('match_against', {0}, {1})",
+                book.bookTitle, formattedTitle).gt(0);
+    }
+
+    //저자 조건 메서드
+    private BooleanExpression authorFullText(String author) {
+        if (!StringUtils.hasText(author)) return null;
+
+        return book.participants.any().type.eq(ParticipantType.AUTHOR)
+                .and(book.participants.any().name.contains(author));
+    }
+
+    private String generateFilterHash(SearchFilterDto searchFilterDto){
+
+        String bookTitle =  searchFilterDto.getBookTitle();
+        String category = searchFilterDto.getCategory();
+        String bookIsbn = searchFilterDto.getBookIsbn();
+        String pulisherName = searchFilterDto.getPublisherName();
+        String bookAuthor = searchFilterDto.getBookAuthor();
+
+        LocalDate publicationDateStart = searchFilterDto.getPublicationDateStart();
+        LocalDate publicationDateEnd = searchFilterDto.getPublicationDateEnd();
+        LocalDate createdAtStart = searchFilterDto.getCreatedAtStart();
+        LocalDate createdAtEnd = searchFilterDto.getCreatedAtEnd();
+
+        return DigestUtils.md5DigestAsHex((bookTitle +
+                        category +
+                        bookIsbn +
+                        pulisherName +
+                        bookAuthor +
+                        publicationDateStart +
+                        publicationDateEnd +
+                        createdAtStart +
+                        createdAtEnd).getBytes());
     }
 }
