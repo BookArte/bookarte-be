@@ -31,7 +31,7 @@ public class BookController implements BookControllerDocs {
 
     //도서 등록
     @Override
-    public ResponseEntity<GlobalResponseDto<String>> registerBook(@Valid @RequestBody BookReqDto bookReqDto){
+    public ResponseEntity<GlobalResponseDto<String>> registerBook(@Valid @ModelAttribute BookReqDto bookReqDto){
         bookService.registerBook(bookReqDto);
 
         String result = "도서 정보 저장 성공";

@@ -3,6 +3,7 @@ package com.library.bookarte.book.dto.request;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
@@ -43,10 +44,9 @@ public class BookReqDto {
     @NotBlank(message = "도서 소개는 필수 입력 항목입니다.")
     private String bookContents;
 
-    //썸네일
-    @NotBlank(message = "도서 썸네일 URL은 필수 입력 항목입니다.")
-    @Pattern(regexp = "^(http|https)://.*", message = "올바른 이미지 URL 형식이어야 합니다.")
+    //썸네일(url or 파일 선택)
     private String bookThumbnail;
+    private MultipartFile bookThumbnailFile;
 
     //청구기호
     //현재 실제 있는 도서관에 대한 사이트가 아니기에 청구기호는 비어둠
