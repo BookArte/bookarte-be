@@ -1,6 +1,9 @@
 package com.library.bookarte.board.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.library.bookarte.board.entity.Board;
+import com.library.bookarte.board.entity.Qna;
+import com.library.bookarte.board.entity.type.QnaStatus;
 import com.library.bookarte.global.entity.UploadFile;
 import com.library.bookarte.global.entity.type.FileType;
 import com.library.bookarte.global.response.FileResponse;
@@ -25,9 +28,13 @@ public class BoardResponse {
     private LocalDateTime createdAt;
     private String thumbnailPath;
     private List<FileResponse> fileList;
+    private String answerStatus;
+    private String admAnswer;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    private LocalDateTime admAnswerDate;
 
     public static BoardResponse from(Board board) {
-        return BoardResponse.builder()
+        BoardResponseBuilder builder = BoardResponse.builder()
                 .id(board.getBoardId())
                 .category(board.getCategory())
                 .title(board.getTitle())
@@ -36,8 +43,20 @@ public class BoardResponse {
                 .orderNum(board.getOrderNum())
                 .regMemberUserId(board.getRegMember().getMemberUserId())
                 .modMemberUserId(board.getModMember() != null ? board.getModMember().getMemberUserId() : null)
-                .createdAt(board.getCreatedAt())
-                .build();
+                .createdAt(board.getCreatedAt());
+
+        if (board instanceof Qna qna) {
+
+            String statusDesc = (qna.getQnaStatus() != null)
+                    ? qna.getQnaStatus().getDescription()
+                    : null;
+
+            builder.answerStatus(statusDesc)
+                    .admAnswer(qna.getAdmAnswer())
+                    .admAnswerDate(qna.getAdmAnswerDate());
+        }
+
+        return builder.build();
     }
 
     public static BoardResponse from(Board board, List<UploadFile> files) {
@@ -53,7 +72,7 @@ public class BoardResponse {
                 .map(FileResponse::from)
                 .collect(Collectors.toList());
 
-        return BoardResponse.builder()
+        BoardResponseBuilder builder = BoardResponse.builder()
                 .id(board.getBoardId())
                 .category(board.getCategory())
                 .title(board.getTitle())
@@ -64,7 +83,19 @@ public class BoardResponse {
                 .modMemberUserId(board.getModMember() != null ? board.getModMember().getMemberUserId() : null)
                 .createdAt(board.getCreatedAt())
                 .thumbnailPath(thumb)
-                .fileList(fileResponses)
-                .build();
+                .fileList(fileResponses);
+
+        if (board instanceof Qna qna) {
+
+            String statusDesc = (qna.getQnaStatus() != null)
+                    ? qna.getQnaStatus().getDescription()
+                    : null;
+
+            builder.answerStatus(statusDesc)
+                    .admAnswer(qna.getAdmAnswer())
+                    .admAnswerDate(qna.getAdmAnswerDate());
+        }
+
+        return builder.build();
     }
 }

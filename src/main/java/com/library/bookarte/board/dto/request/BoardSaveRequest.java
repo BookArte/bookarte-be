@@ -17,8 +17,9 @@ public class BoardSaveRequest {
     @NotBlank
     private String title;
 
-    @NotBlank
     private String editor;
+
+    private String contents;
 
     private String noticeYn;
 
