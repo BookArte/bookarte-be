@@ -19,10 +19,10 @@ import com.library.bookarte.global.entity.type.FileType;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.global.util.S3Service;
+import com.library.bookarte.global.util.XssUtils;
 import com.library.bookarte.recommendation.repository.RecommendationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,6 +45,7 @@ public class BookService {
     private final AladinClient aladinClient;
 
     private final S3Service s3Service;
+    private final XssUtils xssUtils;
 
     /*도서 등록 api*/
     public void registerBook(BookReqDto bookReqDto){
@@ -52,6 +53,8 @@ public class BookService {
         Category category = categoryService.findByCategoryName(bookReqDto.getBookCategory());
 
         String  refType = "BOOK";
+
+        sanitizeRequest(bookReqDto);
 
         Book book = Book.builder()
                 .bookTitle(bookReqDto.getBookTitle())
@@ -285,8 +288,11 @@ public class BookService {
                 book.addParticipant(translatorName, ParticipantType.TRANSLATOR);
             }
         }
+    }
 
-
+    private void sanitizeRequest(BookReqDto bookReqDto){
+        bookReqDto.setBookContents(xssUtils.filterEditor(bookReqDto.getBookContents()));
+        bookReqDto.setBookTitle(xssUtils.escapeText(bookReqDto.getBookTitle()));
     }
 
 }
