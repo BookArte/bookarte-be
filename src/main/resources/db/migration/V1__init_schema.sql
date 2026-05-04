@@ -115,6 +115,21 @@ CREATE TABLE notice (
                         CONSTRAINT FK_notice_board FOREIGN KEY (board_id) REFERENCES board (board_id)
 ) ENGINE=InnoDB;
 
+CREATE TABLE faq (
+                        board_id BIGINT NOT NULL,
+                        PRIMARY KEY (board_id),
+                        CONSTRAINT FK_faq_board FOREIGN KEY (board_id) REFERENCES board (board_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE qna (
+                        board_id BIGINT NOT NULL,
+                        qna_status ENUM('WAITING', 'COMPLETED') NOT NULL,
+                        adm_answer LONGTEXT,
+                        adm_answer_date DATETIME(6),
+                        PRIMARY KEY (board_id),
+                        CONSTRAINT FK_qna_board FOREIGN KEY (board_id) REFERENCES board (board_id)
+) ENGINE=InnoDB;
+
 -- 도서 추천 테이블
 CREATE TABLE recommendation (
                                 recommendation_id BIGINT NOT NULL AUTO_INCREMENT,

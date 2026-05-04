@@ -30,7 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -131,7 +134,20 @@ public class BoardService {
                 pageable
         );
 
-        return PageResponse.from(boardPage.map(BoardResponse::from));
+        List<Long> boardIds = boardPage.getContent().stream()
+                .map(Board::getBoardId)
+                .collect(Collectors.toList());
+
+        final Map<Long, UploadFile> thumbnailMap = new HashMap<>();
+        if (!boardIds.isEmpty()) {
+            List<UploadFile> thumbnails = s3Service.getThumbnailList(boardIds, type);
+            thumbnails.forEach(file -> thumbnailMap.put(file.getRefId(), file));
+        }
+
+        return PageResponse.from(boardPage.map(board -> {
+            UploadFile thumbnail = thumbnailMap.get(board.getBoardId());
+            return BoardResponse.from(board, thumbnail);
+        }));
 
     }
 
