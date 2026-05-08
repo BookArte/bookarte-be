@@ -99,7 +99,7 @@ CREATE TABLE board (
                        PRIMARY KEY (board_id),
                        CONSTRAINT FK_board_reg_member FOREIGN KEY (reg_member_id) REFERENCES member (member_id),
                        CONSTRAINT FK_board_mod_member FOREIGN KEY (mod_member_id) REFERENCES member (member_id),
-                       CHECK (dtype IN ('NEWS', 'NOTICE'))
+                       CHECK (dtype IN ('NEWS', 'NOTICE', 'FAQ', 'QNA'))
 ) ENGINE=InnoDB;
 
 -- 공지사항/뉴스 상세 (1:1 식별 관계)
