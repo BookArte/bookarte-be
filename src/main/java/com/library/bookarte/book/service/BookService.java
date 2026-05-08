@@ -106,6 +106,20 @@ public class BookService {
             category = categoryService.findByCategoryName(bookReqDto.getBookCategory());
         }
 
+        String updateThumbnailUrl = updateTargetBook.getBookThumbnail();
+
+        Long refId = updateTargetBook.getBookId();
+        String refType = "BOOK";
+
+        MultipartFile newThumbnailFile = bookReqDto.getBookThumbnailFile();
+        if(newThumbnailFile != null && !newThumbnailFile.isEmpty()){
+            s3Service.deleteOldThumbnail(refId,refType);
+            updateThumbnailUrl = s3Service.uploadFile(bookReqDto.getBookThumbnailFile());
+            s3Service.uploadAndSave(refId, refType, newThumbnailFile,FileType.THUMBNAIL);
+        } else if (bookReqDto.getBookThumbnail() != null) {
+            updateThumbnailUrl = bookReqDto.getBookThumbnail();
+        }
+
         List<Book.Participant> updateParticipants;
 
         if(bookReqDto.getBookAuthor() != null || bookReqDto.getBookTranslator() != null) {
@@ -140,7 +154,7 @@ public class BookService {
                 bookReqDto.getBookIsbn(),
                 bookReqDto.getBookContents(),
                 bookReqDto.getBookCallNumber(),
-                bookReqDto.getBookThumbnail(),
+                updateThumbnailUrl,
                 category,
                 updateParticipants
         );
