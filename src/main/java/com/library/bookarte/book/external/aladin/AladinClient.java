@@ -1,5 +1,6 @@
 package com.library.bookarte.book.external.aladin;
 
+import com.library.bookarte.book.dto.response.BestsellerResponse;
 import com.library.bookarte.book.external.aladin.dto.AladinResponse;
 import com.library.bookarte.book.external.dto.AladinBestSellerResDto;
 import lombok.RequiredArgsConstructor;
@@ -19,27 +20,34 @@ public class AladinClient {
 
     @Value("${aladin.api.key}")
     private String aladinApikey;
-    public List<AladinBestSellerResDto> getBestSellers(String type) {
+    public BestsellerResponse getBestSellers(String type, int page, int size) {
         RestTemplate restTemplate = new RestTemplate();
 
         String url = aladinApiUrl +
                 "?ttbkey=" + aladinApikey +
                 "&QueryType=" + type +
-                "&MaxResults=10" +
-                "&start=1" +
+                "&MaxResults=" + size +
+                "&start=" + page +
                 "&SearchTarget=Book" +
                 "&output=xml"+ "&Version=20131101";
 
         AladinResponse aladinResponse = restTemplate.getForObject(url, AladinResponse.class);
 
         if (aladinResponse == null || aladinResponse.getItems() == null) {
-            return new ArrayList<>();
+            return BestsellerResponse.builder().books(new ArrayList<>()).build();
         }
 
-        return aladinResponse.getItems().stream()
+        List<AladinBestSellerResDto> items = aladinResponse.getItems().stream()
                 .map(this::convertToBestSellerDto)
                 .collect(Collectors.toList());
 
+        // 3. 전체 건수와 함께 래퍼 DTO 반환
+        return BestsellerResponse.builder()
+                .books(items)
+                .totalResults(aladinResponse.getTotalResults()) // 응답 객체에서 꺼냄
+                .currentPage(page)
+                .itemsPerPage(size)
+                .build();
     }
 
     private AladinBestSellerResDto convertToBestSellerDto(AladinResponse.Item item) {

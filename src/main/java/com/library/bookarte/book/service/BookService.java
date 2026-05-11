@@ -2,13 +2,13 @@ package com.library.bookarte.book.service;
 
 import com.library.bookarte.book.dto.request.BookDelReqDto;
 import com.library.bookarte.book.dto.request.BookReqDto;
+import com.library.bookarte.book.dto.response.BestsellerResponse;
 import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.dto.response.BulkDeleteResponse;
 import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
 import com.library.bookarte.book.external.aladin.AladinClient;
-import com.library.bookarte.book.external.dto.AladinBestSellerResDto;
 import com.library.bookarte.book.external.dto.BookSearchResult;
 import com.library.bookarte.book.external.kakao.KakaoBookSearchClient;
 import com.library.bookarte.book.external.national.NationalLibrarySearchClient;
@@ -219,15 +219,36 @@ public class BookService {
                 .toList();
     }
 
+    public BookSearchResult searchBookWithApi(String query){
+        List<BookSearchResult> kakaoBookList = kakaoBookSearchClient.search(query);
+        String category = nationalLibrarySearchClient.fetchCategoryByTitle(query);
+
+        return kakaoBookList.stream()
+                .map(book -> BookSearchResult.builder()
+                        .bookTitle(book.getBookTitle())
+                        .bookAuthor(book.getBookAuthor())
+                        .bookTranslator(book.getBookTranslator())
+                        .bookContents(book.getBookContents())
+                        .publisherName(book.getPublisherName())
+                        .publicationDate(book.getPublicationDate())
+                        .bookIsbn(book.getBookIsbn())
+                        .bookThumbnail(book.getBookThumbnail())
+                        .bookCategory(category)
+                        .build()
+                )
+                .toList().get(0);
+
+    }
+
     /* DB 내 이미 존재하는 도서인지 검색*/
     public boolean isDuplicateIsbn(String isbn){
         return bookRepository.existsByBookIsbn(isbn);
     }
 
     /*알라딘 api를 이용하여 베스트셀러 도서 목록 조회*/
-    public List<AladinBestSellerResDto> getBestsellersWithAladin(){
+    public BestsellerResponse getBestsellersWithAladin(int page, int size){
         String type = "Bestseller";
-        return aladinClient.getBestSellers(type);
+        return aladinClient.getBestSellers(type, page, size);
     }
 
     /*연관 도서 목록 조회*/
