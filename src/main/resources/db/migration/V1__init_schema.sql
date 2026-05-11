@@ -44,7 +44,7 @@ CREATE TABLE book (
                       book_isbn VARCHAR(255) NOT NULL,
                       book_contents TEXT NOT NULL,
                       book_call_number VARCHAR(255),
-                      book_thumbnail VARCHAR(255) NOT NULL,
+                      book_thumbnail VARCHAR(255),
                       can_borrow BIT NOT NULL,
                       created_at DATETIME(6) NOT NULL,
                       updated_at DATETIME(6),

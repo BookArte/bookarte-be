@@ -38,7 +38,7 @@ public interface BookControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @PostMapping("/register")
-    ResponseEntity<GlobalResponseDto<String>> registerBook(@Valid @RequestBody BookReqDto bookReqDto);
+    ResponseEntity<GlobalResponseDto<String>> registerBook(@Valid @ModelAttribute BookReqDto bookReqDto);
 
     /*Read: 단일 도서 정보 조회*/
     @Operation(summary = "단일 도서 조회 요청", description = "**성공 응답 데이터:** 단일 도서 정보")
@@ -72,7 +72,7 @@ public interface BookControllerDocs {
     })
     @PatchMapping("/{bookId}")
     ResponseEntity<GlobalResponseDto<Long>> updateBook(@PathVariable("bookId") Long bookId,
-                                                       @Valid @RequestBody BookReqDto bookReqDto);
+                                                       @Valid @ModelAttribute BookReqDto bookReqDto);
     /*Delete: 도서 정보 삭제*/
     @Operation(summary = "도서 삭제 요청", description = "**성공 응답 데이터:** 도서 삭제 성공")
     @Parameter(name = "bookId", description = "삭제할 도서 id", example = "1")

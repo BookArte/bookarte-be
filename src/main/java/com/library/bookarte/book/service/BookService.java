@@ -15,13 +15,17 @@ import com.library.bookarte.book.external.national.NationalLibrarySearchClient;
 import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.category.service.CategoryService;
+import com.library.bookarte.global.entity.type.FileType;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
+import com.library.bookarte.global.util.S3Service;
+import com.library.bookarte.global.util.XssUtils;
 import com.library.bookarte.recommendation.repository.RecommendationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,11 +44,17 @@ public class BookService {
     private final NationalLibrarySearchClient nationalLibrarySearchClient;
     private final AladinClient aladinClient;
 
+    private final S3Service s3Service;
+    private final XssUtils xssUtils;
 
     /*도서 등록 api*/
     public void registerBook(BookReqDto bookReqDto){
 
         Category category = categoryService.findByCategoryName(bookReqDto.getBookCategory());
+
+        String  refType = "BOOK";
+
+        sanitizeRequest(bookReqDto);
 
         Book book = Book.builder()
                 .bookTitle(bookReqDto.getBookTitle())
@@ -58,23 +68,16 @@ public class BookService {
                 .category(category)
                 .build();
 
-        //저자 정보 저장
-        if (bookReqDto.getBookAuthor() != null) {
-            String[] authors = bookReqDto.getBookAuthor().split(","); // 구분자에 맞게 설정
-            for (String authorName : authors) {
-                book.addParticipant(authorName, ParticipantType.AUTHOR);
-            }
-        }
+        addParticipants(book, bookReqDto);
 
-        //역자 정보 저장
-        if (bookReqDto.getBookTranslator() != null) {
-            String[] translators = bookReqDto.getBookTranslator().split(",");
-            for (String translatorName : translators) {
-                book.addParticipant(translatorName, ParticipantType.TRANSLATOR);
-            }
-        }
+        Book savedBook = bookRepository.save(book);
 
-        bookRepository.save(book);
+        MultipartFile bookThumbnailFile = bookReqDto.getBookThumbnailFile();
+        if(bookThumbnailFile != null && !bookThumbnailFile.isEmpty()) {
+            String uploadUrl = s3Service.uploadFile(bookThumbnailFile);
+            s3Service.uploadAndSave(savedBook.getBookId(), refType,bookThumbnailFile, FileType.THUMBNAIL);
+            savedBook.updateThumbnail(uploadUrl);
+        }
     }
 
     /*도서 상세 조회 api*/
@@ -101,6 +104,22 @@ public class BookService {
 
         if(bookReqDto.getBookCategory() != null){
             category = categoryService.findByCategoryName(bookReqDto.getBookCategory());
+        }
+
+        sanitizeRequest(bookReqDto);
+
+        String updateThumbnailUrl = updateTargetBook.getBookThumbnail();
+
+        Long refId = updateTargetBook.getBookId();
+        String refType = "BOOK";
+
+        MultipartFile newThumbnailFile = bookReqDto.getBookThumbnailFile();
+        if(newThumbnailFile != null && !newThumbnailFile.isEmpty()){
+            s3Service.deleteOldThumbnail(refId,refType);
+            updateThumbnailUrl = s3Service.uploadFile(bookReqDto.getBookThumbnailFile());
+            s3Service.uploadAndSave(refId, refType, newThumbnailFile,FileType.THUMBNAIL);
+        } else if (bookReqDto.getBookThumbnail() != null) {
+            updateThumbnailUrl = bookReqDto.getBookThumbnail();
         }
 
         List<Book.Participant> updateParticipants;
@@ -137,7 +156,7 @@ public class BookService {
                 bookReqDto.getBookIsbn(),
                 bookReqDto.getBookContents(),
                 bookReqDto.getBookCallNumber(),
-                bookReqDto.getBookThumbnail(),
+                updateThumbnailUrl,
                 category,
                 updateParticipants
         );
@@ -266,6 +285,30 @@ public class BookService {
                 targetList.add(book);
             }
         }
+    }
+
+    private void addParticipants(Book book, BookReqDto bookReqDto){
+
+        //저자 정보 저장
+        if (bookReqDto.getBookAuthor() != null) {
+            String[] authors = bookReqDto.getBookAuthor().split(","); // 구분자에 맞게 설정
+            for (String authorName : authors) {
+                book.addParticipant(authorName, ParticipantType.AUTHOR);
+            }
+        }
+
+        //역자 정보 저장
+        if (bookReqDto.getBookTranslator() != null) {
+            String[] translators = bookReqDto.getBookTranslator().split(",");
+            for (String translatorName : translators) {
+                book.addParticipant(translatorName, ParticipantType.TRANSLATOR);
+            }
+        }
+    }
+
+    private void sanitizeRequest(BookReqDto bookReqDto){
+        bookReqDto.setBookContents(xssUtils.filterEditor(bookReqDto.getBookContents()));
+        bookReqDto.setBookTitle(xssUtils.escapeText(bookReqDto.getBookTitle()));
     }
 
 }

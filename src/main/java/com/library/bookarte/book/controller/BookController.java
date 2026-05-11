@@ -31,7 +31,7 @@ public class BookController implements BookControllerDocs {
 
     //도서 등록
     @Override
-    public ResponseEntity<GlobalResponseDto<String>> registerBook(@Valid @RequestBody BookReqDto bookReqDto){
+    public ResponseEntity<GlobalResponseDto<String>> registerBook(@Valid @ModelAttribute BookReqDto bookReqDto){
         bookService.registerBook(bookReqDto);
 
         String result = "도서 정보 저장 성공";
@@ -52,7 +52,7 @@ public class BookController implements BookControllerDocs {
     //도서 정보 수정
     @Override
     public ResponseEntity<GlobalResponseDto<Long>> updateBook(@PathVariable("bookId") Long bookId,
-                                                              @Valid @RequestBody BookReqDto bookReqDto) {
+                                                              @Valid @ModelAttribute BookReqDto bookReqDto) {
         Long result = bookService.updateBook(bookId, bookReqDto);
 
         return ResponseEntity.status(HttpStatus.OK)
