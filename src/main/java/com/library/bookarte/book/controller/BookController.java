@@ -91,7 +91,7 @@ public class BookController implements BookControllerDocs {
     }
 
     @Override
-    public ResponseEntity<GlobalResponseDto<BookSearchResult>> findBookByISBNWithLibraryApi(@RequestParam(name = "isbn") String isbn){
+    public ResponseEntity<GlobalResponseDto<BookSearchResult>> findBookByISBNWithLibraryApi(@PathVariable String isbn){
         BookSearchResult result = bookService.searchBookWithApi(isbn);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));

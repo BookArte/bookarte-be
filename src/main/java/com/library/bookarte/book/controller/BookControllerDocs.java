@@ -101,8 +101,8 @@ public interface BookControllerDocs {
             @ApiResponse(responseCode = "200", description = "도서 상세 조회 성공"),
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
-    @GetMapping("/library/search/{isbn}")
-    ResponseEntity<GlobalResponseDto<BookSearchResult>> findBookByISBNWithLibraryApi(@RequestParam(name = "isbn") String isbn);
+    @GetMapping("/library/search/view/{isbn}")
+    ResponseEntity<GlobalResponseDto<BookSearchResult>> findBookByISBNWithLibraryApi(@PathVariable String isbn);
 
 
     @Operation(summary = "DB 내 도서 존재 확인", description = "**성공 응답 데이터:** 존재 유무에 대한 boolean")
