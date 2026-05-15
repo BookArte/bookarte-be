@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -42,7 +43,8 @@ public class BorrowRepositoryCustomImpl implements BorrowRepositoryCustom{
                 statusEq(borrowSearchFilterDto.getStatus()),
                 statusNotEq(borrowSearchFilterDto.getStatusNot()),
                 isOverdueEq(borrowSearchFilterDto.getIsOverdue()),
-                memberIdEq(borrowSearchFilterDto.getMemberId())
+                memberIdEq(borrowSearchFilterDto.getMemberId()),
+                titleContains(borrowSearchFilterDto.getSearchKeyword())
         };
 
         List<Borrow> content = jpaQueryFactory
@@ -215,4 +217,9 @@ public class BorrowRepositoryCustomImpl implements BorrowRepositoryCustom{
         return bookId != null ? borrow.book.bookId.eq(bookId) : null;
     }
 
+    private BooleanExpression titleContains(String searchKeyword) {
+        return StringUtils.hasText(searchKeyword)
+                ? borrow.book.bookTitle.contains(searchKeyword)
+                : null;
+    }
 }
