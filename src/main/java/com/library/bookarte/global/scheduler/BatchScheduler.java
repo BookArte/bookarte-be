@@ -12,7 +12,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
+import java.util.UUID;
+
 
 @Slf4j
 @Component
@@ -48,31 +49,24 @@ public class BatchScheduler {
 
     public void runLibraryMasterJob() {
         try {
-            JobParameters params = new JobParametersBuilder()
-                    .addLong("run.id", System.currentTimeMillis())
-                    .addString("today", LocalDate.now().toString())
-                    .toJobParameters();
-
-            JobExecution executionId = jobOperator.start(libraryMasterJob, params);
-            log.info(">>>> [Scheduler] 도서관 관리 마스터 배치 시작...");
-            log.info("배치 실행 성공, executionId={}", executionId);
-            log.info(">>>> [Scheduler] 도서관 관리 마스터 배치 종료.");
-        } catch (Exception e){
-            log.error("배치 실행 실패", e);
+            JobExecution execution = jobOperator.start(libraryMasterJob, buildJobParameters());
+            log.info(">>>> [Scheduler] libraryMasterJob 시작, executionId={}", execution.getId());
+        } catch (Exception e) {
+            log.error("libraryMasterJob 실행 실패", e);
         }
     }
 
     private void runJob(Job job) {
         try {
-            JobParameters params = new JobParametersBuilder()
-                    .addLong("run.id", System.currentTimeMillis())
-                    .addString("today", LocalDate.now().toString())
-                    .toJobParameters();
-
-            jobOperator.start(job, params);
-            log.info(">>>> [Scheduler] {} 실행 성공", job.getName());
-        } catch (Exception e){
+            JobExecution execution = jobOperator.start(job, buildJobParameters());
+            log.info(">>>> [Scheduler] {} 실행 성공, executionId={}", job.getName(), execution.getId());
+        } catch (Exception e) {
             log.error("{} 실행 실패", job.getName(), e);
         }
+    }
+    private JobParameters buildJobParameters() {
+        return new JobParametersBuilder()
+                .addString("run.id", UUID.randomUUID().toString(), true)
+                .toJobParameters();
     }
 }
