@@ -92,6 +92,20 @@ public interface BoardControllerDocs {
             @ModelAttribute BoardListRequest boardListRequest
     );
 
+    /* Read: 본인 게시글 리스트 조회 */
+    @Operation(summary = "본인 게시글 리스트 조회", description = "**성공 응답 데이터:** 게시글 리스트 조회 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "게시글 리스트 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @GetMapping("/my_list")
+    ResponseEntity<GlobalResponseDto<PageResponse<BoardResponse>>> getMyBoardList(
+            @PathVariable("type") String type,
+            @ModelAttribute BoardListRequest boardListRequest,
+            @AuthenticationPrincipal Long memberId
+    );
+
     /* 파일 다운로드 */
     @Operation(summary = "파일 다운로드", description = "**성공 응답 데이터:** 파일 다운로드 성공")
     @ApiResponses(value = {

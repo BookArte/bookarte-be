@@ -151,6 +151,38 @@ public class BoardService {
 
     }
 
+    @Transactional(readOnly = true)
+    public PageResponse<BoardResponse> getMyBoardList(String type, BoardListRequest boardListRequest, Long memberId) {
+        Pageable pageable = PageRequest.of(boardListRequest.getPage(), boardListRequest.getSize(),
+                Sort.by(Sort.Order.desc("noticeYn"),
+                        Sort.Order.desc("orderNum"),
+                        Sort.Order.desc("boardId")));
+
+        BoardType boardType = getBoardType(type);
+
+        Page<Board> boardPage = boardRepository.findAllByTypeAndMember(
+                boardType.getEntityClass(),
+                memberId,
+                pageable
+        );
+
+        List<Long> boardIds = boardPage.getContent().stream()
+                .map(Board::getBoardId)
+                .collect(Collectors.toList());
+
+        final Map<Long, UploadFile> thumbnailMap = new HashMap<>();
+        if (!boardIds.isEmpty()) {
+            List<UploadFile> thumbnails = s3Service.getThumbnailList(boardIds, type);
+            thumbnails.forEach(file -> thumbnailMap.put(file.getRefId(), file));
+        }
+
+        return PageResponse.from(boardPage.map(board -> {
+            UploadFile thumbnail = thumbnailMap.get(board.getBoardId());
+            return BoardResponse.from(board, thumbnail);
+        }));
+
+    }
+
     private Member validateAndGetMember(Long memberId) {
         if (memberId == null) throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);
 

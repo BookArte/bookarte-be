@@ -75,6 +75,16 @@ public class BoardController implements BoardControllerDocs {
     }
 
     @Override
+    public ResponseEntity<GlobalResponseDto<PageResponse<BoardResponse>>> getMyBoardList(
+            @PathVariable("type") String type,
+            @ModelAttribute BoardListRequest boardListRequest,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        PageResponse<BoardResponse> result = boardService.getMyBoardList(type, boardListRequest, memberId);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
     public ResponseEntity<Resource> downloadFile(@PathVariable("fileId") Long fileId) {
 
         return s3Service.downloadFile(fileId);
