@@ -2,10 +2,10 @@ package com.library.bookarte.book.controller;
 
 import com.library.bookarte.book.dto.request.BookDelReqDto;
 import com.library.bookarte.book.dto.request.BookReqDto;
+import com.library.bookarte.book.dto.response.BestsellerResponse;
 import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.dto.response.BulkDeleteResponse;
-import com.library.bookarte.book.external.dto.AladinBestSellerResDto;
 import com.library.bookarte.book.external.dto.BookSearchResult;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -96,6 +96,14 @@ public interface BookControllerDocs {
     @Parameter(name = "query", description = "검색할 도서 이름", example = "이방인")
     ResponseEntity<GlobalResponseDto<List<BookSearchResult>>> searchBookWithLibraryApi(@RequestParam(name = "query") String query);
 
+    @Operation(summary = "외부 api를 활용한 도서 상세 조회", description = "**성공 응답 데이터:** 도서 상세 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "도서 상세 조회 성공"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/library/search/view/{isbn}")
+    ResponseEntity<GlobalResponseDto<BookSearchResult>> findBookByISBNWithLibraryApi(@PathVariable String isbn);
+
 
     @Operation(summary = "DB 내 도서 존재 확인", description = "**성공 응답 데이터:** 존재 유무에 대한 boolean")
     @ApiResponses(value = {
@@ -113,7 +121,8 @@ public interface BookControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @GetMapping("/bestseller")
-    ResponseEntity<GlobalResponseDto<List<AladinBestSellerResDto>>> getBestseller();
+    ResponseEntity<GlobalResponseDto<BestsellerResponse>> getBestseller(@RequestParam(defaultValue = "1") int page,
+                                                                       @RequestParam(defaultValue = "10") int size );
 
     /*Read: 연관 도서 목록 조회*/
     @Operation(summary = "연관 도서 목록 조회 요청", description = "**성공 응답 데이터:** 도서 목록 정보")

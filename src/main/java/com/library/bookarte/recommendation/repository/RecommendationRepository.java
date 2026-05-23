@@ -72,9 +72,19 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     );
 
     @Query("SELECT r FROM Recommendation r " +
-            "WHERE r.endDate < :today ")
+            "JOIN r.book b " + // 💡 도서명 검색을 위해 Recommendation과 연관된 Book을 조인합니다 (엔티티 필드명에 맞게 조정 필요)
+            "WHERE r.endDate < :today " +
+            // 💡키워드 검색
+            "AND (:keyword IS NULL OR b.bookTitle LIKE %:keyword%) " +
+            // 💡 추천 시작일 검색
+            "AND (:startDate IS NULL OR r.startDate >= :startDate) " +
+            // 💡추천 종료일 검색
+            "AND (:endDate IS NULL OR r.endDate <= :endDate)")
     Page<Recommendation> findHistory(
             @Param("today") LocalDate today,
+            @Param("keyword") String keyword,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
             Pageable pageable
     );
 

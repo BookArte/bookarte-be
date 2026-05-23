@@ -2,10 +2,10 @@ package com.library.bookarte.book.controller;
 
 import com.library.bookarte.book.dto.request.BookDelReqDto;
 import com.library.bookarte.book.dto.request.BookReqDto;
+import com.library.bookarte.book.dto.response.BestsellerResponse;
 import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
 import com.library.bookarte.book.dto.response.BulkDeleteResponse;
-import com.library.bookarte.book.external.dto.AladinBestSellerResDto;
 import com.library.bookarte.book.external.dto.BookSearchResult;
 import com.library.bookarte.book.service.BookService;
 import com.library.bookarte.global.response.GlobalResponseDto;
@@ -90,6 +90,13 @@ public class BookController implements BookControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK,result));
     }
 
+    @Override
+    public ResponseEntity<GlobalResponseDto<BookSearchResult>> findBookByISBNWithLibraryApi(@PathVariable String isbn){
+        BookSearchResult result = bookService.searchBookWithApi(isbn);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
     //중복된 ISBN인지 확인
     @Override
     public ResponseEntity<GlobalResponseDto<Boolean>> isDuplicateIsbn(@RequestParam(name = "isbn") String isbn){
@@ -98,13 +105,18 @@ public class BookController implements BookControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    //알라딘 api 베스트셀러 목록 조회
     @Override
-    public ResponseEntity<GlobalResponseDto<List<AladinBestSellerResDto>>> getBestseller(){
-        List<AladinBestSellerResDto> result = bookService.getBestsellersWithAladin();
+    public ResponseEntity<GlobalResponseDto<BestsellerResponse>> getBestseller(@RequestParam(defaultValue = "1") int page,
+                                                                              @RequestParam(defaultValue = "10") int size){
+        BestsellerResponse result = bookService.getBestsellersWithAladin(page, size);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+
+
+    //연관도서 목록 조회
     @Override
     public ResponseEntity<GlobalResponseDto<List<BookResDto>>> listRelatedBook(@PathVariable Long bookId){
         List<BookResDto> result = bookService.getRelatedBooks(bookId);
@@ -112,6 +124,7 @@ public class BookController implements BookControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    //가장 최근 도서 등록 일자
     @Override
     public ResponseEntity<GlobalResponseDto<LocalDate>> getLatestRegistrationDate() {
         LocalDate result = bookService.getLatestRegistrationDate();

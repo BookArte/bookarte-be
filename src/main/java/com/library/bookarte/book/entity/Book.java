@@ -158,6 +158,8 @@ public class Book extends BaseEntity {
                 .bookIsbn(this.bookIsbn)
                 .bookThumbnail(this.bookThumbnail)
                 .bookCategory(this.category.getCategoryName())
+                .createdAt(this.getCreatedAt())
+                .lastUpdatedAt(this.getUpdatedAt())
                 .canBorrow(this.canBorrow)
                 .build();
     }
