@@ -117,6 +117,10 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
+        if (!passwordEncoder.matches(memberDeleteRequest.getPassword(), member.getMemberPwd())) {
+            throw new CustomException(CustomErrorCode.INVALID_CURRENT_PASSWORD);
+        }
+
         if (MemberType.Constants.STATUS_WITHDRAWN.equals(member.getMemberStatus())) {
             throw new CustomException(CustomErrorCode.MEMBER_DELETE_STATUS_ERROR);
         }

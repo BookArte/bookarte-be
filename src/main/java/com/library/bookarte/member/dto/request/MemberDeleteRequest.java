@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class MemberDeleteRequest {
-    @NotBlank
+    private String password;
     private String reason;
 }
