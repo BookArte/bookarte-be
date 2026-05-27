@@ -2,13 +2,12 @@ package com.library.bookarte.book.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.library.bookarte.book.entity.Book;
-import com.library.bookarte.book.entity.type.ParticipantType;
 import com.library.bookarte.book.utils.BookParticipantUtils;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -45,6 +44,10 @@ public class BookResDto {
 
     private int wishCount;
 
+    private LocalDateTime createdAt;
+
+    private LocalDateTime lastUpdatedAt;
+
     public BookResDto(Long bookId,
                       String bookTitle,
                       List<Book.Participant> participants,
@@ -56,7 +59,9 @@ public class BookResDto {
                       String bookCallNumber,
                       String bookCategory,
                       boolean canBorrow,
-                      boolean isWish) {
+                      boolean isWish,
+                      LocalDateTime createdAt,
+                      LocalDateTime lastUpdatedAt) {
         this.bookId = bookId;
         this.bookTitle = bookTitle;
         this.publisherName = publisherName;
@@ -68,6 +73,8 @@ public class BookResDto {
         this.bookCategory = bookCategory;
         this.canBorrow = canBorrow;
         this.isWish = isWish;
+        this.createdAt = createdAt;
+        this.lastUpdatedAt = lastUpdatedAt;
 
         // 리스트를 순회하며 저자와 역자를 콤마(,)로 구분된 문자열로 변환
         if (participants != null) {

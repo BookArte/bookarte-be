@@ -71,7 +71,7 @@ public class Book extends BaseEntity {
     private String bookCallNumber;
 
     //표지사진 book_thumbnail
-    @Column(nullable = false)
+    @Column
     private String bookThumbnail;
 
     //도서 카테고리
@@ -137,6 +137,10 @@ public class Book extends BaseEntity {
         }
     }
 
+    public void updateThumbnail(String bookThumbnail){
+        this.bookThumbnail = bookThumbnail;
+    }
+
     public BookResDto toBookResDto(){
         String authors = BookParticipantUtils.extractAuthors(this.getParticipants());
 
@@ -154,6 +158,8 @@ public class Book extends BaseEntity {
                 .bookIsbn(this.bookIsbn)
                 .bookThumbnail(this.bookThumbnail)
                 .bookCategory(this.category.getCategoryName())
+                .createdAt(this.getCreatedAt())
+                .lastUpdatedAt(this.getUpdatedAt())
                 .canBorrow(this.canBorrow)
                 .build();
     }

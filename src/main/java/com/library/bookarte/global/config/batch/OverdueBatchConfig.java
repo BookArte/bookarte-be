@@ -13,7 +13,6 @@ import org.springframework.batch.infrastructure.item.database.JdbcBatchItemWrite
 import org.springframework.batch.infrastructure.item.database.JdbcCursorItemReader;
 import org.springframework.batch.infrastructure.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.batch.infrastructure.item.database.builder.JdbcCursorItemReaderBuilder;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -55,12 +54,10 @@ public class OverdueBatchConfig {
     }
 
     //Reader
-    @StepScope
     @Bean
-    public JdbcCursorItemReader<Long> overdueItemReader(
-            DataSource dataSource, // SQL 실행을 위해 DataSource 주입 필요
-            @Value("#{jobParameters['today']}") String today
-    ) {
+    @StepScope
+    public JdbcCursorItemReader<Long> overdueItemReader(DataSource dataSource) {
+        LocalDate runtimeToday = LocalDate.now();
         return new JdbcCursorItemReaderBuilder<Long>()
                 .name("overdueItemReader")
                 .dataSource(dataSource)
@@ -70,7 +67,7 @@ public class OverdueBatchConfig {
                 WHERE status = 'BORROWED'
                 AND return_due_date < ?
                 """)
-                .queryArguments(LocalDate.parse(today))
+                .queryArguments(runtimeToday) // 💡 계산된 동적 날짜를 쿼리에 주입
                 .rowMapper((rs, rowNum) -> rs.getLong("borrow_id"))
                 .fetchSize(1000)
                 .build();

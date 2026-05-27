@@ -6,6 +6,7 @@ import com.library.bookarte.borrow.entity.stats.BookMonthlyStats;
 import com.library.bookarte.borrow.repository.BookMonthlyStatsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
@@ -53,6 +54,7 @@ public class BookMonthlyStatsBatchConfig {
     }
 
     @Bean
+    @StepScope
     public JdbcCursorItemReader<BookIdCountDto> yesterdayBorrowReader(){
         return new JdbcCursorItemReaderBuilder<BookIdCountDto>()
                 .name("yesterdayBorrowReader")

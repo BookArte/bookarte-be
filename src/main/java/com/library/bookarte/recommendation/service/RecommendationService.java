@@ -4,10 +4,7 @@ import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.service.BookService;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
-import com.library.bookarte.recommendation.dto.RecommendationBookResDto;
-import com.library.bookarte.recommendation.dto.RecommendationReqDto;
-import com.library.bookarte.recommendation.dto.ReorderReqDto;
-import com.library.bookarte.recommendation.dto.UpdateRecommendDto;
+import com.library.bookarte.recommendation.dto.*;
 import com.library.bookarte.recommendation.entity.Recommendation;
 import com.library.bookarte.recommendation.entity.type.RecommendType;
 import com.library.bookarte.recommendation.repository.RecommendationRepository;
@@ -139,11 +136,26 @@ public class RecommendationService {
     }
 
     @Transactional(readOnly = true)
-    public Page<RecommendationBookResDto> findRecommendationsHistory(Pageable pageable){
-        LocalDate today = LocalDate.now();
-        Page<Recommendation> hitorys = recommendationRepository.findHistory(today, pageable);
+    public Page<RecommendationBookResDto> findRecommendationsHistory(
+            Pageable pageable, RecSearchFilterDto recSearchFilterDto) {
 
-        return hitorys.map(Recommendation::toResDto);
+        LocalDate today = LocalDate.now();
+
+        String keyword = recSearchFilterDto.getSearchKeyword();
+        LocalDate startDate = recSearchFilterDto.getStartDate();
+        LocalDate endDate = recSearchFilterDto.getEndDate();
+
+        String searchKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword : null;
+
+        Page<Recommendation> historys = recommendationRepository.findHistory(
+                today,
+                searchKeyword,
+                startDate,
+                endDate,
+                pageable
+        );
+
+        return historys.map(Recommendation::toResDto);
     }
 
     /**

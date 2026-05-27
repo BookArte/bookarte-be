@@ -1,10 +1,7 @@
 package com.library.bookarte.recommendation.controller;
 
 import com.library.bookarte.global.response.GlobalResponseDto;
-import com.library.bookarte.recommendation.dto.RecommendationBookResDto;
-import com.library.bookarte.recommendation.dto.RecommendationReqDto;
-import com.library.bookarte.recommendation.dto.ReorderReqDto;
-import com.library.bookarte.recommendation.dto.UpdateRecommendDto;
+import com.library.bookarte.recommendation.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -98,5 +95,6 @@ public interface RecommendationControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @GetMapping("/admin/history")
-    ResponseEntity<GlobalResponseDto<Page<RecommendationBookResDto>>> getRecommendationHistory(@ParameterObject @PageableDefault(sort = "endDate", direction = Sort.Direction.DESC)Pageable pageable);
+    ResponseEntity<GlobalResponseDto<Page<RecommendationBookResDto>>> getRecommendationHistory(@ParameterObject @PageableDefault(sort = "endDate", direction = Sort.Direction.DESC)Pageable pageable,
+                                                                                               @ModelAttribute RecSearchFilterDto recSearchFilterDto);
 }

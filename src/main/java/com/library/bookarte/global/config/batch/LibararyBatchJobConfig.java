@@ -55,5 +55,4 @@ public class LibararyBatchJobConfig {
                 .start(bookMonthlyStatStep) // 월간 대출 통계
                 .build();
     }
-
 }
