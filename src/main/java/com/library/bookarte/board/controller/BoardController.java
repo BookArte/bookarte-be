@@ -50,7 +50,7 @@ public class BoardController implements BoardControllerDocs {
             @PathVariable("type") String type,
             @PathVariable("boardId") Long boardId
     ) {
-        BoardResponse result = boardService.getBoard(boardId, type);
+        BoardResponse result = boardService.getBoard(boardId, type, false, null);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
@@ -71,6 +71,26 @@ public class BoardController implements BoardControllerDocs {
             @ModelAttribute BoardListRequest boardListRequest
     ) {
         PageResponse<BoardResponse> result = boardService.getBoardList(type, boardListRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<PageResponse<BoardResponse>>> getMyBoardList(
+            @PathVariable("type") String type,
+            @ModelAttribute BoardListRequest boardListRequest,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        PageResponse<BoardResponse> result = boardService.getMyBoardList(type, boardListRequest, memberId);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<BoardResponse>> getMyBoard(
+            @PathVariable("type") String type,
+            @PathVariable("boardId") Long boardId,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        BoardResponse result = boardService.getBoard(boardId, type, true, memberId);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 

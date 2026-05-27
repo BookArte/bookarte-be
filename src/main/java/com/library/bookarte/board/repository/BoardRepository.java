@@ -30,4 +30,13 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
             @Param("endDate") LocalDateTime endDate,
             Pageable pageable);
 
+    @Query(value = "SELECT b FROM Board b WHERE TYPE(b) = :clazz " +
+            "AND (:memberId = b.regMember.id)",
+            countQuery = "SELECT count(b) FROM Board b WHERE TYPE(b) = :clazz " +
+                    "AND (:memberId = b.regMember.id)")
+    Page<Board> findAllByTypeAndMember(
+            @Param("clazz") Class<? extends Board> clazz,
+            @Param("memberId") Long memberId,
+            Pageable pageable);
+
 }

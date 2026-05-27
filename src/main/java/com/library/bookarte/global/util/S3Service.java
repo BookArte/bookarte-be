@@ -43,6 +43,11 @@ public class S3Service {
         return uploadFileRepository.findByRefIdAndRefType(refId, refType);
     }
 
+    public List<UploadFile> getThumbnailList(List<Long> refIds, String refType) {
+        return uploadFileRepository.findByRefIdInAndRefTypeAndFileRole(
+                refIds, refType, FileType.Constants.THUMBNAIL);
+    }
+
     public void uploadAndSave(Long refId, String refType, MultipartFile file, FileType fileType) {
         if (file == null || file.isEmpty()) return;
 

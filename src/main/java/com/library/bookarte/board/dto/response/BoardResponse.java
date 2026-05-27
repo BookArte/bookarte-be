@@ -72,6 +72,20 @@ public class BoardResponse {
                 .map(FileResponse::from)
                 .collect(Collectors.toList());
 
+        return getBaseBuilder(board)
+                .thumbnailPath(thumb)
+                .fileList(fileResponses)
+                .build();
+
+    }
+
+    public static BoardResponse from(Board board, UploadFile thumbnail) {
+        return getBaseBuilder(board)
+                .thumbnailPath(thumbnail != null ? thumbnail.getFileUrl() : null)
+                .build();
+    }
+
+    private static BoardResponseBuilder getBaseBuilder(Board board) {
         BoardResponseBuilder builder = BoardResponse.builder()
                 .id(board.getBoardId())
                 .category(board.getCategory())
@@ -81,21 +95,13 @@ public class BoardResponse {
                 .orderNum(board.getOrderNum())
                 .regMemberUserId(board.getRegMember().getMemberUserId())
                 .modMemberUserId(board.getModMember() != null ? board.getModMember().getMemberUserId() : null)
-                .createdAt(board.getCreatedAt())
-                .thumbnailPath(thumb)
-                .fileList(fileResponses);
+                .createdAt(board.getCreatedAt());
 
         if (board instanceof Qna qna) {
-
-            String statusDesc = (qna.getQnaStatus() != null)
-                    ? qna.getQnaStatus().getDescription()
-                    : null;
-
-            builder.answerStatus(statusDesc)
+            builder.answerStatus(qna.getQnaStatus() != null ? qna.getQnaStatus().getDescription() : null)
                     .admAnswer(qna.getAdmAnswer())
                     .admAnswerDate(qna.getAdmAnswerDate());
         }
-
-        return builder.build();
+        return builder;
     }
 }

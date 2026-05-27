@@ -135,7 +135,22 @@ CREATE TABLE qna (
                      CONSTRAINT FK_qna_board FOREIGN KEY (board_id) REFERENCES board (board_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 도서 추천 테이블 (기간 인덱스 포함)
+CREATE TABLE faq (
+                        board_id BIGINT NOT NULL,
+                        PRIMARY KEY (board_id),
+                        CONSTRAINT FK_faq_board FOREIGN KEY (board_id) REFERENCES board (board_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE qna (
+                        board_id BIGINT NOT NULL,
+                        qna_status ENUM('WAITING', 'COMPLETED') NOT NULL,
+                        adm_answer LONGTEXT,
+                        adm_answer_date DATETIME(6),
+                        PRIMARY KEY (board_id),
+                        CONSTRAINT FK_qna_board FOREIGN KEY (board_id) REFERENCES board (board_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 도서 추천 테이블
 CREATE TABLE recommendation (
                                 recommendation_id BIGINT NOT NULL AUTO_INCREMENT,
                                 book_id BIGINT NOT NULL,

@@ -30,7 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -98,8 +101,11 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public BoardResponse getBoard(Long boardId, String type) {
+    public BoardResponse getBoard(Long boardId, String type, boolean myData, Long memberId) {
         Board board = getBoardData(boardId);
+
+        if (myData && !board.getRegMember().getMemberId().equals(memberId))
+            throw new CustomException(CustomErrorCode.BOARD_NOT_FOUND);
 
         List<UploadFile> files = s3Service.getAllFileList(boardId, type);
 
@@ -131,7 +137,52 @@ public class BoardService {
                 pageable
         );
 
-        return PageResponse.from(boardPage.map(BoardResponse::from));
+        List<Long> boardIds = boardPage.getContent().stream()
+                .map(Board::getBoardId)
+                .collect(Collectors.toList());
+
+        final Map<Long, UploadFile> thumbnailMap = new HashMap<>();
+        if (!boardIds.isEmpty()) {
+            List<UploadFile> thumbnails = s3Service.getThumbnailList(boardIds, type);
+            thumbnails.forEach(file -> thumbnailMap.put(file.getRefId(), file));
+        }
+
+        return PageResponse.from(boardPage.map(board -> {
+            UploadFile thumbnail = thumbnailMap.get(board.getBoardId());
+            return BoardResponse.from(board, thumbnail);
+        }));
+
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<BoardResponse> getMyBoardList(String type, BoardListRequest boardListRequest, Long memberId) {
+        Pageable pageable = PageRequest.of(boardListRequest.getPage(), boardListRequest.getSize(),
+                Sort.by(Sort.Order.desc("noticeYn"),
+                        Sort.Order.desc("orderNum"),
+                        Sort.Order.desc("boardId")));
+
+        BoardType boardType = getBoardType(type);
+
+        Page<Board> boardPage = boardRepository.findAllByTypeAndMember(
+                boardType.getEntityClass(),
+                memberId,
+                pageable
+        );
+
+        List<Long> boardIds = boardPage.getContent().stream()
+                .map(Board::getBoardId)
+                .collect(Collectors.toList());
+
+        final Map<Long, UploadFile> thumbnailMap = new HashMap<>();
+        if (!boardIds.isEmpty()) {
+            List<UploadFile> thumbnails = s3Service.getThumbnailList(boardIds, type);
+            thumbnails.forEach(file -> thumbnailMap.put(file.getRefId(), file));
+        }
+
+        return PageResponse.from(boardPage.map(board -> {
+            UploadFile thumbnail = thumbnailMap.get(board.getBoardId());
+            return BoardResponse.from(board, thumbnail);
+        }));
 
     }
 
