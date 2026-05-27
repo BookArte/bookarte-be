@@ -101,8 +101,11 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public BoardResponse getBoard(Long boardId, String type) {
+    public BoardResponse getBoard(Long boardId, String type, boolean myData, Long memberId) {
         Board board = getBoardData(boardId);
+
+        if (myData && !board.getRegMember().getMemberId().equals(memberId))
+            throw new CustomException(CustomErrorCode.BOARD_NOT_FOUND);
 
         List<UploadFile> files = s3Service.getAllFileList(boardId, type);
 
