@@ -17,6 +17,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Tag(name = "Board")
 public interface BoardControllerDocs {
 
@@ -119,6 +121,18 @@ public interface BoardControllerDocs {
             @PathVariable("type") String type,
             @PathVariable("boardId") Long boardId,
             @AuthenticationPrincipal Long memberId
+    );
+
+    /* Read: 메인페이지 리스트 조회 */
+    @Operation(summary = "메인페이지 리스트 조회", description = "**성공 응답 데이터:** 게시글 리스트 조회 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "게시글 리스트 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @GetMapping("/main_list")
+    ResponseEntity<GlobalResponseDto<List<BoardResponse>>> getMainBoardList(
+            @PathVariable("type") String type
     );
 
     /* 파일 다운로드 */

@@ -186,6 +186,26 @@ public class BoardService {
 
     }
 
+    @Transactional(readOnly = true)
+    public List<BoardResponse> getMainBoardList(String type) {
+        BoardType boardType = getBoardType(type);
+
+        Pageable pageable = PageRequest.of(0, 4,
+                Sort.by(Sort.Order.desc("createdAt")));
+
+        Page<Board> boardPage = boardRepository.findAllByTypeAndSearch(
+                boardType.getEntityClass(),
+                null,
+                null,
+                null,
+                pageable
+        );
+
+        return boardPage.getContent().stream()
+                .map(BoardResponse::from)
+                .collect(Collectors.toList());
+    }
+
     private Member validateAndGetMember(Long memberId) {
         if (memberId == null) throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);
 
