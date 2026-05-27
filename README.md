@@ -1,5 +1,4 @@
-// 프로젝트 배너 필요
-
+<img width="1792" height="592" alt="Image" src="https://github.com/user-attachments/assets/456ae7b0-9f36-465d-80e9-90ba27a8677d" />
 <br/>
 <br/>
 
@@ -61,55 +60,30 @@ $ npm start
 # 6. 기술 스택
 
 ## 6.1 Frotend
-|  |  |  |
-|-----------------|-----------------|-----------------|
-| React    |  <img src="https://skillicons.dev/icons?i=react" width="48">   | 19.2.0    |
-| Vite     |  <img src="https://skillicons.dev/icons?i=vite" width="48">    | 7.2.4     |
-| JS       |  <img src="https://skillicons.dev/icons?i=js" width="48">      |           |
-| HTML     |  <img src="https://skillicons.dev/icons?i=html" width="48">    |           |
-| CSS      | <img src="https://skillicons.dev/icons?i=css" width="48">      |           | 
+- Language: JavaScript,HTML,CSS
+- Framework: React 19
+- Build Tool: Vite
 
 <br/>
 
 ## 6.2 Backend
-|  |  |  |
-|-----------------|-----------------|-----------------|
-| SpringBoot    |  <img src="https://skillicons.dev/icons?i=spring" width="48">   | 19.2.0    |
-| SpringSecurity   |     |      |
-| Java       |  <img src="https://skillicons.dev/icons?i=java" width="48">         | 17          |
-| SpringBatch   |   |    |
-
-### 6.2.1  DB
-|  |  |  |
-|-----------------|-----------------|-----------------|
-| MySQL    |  <img src="https://skillicons.dev/icons?i=mysql" width="48">  |     |
-| Redis    |   <img src="https://skillicons.dev/icons?i=redis" width="48"> |     |
-
-### 6.2.2  ORM
-|  |  |  |
-|-----------------|-----------------|-----------------|
-| JPA    |    |     |
-| QueryDsl   |   |      |
-
-### 6.2.3  DB 마이그레이션 툴
-|  |  |  |
-|-----------------|-----------------|-----------------|
-| flyway    |    |     |
-
-### 6.2.3  인프라
-|  |  |  |
-|-----------------|-----------------|-----------------|
-| AWS S3    | <img src="https://skillicons.dev/icons?i=s3" width="48">   |     |
+- Langauage: Java 17
+- Framework: SpringBoot 4.0.0, Spring Security
+- Build Tool: Gradle
+- Database: MySql
+- Cache: Redis
+- ORM: Spring Data JPA, QueryDsl 5.0.0
+- Migration Tool: flyway
+- Infra: AWS S3
 
 <br/>
 
 ## 6.3 협업 툴
-|  |  |
-|-----------------|-----------------|
-| Git    |  <img src="https://skillicons.dev/icons?i=git" width="48">    |
-| Discord    |  <img src="https://skillicons.dev/icons?i=discord" width="48">   |
-| Notion    |  <img src="https://skillicons.dev/icons?i=notion" width="48">   |
-
+- 버전 관리: Git
+- 문서 관리: Notion
+- 소통: Discord
+  
+<br/>
 <br/>
 
 # 7. 프로젝트 데모
