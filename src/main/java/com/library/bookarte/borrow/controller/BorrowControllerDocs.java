@@ -107,4 +107,13 @@ public interface BorrowControllerDocs {
     ResponseEntity<GlobalResponseDto<Page<PopularBookResDto>>> getPopularBooks(@RequestParam("period") String period,
                                                                                @ParameterObject Pageable pageable);
 
+    /*Read: 특정 사용자의 대출 목록 확인*/
+    @Operation(summary = "특정 사용자의 대출 목록 확인", description = "**성공 응답 데이터:** 대출 목록 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "패널티 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping("/admin/user_list/{memberId}")
+    ResponseEntity<GlobalResponseDto<List<UserBorrowResDto>>> getMemberBorrow(@PathVariable Long memberId);
 }

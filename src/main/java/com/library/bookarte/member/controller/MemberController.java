@@ -58,6 +58,15 @@ public class MemberController implements MemberControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, null));
     }
 
+    @Override
+    public ResponseEntity<GlobalResponseDto<Void>> expelMember(
+            @AuthenticationPrincipal Long memberId,
+            @RequestBody MemberExpelRequest memberExpelRequest
+    ) {
+        memberService.expelMember(memberId, memberExpelRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, null));
+    }
+
     @GetMapping("/point")
     public ResponseEntity<GlobalResponseDto> getPoint() {
         return null;

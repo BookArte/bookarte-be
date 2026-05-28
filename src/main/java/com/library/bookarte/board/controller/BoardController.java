@@ -16,6 +16,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/board/{type}")
 @RequiredArgsConstructor
@@ -91,6 +93,14 @@ public class BoardController implements BoardControllerDocs {
             @AuthenticationPrincipal Long memberId
     ) {
         BoardResponse result = boardService.getBoard(boardId, type, true, memberId);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<List<BoardResponse>>> getMainBoardList(
+            @PathVariable("type") String type
+    ) {
+        List<BoardResponse> result = boardService.getMainBoardList(type);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 

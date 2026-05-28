@@ -1,5 +1,7 @@
 package com.library.bookarte.member.service;
 
+import com.library.bookarte.board.entity.type.BoardType;
+import com.library.bookarte.board.repository.BoardRepository;
 import com.library.bookarte.borrow.entity.type.Status;
 import com.library.bookarte.borrow.repository.BorrowRepository;
 import com.library.bookarte.global.dto.response.CursorResponse;
@@ -28,6 +30,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final BorrowRepository borrowRepository;
     private final WishRepository wishRepository;
+    private final BoardRepository boardRepository;
 
     public MemberJoinResponse join(MemberJoinRequest memberJoinRequest) {
         LocalDateTime now = LocalDateTime.now();
@@ -37,7 +40,7 @@ public class MemberService {
                 .memberTel(memberJoinRequest.getMemberTel())
                 .memberPwd(passwordEncoder.encode(memberJoinRequest.getMemberPassword()))
                 .memberEmail(memberJoinRequest.getMemberEmail())
-                .memberRole(MemberType.Constants.ROLE_ADMIN)
+                .memberRole(MemberType.Constants.ROLE_USER)
                 .memberSocialType(MemberType.Constants.SOCIAL_NONE)
                 .memberStatus(MemberType.Constants.STATUS_ACTIVE)
                 .memberPoint(0L)
@@ -91,6 +94,9 @@ public class MemberService {
         //관심 도서 카운팅
         Long wishCount = wishRepository.countWishByMember_MemberId(memberId);
 
+        // 문의 내역 카운팅
+        Long qnaCount = boardRepository.countByTypeAndMember(BoardType.QNA.getEntityClass(), memberId);
+
         return MemberResponse.builder()
                 .id(member.getMemberId())
                 .userId(member.getMemberUserId())
@@ -100,6 +106,7 @@ public class MemberService {
                 .point(member.getMemberPoint())
                 .borrowingCount(borrowedCount + overdueCount)
                 .wishCount(wishCount)
+                .qnaCount(qnaCount)
                 .build();
     }
 
@@ -117,11 +124,39 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
+        if (!passwordEncoder.matches(memberDeleteRequest.getPassword(), member.getMemberPwd())) {
+            throw new CustomException(CustomErrorCode.INVALID_CURRENT_PASSWORD);
+        }
+
         if (MemberType.Constants.STATUS_WITHDRAWN.equals(member.getMemberStatus())) {
             throw new CustomException(CustomErrorCode.MEMBER_DELETE_STATUS_ERROR);
         }
 
+        long borrowedCount = borrowRepository.countBorrowByMember_MemberIdAndStatus(memberId, Status.BORROWED);
+
+        if (borrowedCount > 0) {
+            throw new CustomException(CustomErrorCode.MEMBER_BORROW_NOT_RETURNED);
+        }
+
         member.delete(memberDeleteRequest.getReason());
+    }
+
+    public void expelMember(Long memberId, MemberExpelRequest memberExpelRequest) {
+        Member loginMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        if (!MemberType.Constants.ROLE_ADMIN.equals(loginMember.getMemberRole())) {
+            throw new CustomException(CustomErrorCode.MEMBER_NOT_ADMIN);
+        }
+
+        Member member = memberRepository.findById(memberExpelRequest.getId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        if (MemberType.Constants.STATUS_WITHDRAWN.equals(member.getMemberStatus())) {
+            throw new CustomException(CustomErrorCode.MEMBER_DELETE_STATUS_ERROR);
+        }
+
+        member.delete("관리자 추방");
     }
 
     public MemberFindIdResponse findId(MemberFindIdRequest memberFindIdRequest) {

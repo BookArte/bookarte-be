@@ -74,6 +74,20 @@ public interface MemberControllerDocs {
             @RequestBody MemberDeleteRequest memberDeleteRequest
     );
 
+    /* Update: 관리자 회원 정보 탈퇴 */
+    @Operation(summary = "관리자 회원 정보 탈퇴", description = "**성공 응답 데이터:** 회원 정보 탈퇴 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원 정보 탈퇴 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "회원 정보가 존재하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @PatchMapping("/expel")
+    ResponseEntity<GlobalResponseDto<Void>> expelMember(
+            @AuthenticationPrincipal Long memberId,
+            @RequestBody MemberExpelRequest memberExpelRequest
+    );
+
     /* Read: 아이디 찾기 */
     @Operation(summary = "아이디 찾기", description = "**성공 응답 데이터:** 아이디 찾기 성공")
     @ApiResponses(value = {

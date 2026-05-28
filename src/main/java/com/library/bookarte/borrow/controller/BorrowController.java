@@ -90,5 +90,11 @@ public class BorrowController implements BorrowControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    @Override
+    public ResponseEntity<GlobalResponseDto<List<UserBorrowResDto>>> getMemberBorrow(@PathVariable Long memberId){
+        List<UserBorrowResDto> result = borrowService.getMemberBorrowList(memberId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK,result));
+    }
 
 }
