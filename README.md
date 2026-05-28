@@ -3,11 +3,16 @@
 <br/>
 
 # 0. 시작하기
-추후 수정
+### 프론트엔드 프로젝트
 ```bash
-$ npm start
+$ npm install
+$ npm run dev
 ```
 
+### 백엔드 프로젝트
+```bash
+$ ./gradlew build
+```
 
 <br/>
 <br/>
@@ -130,7 +135,7 @@ $ npm start
 
 # 6. 기술 스택
 
-## 6.1 Frotend
+## 6.1 Frontend
 - Language: JavaScript,HTML,CSS
 - Framework: React 19
 - Build Tool: Vite
