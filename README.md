@@ -114,7 +114,7 @@ $ npm start
 
 # 4. API 명세서
 
-- 추후 swagger 버셀 배포 링크
+- [API 명세서 확인](https://bookarte.github.io/bookarte-swagger-ui/)
 
 <br/>
 <br/>
