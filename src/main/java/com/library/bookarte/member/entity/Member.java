@@ -1,7 +1,12 @@
 package com.library.bookarte.member.entity;
 
+import com.library.bookarte.board.entity.Faq;
+import com.library.bookarte.board.entity.News;
+import com.library.bookarte.board.entity.Notice;
+import com.library.bookarte.board.entity.Qna;
 import com.library.bookarte.global.base.BaseEntity;
 import com.library.bookarte.member.dto.response.MemberResponse;
+import com.library.bookarte.member.entity.type.MemberType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -112,12 +117,19 @@ public class Member extends BaseEntity {
     }
 
     public MemberResponse toResDto(){
+        String withdrawal = switch (this.memberStatus) {
+            case MemberType.Constants.STATUS_ACTIVE -> "N";
+            case MemberType.Constants.STATUS_WITHDRAWN -> "Y";
+            default -> "N";
+        };
+
         return MemberResponse.builder()
                 .id(this.memberId)
                 .userId(this.memberUserId)
                 .name(this.memberName)
                 .tel(this.memberTel)
                 .email(this.memberEmail)
+                .withdrawal(withdrawal)
                 .build();
     }
 }

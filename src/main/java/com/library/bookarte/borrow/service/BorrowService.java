@@ -16,6 +16,7 @@ import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.repository.MemberRepository;
+import com.library.bookarte.penalty.entity.Penalty;
 import com.library.bookarte.penalty.repository.PenaltyRepository;
 import com.library.bookarte.penalty.service.PenaltyService;
 import jakarta.persistence.EntityManager;
@@ -314,7 +315,13 @@ public class BorrowService {
         return new PageImpl<>(pagedContent, pageable, allTopBooks.size());
     }
 
+    public List<UserBorrowResDto> getMemberBorrowList(Long memberId) {
+        List<Borrow> borrows = borrowRepository.findByMember_MemberId(memberId);
 
+        return borrows.stream()
+                .map(Borrow::toUserBorrowResDto)
+                .toList();
+    }
 
     private void checkBorrowRestricted(Long memberId){
         //연체 중인 도서 존재 시 대출 불가

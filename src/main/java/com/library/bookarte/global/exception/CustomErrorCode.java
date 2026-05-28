@@ -30,6 +30,7 @@ public enum CustomErrorCode {
     MEMBER_NOT_ADMIN(HttpStatus.UNAUTHORIZED, "관리자 권한이 없습니다."),
     MEMBER_NOT_MATCH(HttpStatus.BAD_REQUEST, "회원정보가 일치하지 않습니다."),
     MEMBER_WITHDRAWN(HttpStatus.BAD_REQUEST, "탈퇴된 계정입니다."),
+    MEMBER_BORROW_NOT_RETURNED(HttpStatus.BAD_REQUEST, "대출중인 도서를 반납 후 이용 가능합니다."),
   
     //recommendation
     RECOMMENDATION_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 추천 도서는 존재하지 않습니다"),
