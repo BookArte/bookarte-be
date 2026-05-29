@@ -1,0 +1,11 @@
+package com.library.bookarte.auth.dto.response;
+
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+@Builder
+public class MemberFindPasswordResponse {
+    private Long memberId;
+    private Long expiresIn;
+}
