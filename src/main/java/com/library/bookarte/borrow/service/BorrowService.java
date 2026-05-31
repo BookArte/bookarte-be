@@ -16,7 +16,6 @@ import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.repository.MemberRepository;
-import com.library.bookarte.penalty.entity.Penalty;
 import com.library.bookarte.penalty.repository.PenaltyRepository;
 import com.library.bookarte.penalty.service.PenaltyService;
 import jakarta.persistence.EntityManager;
@@ -324,15 +323,18 @@ public class BorrowService {
     }
 
     private void checkBorrowRestricted(Long memberId){
+        LocalDate today = LocalDate.now();
+
         //연체 중인 도서 존재 시 대출 불가
-        if (borrowRepository.existsByMember_MemberIdAndStatus(memberId, Status.OVERDUE)) {
+        if (borrowRepository.existsByMember_MemberIdAndReturnDateIsNullAndReturnDueDateBefore(memberId, today)) {
             throw new CustomException(CustomErrorCode.USER_BORROW_RESTRICTED);
         }
 
-        //패널티 여부 존재 시 대출 불가
-        if (penaltyRepository.existsByMember_MemberIdAndEndDateAfterAndIsReleasedFalse(memberId, LocalDate.now())) {
+        // 적용 중인 패널티가 있으면 대출/연장 불가
+        if (penaltyRepository.existsByMember_MemberIdAndEndDateAfterAndIsReleasedFalse(memberId, today)) {
             throw new CustomException(CustomErrorCode.USER_BORROW_RESTRICTED);
         }
+
     }
 
     //테스트용 코드
