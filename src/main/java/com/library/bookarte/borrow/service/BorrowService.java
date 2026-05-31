@@ -16,7 +16,6 @@ import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.repository.MemberRepository;
-import com.library.bookarte.penalty.entity.Penalty;
 import com.library.bookarte.penalty.repository.PenaltyRepository;
 import com.library.bookarte.penalty.service.PenaltyService;
 import jakarta.persistence.EntityManager;
