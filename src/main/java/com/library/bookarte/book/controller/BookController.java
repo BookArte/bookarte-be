@@ -51,9 +51,11 @@ public class BookController implements BookControllerDocs {
 
     //도서 정보 수정
     @Override
-    public ResponseEntity<GlobalResponseDto<Long>> updateBook(@PathVariable("bookId") Long bookId,
+    public ResponseEntity<GlobalResponseDto<String>> updateBook(@PathVariable("bookId") Long bookId,
                                                               @Valid @ModelAttribute BookReqDto bookReqDto) {
-        Long result = bookService.updateBook(bookId, bookReqDto);
+        bookService.updateBook(bookId, bookReqDto);
+
+        String result = "도서 정보 수정 성공";
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
