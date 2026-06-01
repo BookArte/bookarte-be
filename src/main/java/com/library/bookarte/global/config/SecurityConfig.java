@@ -3,6 +3,7 @@ package com.library.bookarte.global.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.library.bookarte.auth.handler.CustomAccessDeniedHandler;
 import com.library.bookarte.auth.jwt.JwtFilter;
+import com.library.bookarte.member.entity.type.MemberType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -49,7 +50,7 @@ public class SecurityConfig {
                                 "/api/borrow/admin/**",
                                 "/api/recommendation/admin/**",
                                 "/api/penalty/admin/**"
-                        ).hasRole("ROLE01")
+                        ).hasAuthority(MemberType.Constants.ROLE_ADMIN)
                         .requestMatchers(
                                 "/api/**",
                                 "/api/auth/**",
