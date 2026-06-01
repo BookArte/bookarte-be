@@ -45,8 +45,8 @@ public class BoardService {
     private final XssUtils xssUtils;
 
     public BoardSaveResponse save(String type, BoardSaveRequest request, Long memberId) {
-        Member member = validateAndGetMember(memberId);
         BoardType boardType = getBoardType(type);
+        Member member = validateAndGetMember(memberId, boardType);
 
         sanitizeRequest(request);
 
@@ -63,8 +63,8 @@ public class BoardService {
     }
 
     public BoardUpdateResponse updateBoard(String type, Long memberId, Long boardId, BoardUpdateRequest request) {
-        Member member = validateAndGetMember(memberId);
         BoardType boardType = getBoardType(type);
+        Member member = validateAndGetMember(memberId, boardType);
         Board board = getBoardData(boardId);
 
         validateBoardType(board, boardType);
@@ -81,8 +81,8 @@ public class BoardService {
     }
 
     public void deleteBoard(String type, Long memberId, BoardDelsRequest boardDelsRequest) {
-        Member member = validateAndGetMember(memberId);
         BoardType boardType = getBoardType(type);
+        Member member = validateAndGetMember(memberId, boardType);
         List<Long> boardIds = boardDelsRequest.getBoardIds();
 
         List<Board> targets = boardRepository.findAllById(boardIds);
@@ -206,13 +206,13 @@ public class BoardService {
                 .collect(Collectors.toList());
     }
 
-    private Member validateAndGetMember(Long memberId) {
+    private Member validateAndGetMember(Long memberId, BoardType boardType) {
         if (memberId == null) throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
-        if (!MemberType.Constants.ROLE_ADMIN.equals(member.getMemberRole())) {
+        if (!boardType.getValue().equals(BoardType.Constants.QNA) && !MemberType.Constants.ROLE_ADMIN.equals(member.getMemberRole())) {
             throw new CustomException(CustomErrorCode.MEMBER_NOT_ADMIN);
         }
 
