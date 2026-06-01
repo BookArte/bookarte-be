@@ -1,5 +1,7 @@
 package com.library.bookarte.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.library.bookarte.auth.handler.CustomAccessDeniedHandler;
 import com.library.bookarte.auth.jwt.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +25,7 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
     private final JwtFilter jwtFilter;
+    private final ObjectMapper objectMapper;
 
     @Value("${cors.allow.origins}")
     private String origin;
@@ -38,6 +41,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(SWAGGER_PATTERNS).permitAll() //swagger 관련 요청 허용
                         .requestMatchers(
+                                "/api/book/admin/**",
+                                "/api/borrow/admin/**",
+                                "/api/recommendation/admin/**",
+                                "/api/penalty/admin/**"
+                        ).hasRole("ROLE01")
+                        .requestMatchers(
                                 "/api/**",
                                 "/api/auth/**",
                                 "/api/member/**"
@@ -46,6 +55,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling((exceptionHandling) -> exceptionHandling
+                        .accessDeniedHandler(new CustomAccessDeniedHandler(objectMapper)))
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable());
 

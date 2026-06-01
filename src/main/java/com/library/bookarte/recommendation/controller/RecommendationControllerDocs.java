@@ -26,7 +26,7 @@ public interface RecommendationControllerDocs {
             @ApiResponse(responseCode = "401", description = "권한 없음"),
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
-    @PostMapping("/set")
+    @PostMapping("/admin/set")
     ResponseEntity<GlobalResponseDto<String>> setRecommendByAdmin(@RequestBody RecommendationReqDto recommendationReqDto);
 
     @Operation(summary = "추천 도서 제외 요청", description = "**성공 응답 데이터:**: 추천 제외 완료")
@@ -37,7 +37,7 @@ public interface RecommendationControllerDocs {
             @ApiResponse(responseCode = "404", description = "해당 추천 도서 없음"),
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
-    @DeleteMapping("/{recommendationId}")
+    @DeleteMapping("/admin/{recommendationId}")
     ResponseEntity<GlobalResponseDto<String>> deleteRecommend(@PathVariable Long recommendationId);
 
     @Operation(summary = "추천 도서 목록 조회 요청", description = "**성공 응답 데이터:**: 추천 도서 목록")
@@ -66,7 +66,7 @@ public interface RecommendationControllerDocs {
             @ApiResponse(responseCode = "404", description = "해당 도서 없음"),
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
-    @PatchMapping("/reorder")
+    @PatchMapping("/admin/reorder")
     ResponseEntity<GlobalResponseDto<String>> reorder(@RequestBody ReorderReqDto reorderReqDto);
 
     @Operation(summary = "추천 도서 정보 수정 요청", description = "**성공 응답 데이터:**: 추천 도서 정보 수정 완료")
@@ -76,7 +76,7 @@ public interface RecommendationControllerDocs {
             @ApiResponse(responseCode = "404", description = "해당 추천 도서 없음"),
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
-    @PatchMapping("/{recommendationId}")
+    @PatchMapping("/admin/{recommendationId}")
     ResponseEntity<GlobalResponseDto<String>> updateRecommend(@PathVariable Long recommendationId,
                                                              @RequestBody UpdateRecommendDto updateRecommendDto);
 
