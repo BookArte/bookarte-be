@@ -11,7 +11,7 @@ $ npm run dev
 
 ### 백엔드 프로젝트
 ```bash
-$ ./gradlew build
+$ ./gradlew bootRun
 ```
 
 <br/>
@@ -187,6 +187,8 @@ $ ./gradlew build
 - Language: JavaScript,HTML,CSS
 - Framework: React 19
 - Build Tool: Vite
+- State Management:Zustand
+- Http Client: Axios
 
 <br/>
 
