@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/ai")
 @RequiredArgsConstructor
@@ -26,6 +28,15 @@ public class GeminiController implements GeminiControllerDocs {
             HttpServletRequest request
     ) {
         GeminiResponse result = geminiService.getChateResponse(memberId, geminiRequest, request);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<List<GeminiResponse>>> getHistory(
+            @AuthenticationPrincipal Long memberId,
+            HttpServletRequest request
+    ) {
+        List<GeminiResponse> result = geminiService.getChatHistory(memberId, request);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 

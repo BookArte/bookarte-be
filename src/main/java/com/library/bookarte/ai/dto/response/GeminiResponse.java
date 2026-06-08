@@ -6,5 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class GeminiResponse {
-    private String answer;
+    private String sender;
+    private String message;
 }

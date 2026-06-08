@@ -82,8 +82,40 @@ public class GeminiService {
         }
 
         return GeminiResponse.builder()
-                .answer(answerText)
+                .sender("ai")
+                .message(answerText)
                 .build();
+    }
+
+    public List<GeminiResponse> getChatHistory(Long memberId, HttpServletRequest request) {
+        String identifier;
+        if (memberId != null) {
+            identifier = memberRepository.findMemberUserIdByMemberId(memberId)
+                    .orElseGet(() -> request.getSession().getId());
+        } else {
+            identifier = request.getSession().getId();
+        }
+
+        List<Content> history = chatHistories.getOrDefault(identifier, Collections.emptyList());
+
+        return history.stream().map(content -> {
+            String role = content.role().orElse("user");
+
+            String text = "";
+            if (content.parts().isPresent()) {
+                List<Part> partsList = content.parts().get();
+                if (!partsList.isEmpty()) {
+                    text = partsList.get(0).text().orElse("");
+                }
+            }
+
+            String sender = "model".equals(role) ? "ai" : "user";
+
+            return GeminiResponse.builder()
+                    .sender(sender)
+                    .message(text)
+                    .build();
+        }).toList();
     }
 
     public void clearChatHistory(String sessionId) {
