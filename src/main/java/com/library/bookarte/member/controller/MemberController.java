@@ -1,5 +1,6 @@
 package com.library.bookarte.member.controller;
 
+import com.library.bookarte.global.dto.response.CursorResponse;
 import com.library.bookarte.global.response.GlobalResponseDto;
 import com.library.bookarte.member.dto.request.*;
 import com.library.bookarte.member.dto.response.*;
@@ -57,6 +58,15 @@ public class MemberController implements MemberControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, null));
     }
 
+    @Override
+    public ResponseEntity<GlobalResponseDto<Void>> expelMember(
+            @AuthenticationPrincipal Long memberId,
+            @RequestBody MemberExpelRequest memberExpelRequest
+    ) {
+        memberService.expelMember(memberId, memberExpelRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, null));
+    }
+
     @GetMapping("/point")
     public ResponseEntity<GlobalResponseDto> getPoint() {
         return null;
@@ -75,5 +85,16 @@ public class MemberController implements MemberControllerDocs {
     ) {
         memberService.changePassword(memberId, memberChangePasswordRequest);
         return ResponseEntity.status(HttpStatus.OK).body(GlobalResponseDto.success(HttpStatus.OK, null));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<CursorResponse<MemberResponse>>> getMemberList(
+            @RequestParam(name = "lastMemberId", required = false) Long lastMemberId,
+            @RequestParam(name = "userId", required = false) String userId,
+            @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize
+    ){
+        CursorResponse<MemberResponse> result = memberService.findListByCursor(lastMemberId, userId, pageSize);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 }

@@ -65,6 +65,15 @@ public class JwtProvider {
         );
     }
 
+    public String getRole(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role", String.class);
+    }
+
     public boolean validate(String token) {
         try {
             Jwts.parserBuilder()

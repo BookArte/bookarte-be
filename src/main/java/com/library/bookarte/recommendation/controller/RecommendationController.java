@@ -1,13 +1,14 @@
 package com.library.bookarte.recommendation.controller;
 
 import com.library.bookarte.global.response.GlobalResponseDto;
-import com.library.bookarte.recommendation.dto.RecommendationBookResDto;
-import com.library.bookarte.recommendation.dto.RecommendationReqDto;
-import com.library.bookarte.recommendation.dto.ReorderReqDto;
-import com.library.bookarte.recommendation.dto.UpdateRecommendDto;
+import com.library.bookarte.recommendation.dto.*;
 import com.library.bookarte.recommendation.service.RecommendationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -76,8 +77,17 @@ public class RecommendationController implements RecommendationControllerDocs {
     }
 
     @Override
-    public ResponseEntity<GlobalResponseDto<Boolean>> isRecommend(@RequestParam Long bookId) {
-        boolean result = recommendationService.existByBookId(bookId);
+    public ResponseEntity<GlobalResponseDto<List<RecommendationBookResDto>>> getActiveRecommendationList(){
+        List<RecommendationBookResDto> result = recommendationService.findActiveRecommendations();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    @Override
+    public ResponseEntity<GlobalResponseDto<Page<RecommendationBookResDto>>> getRecommendationHistory(@PageableDefault(sort = "endDate", direction = Sort.Direction.DESC) Pageable pageable
+    , @ModelAttribute RecSearchFilterDto recSearchFilterDto){
+        Page<RecommendationBookResDto> result = recommendationService.findRecommendationsHistory(pageable, recSearchFilterDto);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));

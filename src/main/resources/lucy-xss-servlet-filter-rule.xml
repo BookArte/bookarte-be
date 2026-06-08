@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lucy-xss-servlet-filter xmlns="http://www.navercorp.com/lucy-xss-servlet">
+    <use-default-defender>true</use-default-defender>
+
+    <url-rule>
+        <url>/api/*</url>
+        <params>
+            <param name="editor" useDefender="true" defender="dom"/>
+        </params>
+    </url-rule>
+
+    <defender>
+        <name>dom</name>
+        <class>com.navercorp.lucy.xss.servlet.filter.defender.DomDefender</class>
+    </defender>
+</lucy-xss-servlet-filter>

@@ -1,9 +1,11 @@
 package com.library.bookarte.book.controller;
 
-import com.library.bookarte.book.dto.BookReqDto;
-import com.library.bookarte.book.dto.BookResDto;
+import com.library.bookarte.book.dto.request.BookDelReqDto;
+import com.library.bookarte.book.dto.request.BookReqDto;
+import com.library.bookarte.book.dto.response.BestsellerResponse;
+import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.dto.SearchFilterDto;
-import com.library.bookarte.book.external.dto.AladinBestSellerResDto;
+import com.library.bookarte.book.dto.response.BulkDeleteResponse;
 import com.library.bookarte.book.external.dto.BookSearchResult;
 import com.library.bookarte.book.service.BookService;
 import com.library.bookarte.global.response.GlobalResponseDto;
@@ -15,8 +17,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -27,7 +31,7 @@ public class BookController implements BookControllerDocs {
 
     //도서 등록
     @Override
-    public ResponseEntity<GlobalResponseDto<String>> registerBook(@Valid @RequestBody BookReqDto bookReqDto){
+    public ResponseEntity<GlobalResponseDto<String>> registerBook(@Valid @ModelAttribute BookReqDto bookReqDto){
         bookService.registerBook(bookReqDto);
 
         String result = "도서 정보 저장 성공";
@@ -38,8 +42,8 @@ public class BookController implements BookControllerDocs {
 
     //도서 상제 조회
     @Override
-    public ResponseEntity<GlobalResponseDto<BookResDto>> findBookById(@PathVariable("bookId") Long bookId){
-        BookResDto result = bookService.findBookById(bookId);
+    public ResponseEntity<GlobalResponseDto<BookResDto>> findBookWithWish(@PathVariable("bookId") Long bookId, @AuthenticationPrincipal Long memberId){
+        BookResDto result = bookService.findBookWithWish(bookId,memberId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
@@ -47,9 +51,11 @@ public class BookController implements BookControllerDocs {
 
     //도서 정보 수정
     @Override
-    public ResponseEntity<GlobalResponseDto<Long>> updateBook(@PathVariable("bookId") Long bookId,
-                                                              @Valid @RequestBody BookReqDto bookReqDto) {
-        Long result = bookService.updateBook(bookId, bookReqDto);
+    public ResponseEntity<GlobalResponseDto<String>> updateBook(@PathVariable("bookId") Long bookId,
+                                                              @Valid @ModelAttribute BookReqDto bookReqDto) {
+        bookService.updateBook(bookId, bookReqDto);
+
+        String result = "도서 정보 수정 성공";
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
@@ -57,12 +63,12 @@ public class BookController implements BookControllerDocs {
 
     //도서 삭제
     @Override
-    public ResponseEntity<GlobalResponseDto<?>> deleteBook(@PathVariable("bookId") Long bookId){
+    public ResponseEntity<GlobalResponseDto<BulkDeleteResponse>> deleteBooks(BookDelReqDto bookDelReqDto){
 
-        bookService.deleteBook(bookId);
+        BulkDeleteResponse result = bookService.bulkDeleteBooks(bookDelReqDto);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(GlobalResponseDto.success(HttpStatus.OK,null));
+                .body(GlobalResponseDto.success(HttpStatus.OK,result));
 
     }
 
@@ -70,7 +76,7 @@ public class BookController implements BookControllerDocs {
     @Override
     public ResponseEntity<GlobalResponseDto<Page<BookResDto>>> listBook(@ModelAttribute SearchFilterDto searchFilterDto,
                                                                         @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable){
-        Page<BookResDto> result = bookService.findBooksWithFilter(searchFilterDto, pageable);
+        Page<BookResDto> result = bookService.findBooksWithFilterAndFTS(searchFilterDto, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK,result));
@@ -79,31 +85,51 @@ public class BookController implements BookControllerDocs {
 
     //카카오 api + 국립 중앙 도서관 api 호출
     @Override
-    public  ResponseEntity<GlobalResponseDto<List<BookSearchResult>>> searchBookWithLibraryApi(@RequestParam String query){
+    public  ResponseEntity<GlobalResponseDto<List<BookSearchResult>>> searchBookWithLibraryApi(@RequestParam(name = "query") String query){
         List<BookSearchResult> result = bookService.searchBooksWithApi(query);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK,result));
     }
 
+    @Override
+    public ResponseEntity<GlobalResponseDto<BookSearchResult>> findBookByISBNWithLibraryApi(@PathVariable String isbn){
+        BookSearchResult result = bookService.searchBookWithApi(isbn);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
     //중복된 ISBN인지 확인
     @Override
-    public ResponseEntity<GlobalResponseDto<Boolean>> isDuplicateIsbn(@RequestParam String isbn){
+    public ResponseEntity<GlobalResponseDto<Boolean>> isDuplicateIsbn(@RequestParam(name = "isbn") String isbn){
         boolean result = bookService.isDuplicateIsbn(isbn);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+    //알라딘 api 베스트셀러 목록 조회
     @Override
-    public ResponseEntity<GlobalResponseDto<List<AladinBestSellerResDto>>> getBestseller(){
-        List<AladinBestSellerResDto> result = bookService.getBestsellersWithAladin();
+    public ResponseEntity<GlobalResponseDto<BestsellerResponse>> getBestseller(@RequestParam(defaultValue = "1") int page,
+                                                                              @RequestParam(defaultValue = "10") int size){
+        BestsellerResponse result = bookService.getBestsellersWithAladin(page, size);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
+
+
+    //연관도서 목록 조회
     @Override
     public ResponseEntity<GlobalResponseDto<List<BookResDto>>> listRelatedBook(@PathVariable Long bookId){
         List<BookResDto> result = bookService.getRelatedBooks(bookId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, result));
+    }
+
+    //가장 최근 도서 등록 일자
+    @Override
+    public ResponseEntity<GlobalResponseDto<LocalDate>> getLatestRegistrationDate() {
+        LocalDate result = bookService.getLatestRegistrationDate();
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }

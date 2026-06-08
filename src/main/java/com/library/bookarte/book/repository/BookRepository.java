@@ -7,41 +7,21 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface BookRepository extends JpaRepository<Book, Long>, BookRepositoryCustom {
-/*    @Query(
-            value = """
-        select new com.library.bookarte.book.dto.BookResDto(
-            b.bookId,
-            b.bookTitle,
-            b.bookAuthor,
-            b.publisherName,
-            b.publicationDate,
-            b.bookIsbn,
-            b.bookContents,
-            b.bookThumbnail,
-            b.bookCallNumber,
-            c.categoryName
-        )
-        from Book b
-        join b.category c
-        where c.categoryId = :categoryId
-    """,
-            countQuery = """
-        select count(b)
-        from Book b
-        where b.category.categoryId = :categoryId
-    """
-    )
-    Page<BookResDto> findBookResDtosByCategoryId(
-            @Param("categoryId") Long categoryId,
-            Pageable pageable
-    );*/
-
     boolean existsByBookIsbn(String isbn);
 
+    //비관적 락
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select b from Book b where b.bookId = :id")
-    Optional<Book> findByIdWithLock(@Param("id") Long id);
+    Optional<Book> findByIdWithPessimisticLock(@Param("id") Long id);
+
+    //낙관적 락
+/*    @Query("select b from Book b where b.bookId = :id")
+    Optional<Book> findByIdWithOptimisticLock(@Param("id") Long id);*/
+
+    @Query("SELECT MAX(b.createdAt) FROM Book b")
+    Optional<LocalDateTime> findLatestCreatedAt();
 }

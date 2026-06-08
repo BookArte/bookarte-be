@@ -11,11 +11,15 @@ import java.util.List;
 public class AladinResponse {
 
     private List<Item> items;
+    private int totalResults;
 
     @XmlElement(name = "item")
     public void setItems(List<Item> items) {
         this.items = items;
     }
+
+    @XmlElement(name = "totalResults")
+    public void setTotalResults(int totalResults) { this.totalResults = totalResults; }
 
     @Data
     public static class Item {

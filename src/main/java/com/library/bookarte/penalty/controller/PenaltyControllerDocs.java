@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public interface PenaltyControllerDocs {
     })
     @PatchMapping("/admin/{penaltyId}/release")
     ResponseEntity<GlobalResponseDto<Long>> release(@PathVariable Long penaltyId,
+                                                    @AuthenticationPrincipal Long memeberId,
                                                     @RequestBody ReleaseReqDto releaseReqDto);
 
     /*Update: 패널티 해제 철회*/
@@ -38,7 +40,7 @@ public interface PenaltyControllerDocs {
     @PatchMapping("/admin/{penaltyId}/revoke")
     ResponseEntity<GlobalResponseDto<Long>> revoke(@PathVariable Long penaltyId);
 
-    /*Update: 패널티 해제 철회*/
+    /*Update: 패널티 해제 사유 변경*/
     @Operation(summary = "관리자 권한으로 패널티 해제 사유 변경", description = "**성공 응답 데이터:** 요청 성공 패널티 id ")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "페널티 해제 사유 변경 성공"),
@@ -58,5 +60,14 @@ public interface PenaltyControllerDocs {
     })
     @GetMapping("/admin/list")
     ResponseEntity<GlobalResponseDto<List<PenaltyResDto>>> getMemberPenaltys(@RequestParam String memberUserId);
+
+    @Operation(summary = "본인의 패널티 목록 확인", description = "**성공 응답 데이터:** 패널티 목록 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "패널티 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @GetMapping
+    ResponseEntity<GlobalResponseDto<List<PenaltyResDto>>> getMyPenaltys(@AuthenticationPrincipal Long memberId);
 
 }

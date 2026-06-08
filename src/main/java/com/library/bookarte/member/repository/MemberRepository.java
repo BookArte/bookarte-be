@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface MemberRepository extends JpaRepository<Member, Long> {
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
     Optional<Member> findByMemberUserId(String userId);
 
     boolean existsByMemberUserId(String userId);
@@ -17,6 +17,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<List<Member>> findByMemberNameAndMemberTelAndMemberEmail(String memberName, String memberTel, String memberEmail);
 
     Optional<Member> findByMemberUserIdAndMemberNameAndMemberEmail(String memberUserId, String memberName, String memberEmail);
+
+    List<Member> findMembersByMemberUserId(String userid);
+    List<Member> findALlByOrderByMemberNameAsc();
 
     @Query("SELECT m.memberUserId FROM Member m WHERE m.memberId = :memberId")
     Optional<String> findMemberUserIdByMemberId(@Param("memberId") Long memberId);

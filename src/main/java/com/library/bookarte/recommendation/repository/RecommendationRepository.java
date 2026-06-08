@@ -3,19 +3,18 @@ package com.library.bookarte.recommendation.repository;
 import com.library.bookarte.recommendation.entity.Recommendation;
 import com.library.bookarte.recommendation.entity.type.RecommendType;
 import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
-public interface RecommendationRepository extends JpaRepository<Recommendation, Long> {
+public interface RecommendationRepository extends JpaRepository<Recommendation, Long>,RecommendationRepositoryCustom {
 
-    //우선 순위 자동 증가
-    @Modifying
-    @Query("UPDATE Recommendation r SET r.priority = r.priority + 1 WHERE r.priority >= 1")
-    void shiftPriorities();
 
     //우선 순위 자동 감소
     @Modifying
@@ -32,7 +31,66 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     @Query("UPDATE Recommendation r SET r.priority = :priority WHERE r.id = :id")
     void updatePriority(@Param("id") Long id, @Param("priority") int priority);
 
-    boolean existsByBook_BookId(Long bookId);
+    //특정 기간 내 최대 우선순위 조회 (값이 없으면 0 반환)
+    @Query("SELECT COALESCE(MAX(r.priority), 0) FROM Recommendation r " +
+            "WHERE r.recommendType = :type " +
+            "AND r.startDate <= :newEnd " +
+            "AND r.endDate >= :newStart")
+    int findMaxPriorityInPeriod(
+            @Param("type") RecommendType type,
+            @Param("newStart") LocalDate newStart,
+            @Param("newEnd") LocalDate newEnd
+    );
 
-    int countByRecommendType(RecommendType recommendType);
+    //진행 중 및 예약 도서 전체 조회
+    @Query("SELECT r FROM Recommendation r JOIN FETCH r.book " +
+            "WHERE r.endDate >= :today " +
+            "ORDER BY r.startDate ASC, r.priority ASC")
+    List<Recommendation> findActiveAndUpcoming(@Param("today") LocalDate today);
+
+    @Query("SELECT r FROM Recommendation r " +
+            "WHERE r.recommendType = :type " +
+            "AND r.startDate <= :endDate " +
+            "AND r.endDate >= :startDate")
+    List<Recommendation> findAllOverlapping(
+            @Param("type") RecommendType type,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    //업데이트 대상 한권 제외 조회
+    @Query("SELECT r FROM Recommendation r " +
+            "WHERE r.recommendType = :type " +
+            "AND r.startDate <= :newEnd " +
+            "AND r.endDate >= :newStart " +
+            "AND r.recommendationId != :excludeId")
+    List<Recommendation> findOverlappingExceptSelf(
+            @Param("type") RecommendType type,
+            @Param("newStart") LocalDate newStart,
+            @Param("newEnd") LocalDate newEnd,
+            @Param("excludeId") Long excludeId
+    );
+
+    @Query("SELECT r FROM Recommendation r " +
+            "JOIN r.book b " + // 💡 도서명 검색을 위해 Recommendation과 연관된 Book을 조인합니다 (엔티티 필드명에 맞게 조정 필요)
+            "WHERE r.endDate < :today " +
+            // 💡키워드 검색
+            "AND (:keyword IS NULL OR b.bookTitle LIKE %:keyword%) " +
+            // 💡 추천 시작일 검색
+            "AND (:startDate IS NULL OR r.startDate >= :startDate) " +
+            // 💡추천 종료일 검색
+            "AND (:endDate IS NULL OR r.endDate <= :endDate)")
+    Page<Recommendation> findHistory(
+            @Param("today") LocalDate today,
+            @Param("keyword") String keyword,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            Pageable pageable
+    );
+
+    //등록 기간 내 중복 도서 조회
+    Optional<Recommendation> findFirstByBook_BookIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual( Long bookId,
+                                                                                                        LocalDate endDate,
+                                                                                                        LocalDate startDate
+    );
 }

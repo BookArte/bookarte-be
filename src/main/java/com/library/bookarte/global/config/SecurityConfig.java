@@ -1,7 +1,11 @@
 package com.library.bookarte.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.library.bookarte.auth.handler.CustomAccessDeniedHandler;
 import com.library.bookarte.auth.jwt.JwtFilter;
+import com.library.bookarte.member.entity.type.MemberType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,17 +26,31 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
     private final JwtFilter jwtFilter;
+    private final ObjectMapper objectMapper;
+
+    @Value("${cors.allow.origins}")
+    private String origin;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> {})
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/error").permitAll()
+
                         .requestMatchers(SWAGGER_PATTERNS).permitAll() //swagger 관련 요청 허용
+                        .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/logout").permitAll()
+                        .requestMatchers(
+                                "/api/book/admin/**",
+                                "/api/borrow/admin/**",
+                                "/api/recommendation/admin/**",
+                                "/api/penalty/admin/**"
+                        ).hasAuthority(MemberType.Constants.ROLE_ADMIN)
                         .requestMatchers(
                                 "/api/**",
                                 "/api/auth/**",
@@ -41,6 +59,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling((exceptionHandling) -> exceptionHandling
+                        .accessDeniedHandler(new CustomAccessDeniedHandler(objectMapper)))
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable());
 
@@ -55,8 +75,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
+        configuration.setAllowedOrigins(List.of(origin));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 

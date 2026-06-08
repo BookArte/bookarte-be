@@ -1,9 +1,13 @@
 package com.library.bookarte.book.entity;
 
-import com.library.bookarte.book.dto.BookResDto;
+import com.library.bookarte.book.dto.response.BookResDto;
 import com.library.bookarte.book.entity.type.ParticipantType;
+import com.library.bookarte.book.utils.BookParticipantUtils;
+import com.library.bookarte.borrow.dto.response.PopularBookResDto;
 import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.global.base.BaseEntity;
+import com.library.bookarte.recommendation.entity.Recommendation;
+import com.library.bookarte.wish.entity.Wish;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +17,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -25,6 +28,10 @@ public class Book extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bookId;
+
+    //낙관적 락을 위한 엔티티 버전
+/*    @Version
+    private Long version;*/
 
     //도서명, book_title
     @Column(nullable = false)
@@ -64,13 +71,19 @@ public class Book extends BaseEntity {
     private String bookCallNumber;
 
     //표지사진 book_thumbnail
-    @Column(nullable = false)
+    @Column
     private String bookThumbnail;
 
     //도서 카테고리
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Recommendation> recommendations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Wish> wishes = new ArrayList<>();
 
     @Builder
     public Book(String bookTitle,
@@ -124,16 +137,14 @@ public class Book extends BaseEntity {
         }
     }
 
-    public BookResDto toBookResDto(){
-        String authors = this.participants.stream()
-                .filter(p -> p.getType() == ParticipantType.AUTHOR)
-                .map(Participant::getName)
-                .collect(Collectors.joining(", "));
+    public void updateThumbnail(String bookThumbnail){
+        this.bookThumbnail = bookThumbnail;
+    }
 
-        String translators = this.participants.stream()
-                .filter(p -> p.getType() == ParticipantType.TRANSLATOR)
-                .map(Participant::getName)
-                .collect(Collectors.joining(", "));
+    public BookResDto toBookResDto(){
+        String authors = BookParticipantUtils.extractAuthors(this.getParticipants());
+
+        String translators = BookParticipantUtils.extractTranslators(this.getParticipants());
 
         return  BookResDto.builder()
                 .bookId(this.bookId)
@@ -147,7 +158,29 @@ public class Book extends BaseEntity {
                 .bookIsbn(this.bookIsbn)
                 .bookThumbnail(this.bookThumbnail)
                 .bookCategory(this.category.getCategoryName())
+                .createdAt(this.getCreatedAt())
+                .lastUpdatedAt(this.getUpdatedAt())
                 .canBorrow(this.canBorrow)
+                .build();
+    }
+
+    public PopularBookResDto toPopularBookResDto(Long borrowCount){
+        String authors = BookParticipantUtils.extractAuthors(this.getParticipants());
+
+        String translators = BookParticipantUtils.extractTranslators(this.getParticipants());
+
+
+        return PopularBookResDto.builder()
+                .bookId(this.bookId)
+                .bookTitle(this.bookTitle)
+                .publisherName(this.publisherName)
+                .publicationDate(this.publicationDate)
+                .bookAuthor(authors)
+                .bookTranslator(translators)
+                .bookCategory(this.category.getCategoryName())
+                .bookIsbn(this.bookIsbn)
+                .bookThumbnail(this.bookThumbnail)
+                .borrowCount(borrowCount)
                 .build();
     }
 

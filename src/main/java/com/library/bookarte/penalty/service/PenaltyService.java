@@ -59,7 +59,7 @@ public class PenaltyService {
     }
 
     //관리자 권한 도서 연체 패널티 해제
-    public Long releasePenalty(Long penaltyId, ReleaseReqDto releaseReqDto){
+    public Long releasePenalty(Long penaltyId, Long memberId,ReleaseReqDto releaseReqDto){
         Penalty penalty = penaltyRepository.findById(penaltyId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PENALTY_NOT_FOUND));
 
@@ -67,7 +67,6 @@ public class PenaltyService {
             throw new CustomException(CustomErrorCode.ALREADY_RELEASE);
         }
 
-        Long memberId = Long.parseLong(Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName());
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
@@ -118,14 +117,18 @@ public class PenaltyService {
 
     //특정 유저 패널티 목록 조회
     public List<PenaltyResDto> getPenaltyList(String memberUserId){
-        Member member = memberRepository.findByMemberUserId(memberUserId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
-
-        Long memberId = member.getMemberId();
-
-        List<Penalty> penaltys = penaltyRepository.findByMember_MemberId(memberId);
+        List<Penalty> penaltys = penaltyRepository.findByMember_MemberUserId(memberUserId);
 
         return penaltys.stream()
+                .map(Penalty::toResDto)
+                .toList();
+    }
+
+    //로그인한 유저 본인 패널티 확인
+    public List<PenaltyResDto> getMyPenaltyList(Long memberId){
+        List<Penalty> penalties = penaltyRepository.findByMember_MemberIdAndIsReleasedFalse(memberId);
+
+        return penalties.stream()
                 .map(Penalty::toResDto)
                 .toList();
     }

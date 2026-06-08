@@ -1,12 +1,19 @@
 package com.library.bookarte.member.service;
 
+import com.library.bookarte.board.entity.type.BoardType;
+import com.library.bookarte.board.repository.BoardRepository;
+import com.library.bookarte.borrow.entity.type.Status;
+import com.library.bookarte.borrow.repository.BorrowRepository;
+import com.library.bookarte.global.dto.response.CursorResponse;
 import com.library.bookarte.global.exception.CustomErrorCode;
 import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.global.util.StringUtils;
 import com.library.bookarte.member.dto.request.*;
 import com.library.bookarte.member.dto.response.*;
 import com.library.bookarte.member.entity.Member;
+import com.library.bookarte.member.entity.type.MemberType;
 import com.library.bookarte.member.repository.MemberRepository;
+import com.library.bookarte.wish.repository.WishRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +28,9 @@ import java.util.List;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BorrowRepository borrowRepository;
+    private final WishRepository wishRepository;
+    private final BoardRepository boardRepository;
 
     public MemberJoinResponse join(MemberJoinRequest memberJoinRequest) {
         LocalDateTime now = LocalDateTime.now();
@@ -30,9 +40,10 @@ public class MemberService {
                 .memberTel(memberJoinRequest.getMemberTel())
                 .memberPwd(passwordEncoder.encode(memberJoinRequest.getMemberPassword()))
                 .memberEmail(memberJoinRequest.getMemberEmail())
-                .memberRole("ROLE01")               // 상수 ENUM 작업
-                .memberSocialType("SOCIAL01")       // 상수 ENUM 작업
-                .memberStatus("STATUS01")           // 상수 ENUM 작업
+                .memberRole(MemberType.Constants.ROLE_USER)
+                .memberSocialType(MemberType.Constants.SOCIAL_NONE)
+                .memberStatus(MemberType.Constants.STATUS_ACTIVE)
+                .memberPoint(0L)
                 .usePrivacyYn(memberJoinRequest.getAgreePrivacy() ? "Y" : "N")
                 .useServiceYn(memberJoinRequest.getAgreeService() ? "Y" : "N")
                 .usePrivacyDate(memberJoinRequest.getAgreePrivacy() ? now : null)
@@ -76,6 +87,16 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
+        //대출 + 연체 도서 카운팅
+        Long borrowedCount = borrowRepository.countBorrowByMember_MemberIdAndStatus(memberId, Status.BORROWED);
+        Long overdueCount = borrowRepository.countBorrowByMember_MemberIdAndStatus(memberId, Status.OVERDUE);
+
+        //관심 도서 카운팅
+        Long wishCount = wishRepository.countWishByMember_MemberId(memberId);
+
+        // 문의 내역 카운팅
+        Long qnaCount = boardRepository.countByTypeAndMember(BoardType.QNA.getEntityClass(), memberId);
+
         return MemberResponse.builder()
                 .id(member.getMemberId())
                 .userId(member.getMemberUserId())
@@ -83,6 +104,9 @@ public class MemberService {
                 .email(member.getMemberEmail())
                 .tel(member.getMemberTel())
                 .point(member.getMemberPoint())
+                .borrowingCount(borrowedCount + overdueCount)
+                .wishCount(wishCount)
+                .qnaCount(qnaCount)
                 .build();
     }
 
@@ -100,11 +124,39 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
-        if ("STATUS02".equals(member.getMemberStatus())) {
+        if (!passwordEncoder.matches(memberDeleteRequest.getPassword(), member.getMemberPwd())) {
+            throw new CustomException(CustomErrorCode.INVALID_CURRENT_PASSWORD);
+        }
+
+        if (MemberType.Constants.STATUS_WITHDRAWN.equals(member.getMemberStatus())) {
             throw new CustomException(CustomErrorCode.MEMBER_DELETE_STATUS_ERROR);
         }
 
+        long borrowedCount = borrowRepository.countBorrowByMember_MemberIdAndStatus(memberId, Status.BORROWED);
+
+        if (borrowedCount > 0) {
+            throw new CustomException(CustomErrorCode.MEMBER_BORROW_NOT_RETURNED);
+        }
+
         member.delete(memberDeleteRequest.getReason());
+    }
+
+    public void expelMember(Long memberId, MemberExpelRequest memberExpelRequest) {
+        Member loginMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        if (!MemberType.Constants.ROLE_ADMIN.equals(loginMember.getMemberRole())) {
+            throw new CustomException(CustomErrorCode.MEMBER_NOT_ADMIN);
+        }
+
+        Member member = memberRepository.findById(memberExpelRequest.getId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        if (MemberType.Constants.STATUS_WITHDRAWN.equals(member.getMemberStatus())) {
+            throw new CustomException(CustomErrorCode.MEMBER_DELETE_STATUS_ERROR);
+        }
+
+        member.delete("관리자 추방");
     }
 
     public MemberFindIdResponse findId(MemberFindIdRequest memberFindIdRequest) {
@@ -133,5 +185,21 @@ public class MemberService {
 
         String encodedNewPassword = passwordEncoder.encode(memberChangePasswordRequest.getNewPassword());
         member.updatePassword(encodedNewPassword);
+    }
+
+    public CursorResponse<MemberResponse> findListByCursor(Long lastMemberId, String userId, int pageSize) {
+        // 1. 커서 기반 조회
+        List<Member> members = memberRepository.findMembersByCursor(lastMemberId, userId, pageSize);
+
+        // 2. 응답 DTO 변환
+        List<MemberResponse> content = members.stream()
+                .map(Member::toResDto)
+                .toList();
+
+        // 3. 다음 페이지 존재 여부 및 다음 커서 계산
+        Long lastCursor = content.isEmpty() ? null : content.get(content.size() - 1).getId();
+        boolean hasNext = content.size() >= pageSize;
+
+        return new CursorResponse<>(content, lastCursor, hasNext);
     }
 }

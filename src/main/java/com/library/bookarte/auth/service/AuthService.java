@@ -14,6 +14,7 @@ import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.global.util.MailService;
 import com.library.bookarte.global.util.StringUtils;
 import com.library.bookarte.member.entity.Member;
+import com.library.bookarte.member.entity.type.MemberType;
 import com.library.bookarte.member.repository.MemberRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +58,10 @@ public class AuthService {
 
         Member member = memberRepository.findByMemberUserId(loginRequest.getMemberUserId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        if(member.getMemberStatus().equals(MemberType.Constants.STATUS_WITHDRAWN)) {
+            throw new CustomException(CustomErrorCode.MEMBER_WITHDRAWN);
+        }
 
         if (!passwordEncoder.matches(loginRequest.getMemberPassword(), member.getMemberPwd())) {
             throw new CustomException(CustomErrorCode.INVALID_PASSWORD);

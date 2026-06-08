@@ -76,9 +76,10 @@ public class Penalty extends BaseEntity {
     //응답 dto로 변환
     public PenaltyResDto toResDto(){
         return PenaltyResDto.builder()
+                .penaltyId(this.penaltyId)
                 .penaltyReason(this.penaltyReason)
-                .startDate(this.startDate)
-                .endDate(this.endDate)
+                .penaltyStartDate(this.startDate)
+                .penaltyEndDate(this.endDate)
                 .isReleased(this.isReleased)
                 .releaseReason(this.releaseReason)
                 .memberUserId(this.member.getMemberUserId())
@@ -87,7 +88,16 @@ public class Penalty extends BaseEntity {
                 .memberTel(this.member.getMemberTel())
                 .bookTitle(this.borrow.getBook().getBookTitle())
                 .bookIsbn(this.borrow.getBook().getBookIsbn())
+                .borrowStartDate(this.borrow.getCreatedAt().toLocalDate())
+                .borrowEndDate(this.borrow.getReturnDueDate())
+                .returnDay(this.borrow.getReturnDate())
+                .overdueStartDate(this.borrow.getReturnDueDate().plusDays(1))
+                .overdueEndDate(this.borrow.getReturnDate())
                 .overdueDays(this.borrow.getOverdueDays())
+                .releasedBy(this.releasedBy)
+                .releasedAt(this.releasedAt)
+                .lastModifiedBy(this.lastModifiedBy)
+                .lastModifiedAt(this.getUpdatedAt())
                 .build();
     }
 
