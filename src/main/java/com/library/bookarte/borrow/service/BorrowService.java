@@ -58,14 +58,16 @@ public class BorrowService {
     @PersistenceContext
     private EntityManager em;
 
+    private static final int MAX_BORROW_COUNT = 5;
+
     //도서 대출 등록
     public void borrowBook(Long bookId, Long memberId){
-
-        checkBorrowRestricted(memberId);
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
+        checkBorrowRestricted(memberId);
+        checkBorrowLimit(memberId);
         /**
          * 1. 비관적 릭을 적용하여 도서 조회
          * 2. 해당 도서에 대해서 다른 트랜잭션은 이 도서 정보를 수정할 수 없음
@@ -335,6 +337,14 @@ public class BorrowService {
             throw new CustomException(CustomErrorCode.USER_BORROW_RESTRICTED);
         }
 
+    }
+
+    private void checkBorrowLimit(Long memberId) {
+        long activeBorrowCount = borrowRepository.countByMember_MemberIdAndReturnDateIsNull(memberId);
+
+        if (activeBorrowCount >= MAX_BORROW_COUNT) {
+            throw new CustomException(CustomErrorCode.USER_BORROW_LIMIT_EXCEEDED);
+        }
     }
 
     //테스트용 코드
