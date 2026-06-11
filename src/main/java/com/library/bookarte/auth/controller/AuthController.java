@@ -9,6 +9,7 @@ import com.library.bookarte.auth.dto.response.TokenResponse;
 import com.library.bookarte.auth.dto.response.VerifyCodeResponse;
 import com.library.bookarte.auth.service.AuthService;
 import com.library.bookarte.global.response.GlobalResponseDto;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +29,10 @@ public class AuthController implements AuthControllerDocs {
     @Override
     public ResponseEntity<GlobalResponseDto<TokenResponse>> login(
             @Valid @RequestBody LoginRequest loginRequest,
-            HttpServletResponse response
+            HttpServletResponse response,
+            HttpServletRequest request
     ) {
-        TokenResponse tokenResponse = authService.login(loginRequest);
+        TokenResponse tokenResponse = authService.login(loginRequest, request);
 
         ResponseCookie cookie = authService.createHttpOnlyCookie(tokenResponse.getRefreshToken());
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
