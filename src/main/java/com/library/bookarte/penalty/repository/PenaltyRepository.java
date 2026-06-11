@@ -16,6 +16,11 @@ public interface PenaltyRepository extends JpaRepository<Penalty, Long> {
     //패널티 여부 확인
     boolean existsByMember_MemberIdAndEndDateAfterAndIsReleasedFalse(Long memberId, LocalDate today);
 
+    Optional<Penalty> findTopByMember_MemberIdAndIsReleasedFalseOrderByEndDateDesc(Long memberId);
+    List<Penalty> findByMember_MemberIdAndIsReleasedFalseAndStartDateGreaterThanEqualOrderByStartDateAsc(
+            Long memberId,
+            LocalDate startDate
+    );
     List<Penalty> findByMember_MemberUserId(String memberUserId);
     List<Penalty> findByMember_MemberIdAndIsReleasedFalse(Long memberId);
 }

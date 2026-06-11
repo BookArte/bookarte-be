@@ -73,6 +73,12 @@ public class Penalty extends BaseEntity {
         this.lastModifiedBy = modifiedBy;
     }
 
+
+    public void updatePeriod(LocalDate startDate, LocalDate endDate) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
     //응답 dto로 변환
     public PenaltyResDto toResDto(){
         return PenaltyResDto.builder()
