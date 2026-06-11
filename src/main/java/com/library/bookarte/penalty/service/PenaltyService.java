@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 
@@ -53,34 +54,39 @@ public class PenaltyService {
     }
 
     public LocalDate getLastestPenaltyEndDate(Long memberId, LocalDate today) {
-        return penaltyRepository.findTopByMember_MemberIdOrderByEndDateDesc(memberId)
+        return penaltyRepository.findTopByMember_MemberIdAndIsReleasedFalseOrderByEndDateDesc(memberId)
                 .map(p -> p.getEndDate().isAfter(today) ? p.getEndDate() : today)
                 .orElse(today);
     }
 
     //관리자 권한 도서 연체 패널티 해제
-    public Long releasePenalty(Long penaltyId, Long memberId,ReleaseReqDto releaseReqDto){
+    public Long releasePenalty(Long penaltyId, Long memberId, ReleaseReqDto releaseReqDto) {
         Penalty penalty = penaltyRepository.findById(penaltyId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PENALTY_NOT_FOUND));
 
-        if(penalty.isReleased()){
+        if (penalty.isReleased()) {
             throw new CustomException(CustomErrorCode.ALREADY_RELEASE);
         }
-
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
-        boolean isReleased = true;
-        String releaseReason = releaseReqDto.getReleaseReason();
-        String releasedBy = member.getMemberUserId();
-        LocalDateTime releasedAt = LocalDateTime.now();
+        long releasedDays = ChronoUnit.DAYS.between(
+                penalty.getStartDate(),
+                penalty.getEndDate()
+        );
 
-        penalty.releasePenalty(isReleased, releaseReason, releasedBy, releasedAt);
+        penalty.releasePenalty(
+                true,
+                releaseReqDto.getReleaseReason(),
+                member.getMemberUserId(),
+                LocalDateTime.now()
+        );
+
+        shiftFuturePenalties(penalty, releasedDays);
 
         return penaltyId;
     }
-
     //연체 패널티 해제 철회
     public Long revokePenalty(Long penaltyId){
         Penalty penalty = penaltyRepository.findById(penaltyId)
@@ -131,5 +137,23 @@ public class PenaltyService {
         return penalties.stream()
                 .map(Penalty::toResDto)
                 .toList();
+    }
+
+
+    private void shiftFuturePenalties(Penalty releasedPenalty, long releasedDays) {
+        if (releasedDays <= 0) return;
+
+        List<Penalty> futurePenalties =
+                penaltyRepository.findByMember_MemberIdAndIsReleasedFalseAndStartDateGreaterThanEqualOrderByStartDateAsc(
+                        releasedPenalty.getMember().getMemberId(),
+                        releasedPenalty.getEndDate()
+                );
+
+        for (Penalty penalty : futurePenalties) {
+            penalty.updatePeriod(
+                    penalty.getStartDate().minusDays(releasedDays),
+                    penalty.getEndDate().minusDays(releasedDays)
+            );
+        }
     }
 }

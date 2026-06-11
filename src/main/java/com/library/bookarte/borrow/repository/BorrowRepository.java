@@ -12,4 +12,5 @@ public interface BorrowRepository extends JpaRepository<Borrow, Long>, BorrowRep
     boolean  existsByMember_MemberIdAndReturnDateIsNullAndReturnDueDateBefore(Long memberId, LocalDate today);
     long countBorrowByMember_MemberIdAndStatus(Long memberId, Status status);
     List<Borrow> findByMember_MemberId(Long memberId);
+    long countByMember_MemberIdAndReturnDateIsNull(Long memberId);
 }

@@ -1,5 +1,6 @@
 package com.library.bookarte.auth.service;
 
+import com.library.bookarte.ai.service.GeminiService;
 import com.library.bookarte.auth.dto.request.LoginRequest;
 import com.library.bookarte.auth.dto.request.MemberFindPasswordRequest;
 import com.library.bookarte.auth.dto.request.ResetPasswordRequest;
@@ -15,6 +16,7 @@ import com.library.bookarte.global.util.StringUtils;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.entity.type.MemberType;
 import com.library.bookarte.member.repository.MemberRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -39,6 +41,7 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final StringRedisTemplate redisTemplate;
     private final MailService mailService;
+    private final GeminiService geminiService;
 
     @Value("${jwt.access-expiration}")
     private long accessExpirationMs;
@@ -51,7 +54,7 @@ public class AuthService {
 
     private static final String REFRESH_TOKEN_PREFIX = "RT:";
 
-    public TokenResponse login(LoginRequest loginRequest) {
+    public TokenResponse login(LoginRequest loginRequest, HttpServletRequest request) {
 
         Member member = memberRepository.findByMemberUserId(loginRequest.getMemberUserId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
@@ -63,6 +66,8 @@ public class AuthService {
         if (!passwordEncoder.matches(loginRequest.getMemberPassword(), member.getMemberPwd())) {
             throw new CustomException(CustomErrorCode.INVALID_PASSWORD);
         }
+
+        geminiService.clearChatHistory(request.getSession().getId());
 
         return generateTokenResponse(member);
     }
