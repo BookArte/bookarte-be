@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,8 @@ public interface AuthControllerDocs {
     @PostMapping("/login")
     ResponseEntity<GlobalResponseDto<TokenResponse>> login(
             @Valid @RequestBody LoginRequest loginRequest,
-            HttpServletResponse response
+            HttpServletResponse response,
+            HttpServletRequest request
     );
 
     /* Read: 리프레시 토큰 생성 */
