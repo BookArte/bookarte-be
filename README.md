@@ -213,6 +213,19 @@ $ ./gradlew bootRun
 <br/>
 
 # 7. 프로젝트 데모
+## 7.1 배포 주소
+https://bookarte.vercel.app
+
+## 7.2 페이지별 기능 
+### 회원(member/auth)
+-----
+| 회원가입 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/652a16e0-9501-4aac-9015-bcd9707133fd" /> |
+
+| 로그인 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/be6bf9bf-385c-4835-9ac3-a6f8e91d1c35" />|
 
 <br/>
 <br/>
