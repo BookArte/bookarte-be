@@ -217,15 +217,31 @@ $ ./gradlew bootRun
 https://bookarte.vercel.app
 
 ## 7.2 페이지별 기능 
-### 회원(member/auth)
------
+
+### 7.2.1 회원(member/auth)
+
 | 회원가입 |
 |-----------------|
 | <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/652a16e0-9501-4aac-9015-bcd9707133fd" /> |
 
 | 로그인 |
 |-----------------|
-| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/be6bf9bf-385c-4835-9ac3-a6f8e91d1c35" />|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/be6bf9bf-385c-4835-9ac3-a6f8e91d1c35" /> |
+
+### 7.2.2 도서(book)
+
+| 도서검색 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/1f0d066e-2c1b-4516-bc76-28313f60c700" /> |
+
+| 관심 도서 & 도서 대출 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/e5f34eac-c84d-4c5a-b107-dff2e58f525a" /> |
+
+| 대출 연장 & 대출 반납 요청 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/a2976e00-a9b9-499c-a61e-2cf92eedb1bc" /> |
+
 
 <br/>
 <br/>
