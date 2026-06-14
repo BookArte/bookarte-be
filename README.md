@@ -230,7 +230,7 @@ https://bookarte.vercel.app
 
 ### 7.2.2 도서(book)
 
-| 도서검색 |
+| 도서 검색 |
 |-----------------|
 | <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/1f0d066e-2c1b-4516-bc76-28313f60c700" /> |
 
@@ -238,7 +238,7 @@ https://bookarte.vercel.app
 |-----------------|
 | <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/e5f34eac-c84d-4c5a-b107-dff2e58f525a" /> |
 
-| 대출 연장 & 대출 반납 요청 |
+| 대출 연장 & 대출 반납 신청 |
 |-----------------|
 | <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/a2976e00-a9b9-499c-a61e-2cf92eedb1bc" /> |
 
