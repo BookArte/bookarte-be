@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,6 +74,9 @@ public class Book extends BaseEntity {
     //표지사진 book_thumbnail
     @Column
     private String bookThumbnail;
+
+    @Column
+    private LocalDateTime deletedAt;
 
     //도서 카테고리
     @ManyToOne(fetch = FetchType.LAZY)
@@ -188,6 +192,10 @@ public class Book extends BaseEntity {
     /* 대출가능여부 업데이트 */
     public void updateCanBorrow(boolean canBorrow){
         this.canBorrow = canBorrow;
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
     }
 
     /**
