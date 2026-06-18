@@ -24,7 +24,7 @@ public class WishService {
     private final MemberRepository memberRepository;
 
     public void addWishBook(Long bookId,Long memberId){
-        Book book = bookRepository.findById(bookId)
+        Book book = bookRepository.findByBookIdAndDeletedAtIsNull(bookId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
 
         Member member = memberRepository.findById(memberId)
@@ -39,7 +39,7 @@ public class WishService {
     }
 
     public Page<WishResDto> getWishList(Long memberId, Pageable pageable){
-        Page<Wish> wishes = wishRepository.findByMember_MemberId(memberId, pageable);
+        Page<Wish> wishes = wishRepository.findByMember_MemberIdAndBook_DeletedAtIsNull(memberId, pageable);
         return wishes.map(Wish::toWishResDto);
     }
 
