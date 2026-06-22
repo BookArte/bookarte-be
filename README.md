@@ -230,6 +230,10 @@ https://bookarte.vercel.app
 
 ### 7.2.2 도서(book)
 
+| 도서 등록 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/4a4a41bf-591d-40e1-8f01-016d95ee9d28" /> |
+
 | 도서 검색 |
 |-----------------|
 | <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/1f0d066e-2c1b-4516-bc76-28313f60c700" /> |
@@ -242,6 +246,15 @@ https://bookarte.vercel.app
 |-----------------|
 | <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/a2976e00-a9b9-499c-a61e-2cf92eedb1bc" /> |
 
+### 7.2.3 추천 도서(recommendation)
+
+| 추천 도서 등록 |
+|-----------------|
+| <img width="800" height="450" alt="Image"  src="https://github.com/user-attachments/assets/2ca60dfc-4955-47df-bdbe-2f3891da1853"  /> |
+
+| 추천 도서 등록 실패 & 예약 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/ad3367e7-1244-4e7e-932d-aae90f002a98" /> |
 
 <br/>
 <br/>
