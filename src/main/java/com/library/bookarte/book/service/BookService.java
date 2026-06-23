@@ -21,6 +21,7 @@ import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.global.util.S3Service;
 import com.library.bookarte.global.util.XssUtils;
 import com.library.bookarte.recommendation.repository.RecommendationRepository;
+import com.library.bookarte.wish.repository.WishRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,7 @@ public class BookService {
     private final BookRepository bookRepository;
     private final CategoryService categoryService;
     private final RecommendationRepository recommendationRepository;
+    private final WishRepository wishRepository;
 
     private final KakaoBookSearchClient kakaoBookSearchClient;
     private final NationalLibrarySearchClient nationalLibrarySearchClient;
@@ -90,14 +92,14 @@ public class BookService {
     @Transactional(readOnly = true)
     public Book findBook(Long bookId) {
 
-        return bookRepository.findById(bookId)
+        return bookRepository.findByBookIdAndDeletedAtIsNull(bookId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
     }
 
     /*도서 수정 api*/
     public Long updateBook(Long bookId,BookReqDto bookReqDto){
 
-        Book updateTargetBook = bookRepository.findById(bookId)
+        Book updateTargetBook = bookRepository.findByBookIdAndDeletedAtIsNull(bookId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
 
         Category category = updateTargetBook.getCategory();
@@ -174,7 +176,8 @@ public class BookService {
         int deletedCount = 0;
         if (!deletableIds.isEmpty()) {
             recommendationRepository.deleteRecommendationsByBookIds(deletableIds);
-            deletedCount = (int) bookRepository.deleteBooksByIds(deletableIds);
+            wishRepository.deleteByBook_BookIdIn(deletableIds);
+            deletedCount = (int) bookRepository.softDeleteBooksByIds(deletableIds);
         }
 
         return BulkDeleteResponse.builder()
@@ -255,7 +258,7 @@ public class BookService {
     public List<BookResDto> getRelatedBooks(Long bookId){
         int limit;
 
-        Book mainBook = bookRepository.findById(bookId)
+        Book mainBook = bookRepository.findByBookIdAndDeletedAtIsNull(bookId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
 
         Set<Long> excludeIds = new HashSet<>();
