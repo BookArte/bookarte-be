@@ -228,7 +228,11 @@ https://bookarte.vercel.app
 |-----------------|
 | <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/be6bf9bf-385c-4835-9ac3-a6f8e91d1c35" /> |
 
-### 7.2.2 도서(book)
+| 비밀번호 수정 & 회원정보 수정 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/8e4e2ea0-6af0-4bb1-92b9-e51c231de68e" /> |
+
+### 7.2.2 도서
 
 | 도서 등록 |
 |-----------------|
@@ -246,15 +250,48 @@ https://bookarte.vercel.app
 |-----------------|
 | <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/a2976e00-a9b9-499c-a61e-2cf92eedb1bc" /> |
 
-### 7.2.3 추천 도서(recommendation)
-
 | 추천 도서 등록 |
 |-----------------|
-| <img width="800" height="450" alt="Image"  src="https://github.com/user-attachments/assets/2ca60dfc-4955-47df-bdbe-2f3891da1853"  /> |
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/2ca60dfc-4955-47df-bdbe-2f3891da1853" /> |
 
 | 추천 도서 등록 실패 & 예약 |
 |-----------------|
 | <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/ad3367e7-1244-4e7e-932d-aae90f002a98" /> |
+
+### 7.2.3 게시판(board)
+
+| 공지사항 작성 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/dfd38701-2712-4e75-bb46-bb7463512fd0" /> |
+
+| 공지사항 수정 & 삭제 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/bd6e710d-f8c3-4997-b6f3-f46d2995ff62" /> |
+
+| 뉴스 작성 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/cc37f7a4-bc32-440e-9ffe-f3bc5bea9268" /> |
+
+| 뉴스 수정 & 삭제 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/f181b4c8-8429-4ad1-a9ad-65e042be7e19" /> |
+
+| FAQ 작성 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/d05f87c7-2954-4639-982a-2355e48f9ec4" /> |
+
+| FAQ 수정 & 삭제 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/e2766e51-bd47-464e-9837-c0b8b2e78e2c" /> |
+
+| QNA 작성 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/405cfd47-c117-4b1e-8d56-b206be487b5a" /> |
+
+| QNA 답변 |
+|-----------------|
+| <img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/82898a12-d9cd-449e-b471-2495b642bb99" /> |
+
 
 <br/>
 <br/>
