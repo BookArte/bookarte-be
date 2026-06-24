@@ -19,5 +19,5 @@ public interface BookRepositoryCustom {
     List<Book> findBooksByCategoryOrderByBorrowCount(String category, Set<Long> excludeIds, int limit);
     List<String> skippedTitles(List<Long> bookIds);
     List<Long> deletableBookIds(List<Long> bookIds);
-    long deleteBooksByIds(List<Long> bookIds);
+    long softDeleteBooksByIds(List<Long> bookIds);
 }
