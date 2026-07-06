@@ -56,12 +56,14 @@ public class BookService {
 
         sanitizeRequest(bookReqDto);
 
+        String bookContents = removeIncompleteSentence(bookReqDto.getBookContents());
+
         Book book = Book.builder()
                 .bookTitle(bookReqDto.getBookTitle())
                 .publisherName(bookReqDto.getPublisherName())
                 .publicationDate(bookReqDto.getPublicationDate())
                 .bookIsbn(bookReqDto.getBookIsbn())
-                .bookContents(bookReqDto.getBookContents())
+                .bookContents(bookContents)
                 .canBorrow(true)
                 .bookCallNumber(bookReqDto.getBookCallNumber())
                 .bookThumbnail(bookReqDto.getBookThumbnail())
@@ -330,6 +332,26 @@ public class BookService {
     private void sanitizeRequest(BookReqDto bookReqDto){
         bookReqDto.setBookContents(xssUtils.filterEditor(bookReqDto.getBookContents()));
         bookReqDto.setBookTitle(xssUtils.escapeText(bookReqDto.getBookTitle()));
+    }
+
+    public String removeIncompleteSentence(String contents){
+        if(contents == null || contents.isEmpty()){
+            return "등록된 도서 소개가 없습니다.";
+        }
+
+        contents = contents.trim();
+
+        int lastPeriod = contents.lastIndexOf(".");
+        int lastQuestion = contents.lastIndexOf("?");
+        int lastExclamation = contents.lastIndexOf("!");
+
+        int lastSentenceEnd = Math.max(lastPeriod, Math.max(lastQuestion, lastExclamation));
+
+        if (lastSentenceEnd != -1 && lastSentenceEnd < contents.length() - 1) {
+            return contents.substring(0, lastSentenceEnd + 1);
+        }
+
+        return contents;
     }
 
 }
