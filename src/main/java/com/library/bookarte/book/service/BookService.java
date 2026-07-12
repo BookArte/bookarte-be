@@ -203,7 +203,14 @@ public class BookService {
     public List<BookSearchResult> searchBooksWithApi(String query){
 
         List<BookSearchResult> kakaoBookList = kakaoBookSearchClient.search(query);
+
         String category = nationalLibrarySearchClient.fetchCategoryByTitle(query);
+
+        if (category == null || category.isBlank()) {
+            category = "미분류";
+        }
+
+        final String finalCategory = category;
 
         return kakaoBookList.stream()
                 .map(book -> BookSearchResult.builder()
@@ -215,7 +222,7 @@ public class BookService {
                         .publicationDate(book.getPublicationDate())
                         .bookIsbn(book.getBookIsbn())
                         .bookThumbnail(book.getBookThumbnail())
-                        .bookCategory(category)
+                        .bookCategory(finalCategory)
                         .build()
                 )
                 .toList();
@@ -223,6 +230,11 @@ public class BookService {
 
     public BookSearchResult searchBookWithApi(String query){
         List<BookSearchResult> kakaoBookList = kakaoBookSearchClient.search(query);
+
+        if(kakaoBookList == null || kakaoBookList.isEmpty()){
+            throw new CustomException(CustomErrorCode.API_BOOK_NOT_FOUND);
+        }
+
         String category = nationalLibrarySearchClient.fetchCategoryByTitle(query);
 
         return kakaoBookList.stream()
