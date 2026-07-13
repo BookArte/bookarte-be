@@ -12,6 +12,7 @@ public enum CustomErrorCode {
 
     //book
     BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 책은 존재하지않습니다"),
+    API_BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "검색 조건에 부합하는 도서 정보를 외부 API에서 찾을 수 없습니다."),
 
     //category
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카테고리는 존재하지 않습니다."),
