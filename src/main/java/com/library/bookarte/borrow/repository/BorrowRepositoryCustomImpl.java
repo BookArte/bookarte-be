@@ -107,7 +107,10 @@ public class BorrowRepositoryCustomImpl implements BorrowRepositoryCustom{
                         borrow.count()
                 ))
                 .from(borrow)
-                .where(borrow.createdAt.after(startDate))
+                .where(
+                        borrow.createdAt.after(startDate),
+                        borrow.book.deletedAt.isNull()
+                )
                 .groupBy(borrow.book.bookId)
                 .orderBy(borrow.count().desc(), borrow.book.bookId.asc())
                 .offset(pageable.getOffset())
@@ -126,7 +129,7 @@ public class BorrowRepositoryCustomImpl implements BorrowRepositoryCustom{
         List<Book> books = jpaQueryFactory
                 .selectFrom(book)
                 .leftJoin(book.participants).fetchJoin()
-                .where(book.bookId.in(bookIds))
+                .where(book.bookId.in(bookIds).and(book.deletedAt.isNull()))
                 .fetch();
 
         List<PopularBookResDto> content = books.stream()
@@ -140,7 +143,10 @@ public class BorrowRepositoryCustomImpl implements BorrowRepositoryCustom{
         long total = jpaQueryFactory
                 .select(borrow.book.bookId.countDistinct())
                 .from(borrow)
-                .where(book.createdAt.after(startDate))
+                .where(
+                        borrow.createdAt.after(startDate),
+                        borrow.book.deletedAt.isNull()
+                )
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total);
@@ -166,7 +172,10 @@ public class BorrowRepositoryCustomImpl implements BorrowRepositoryCustom{
                         borrow.count()
                 ))
                 .from(borrow)
-                .where(borrow.createdAt.after(startDate))
+                .where(
+                        borrow.createdAt.after(startDate),
+                        borrow.book.deletedAt.isNull()
+                )
                 .groupBy(borrow.book.bookId)
                 .orderBy(borrow.count().desc(), borrow.book.bookId.asc())
                 .limit(limit)
@@ -182,7 +191,7 @@ public class BorrowRepositoryCustomImpl implements BorrowRepositoryCustom{
         List<Book> books = jpaQueryFactory
                 .selectFrom(book)
                 .leftJoin(book.participants).fetchJoin()
-                .where(book.bookId.in(bookIds))
+                .where(book.bookId.in(bookIds).and(book.deletedAt.isNull()))
                 .fetch();
 
         // 3. 결과 매핑 및 정렬

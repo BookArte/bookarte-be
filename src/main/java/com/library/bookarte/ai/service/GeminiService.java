@@ -33,7 +33,8 @@ public class GeminiService {
                     "2. 도서관과 관련 없는 일상 대화나 질문에는 '죄송합니다. 저는 북아티 도서관 관련 안내만 도와드릴 수 있습니다.'라고 정중히 거절하세요.\n" +
                     "3. 말투는 친절하고 정중한 '사서'의 톤을 유지하세요.\n" +
                     "4. 우리 도서관의 특징: 24시간 무인 반납 가능, 희망 도서 신청 가능." +
-                    "5. 이전 대화 맥락을 기억하여 답변하세요.";
+                    "5. 이전 대화 맥락을 기억하여 답변하세요." +
+                    "6. 답변을 작성할 때 마크다운의 **(굵게) 효과를 절대 사용하지 마세요. 텍스트를 강조할 때 별표(*)를 사용하지 말고 평문으로 작성해 주세요.";
 
     public GeminiResponse getChateResponse(Long memberId, GeminiRequest geminiRequest, HttpServletRequest request) {
         Content systemInstruction = Content.builder()

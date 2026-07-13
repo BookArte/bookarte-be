@@ -6,9 +6,11 @@ import com.library.bookarte.book.entity.Book;
 import com.library.bookarte.book.entity.type.ParticipantType;
 import com.library.bookarte.book.service.SearchCacheService;
 import com.library.bookarte.book.utils.BookParticipantUtils;
+import com.library.bookarte.borrow.entity.type.Status;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -63,7 +66,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 publisherContains(publisherName),
                 authorContains(author),
                 publicationDateBetween(start,end),
-                createAtBetween(createAtStart,createAtEnd)
+                createAtBetween(createAtStart,createAtEnd),
+                notDeletedBook()
         };
 
         //도서 id만 선 조회
@@ -89,7 +93,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .selectFrom(book)
                 .join(book.category, category).fetchJoin()
                 .leftJoin(book.participants).fetchJoin()
-                .where(book.bookId.in(ids))
+                .where(book.bookId.in(ids).and(notDeletedBook()))
                 .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .fetch();
 
@@ -137,7 +141,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 publisherContains(publisherName),
                 authorFullText(author),
                 publicationDateBetween(start,end),
-                createAtBetween(createAtStart,createAtEnd)
+                createAtBetween(createAtStart,createAtEnd),
+                notDeletedBook()
         };
 
         //도서 id만 선 조회
@@ -164,7 +169,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .selectFrom(book)
                 .join(book.category, category).fetchJoin()
                 .leftJoin(book.participants).fetchJoin()
-                .where(book.bookId.in(ids))
+                .where(book.bookId.in(ids).and(notDeletedBook()))
                 .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .fetch();
 
@@ -215,7 +220,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .from(borrow)
                 .where(
                         borrow.member.memberId.in(userIds),
-                        book.bookId.notIn(excludeIds)
+                        borrow.book.bookId.notIn(excludeIds),
+                        borrow.book.deletedAt.isNull()
                 )
                 .groupBy(borrow.book.bookId)
                 .orderBy(borrow.count().desc())
@@ -233,7 +239,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .join(book.participants, participant)
                 .where(
                         authorContains(authorName),
-                        book.bookId.notIn(excludeIds)
+                        book.bookId.notIn(excludeIds),
+                        notDeletedBook()
                 )
                 .groupBy(book.bookId)
                 .orderBy(borrow.count().desc())
@@ -246,7 +253,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return jpaQueryFactory
                 .select(book.bookTitle)
                 .from(book)
-                .where(book.bookId.in(bookIds).and(book.canBorrow.isFalse()))
+                .where(book.bookId.in(bookIds).and(notDeletedBook()).and(notDeletableBook()))
                 .fetch();
     }
 
@@ -255,16 +262,32 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return jpaQueryFactory
                 .select(book.bookId)
                 .from(book)
-                .where(book.bookId.in(bookIds).and(book.canBorrow.isTrue()))
+                .where(book.bookId.in(bookIds).and(notDeletedBook()).and(notDeletableBook().not()))
                 .fetch();
     }
 
     @Override
-    public long deleteBooksByIds(List<Long> bookIds){
+    public long softDeleteBooksByIds(List<Long> bookIds){
         return jpaQueryFactory
-                .delete(book)
-                .where(book.bookId.in(bookIds))
+                .update(book)
+                .set(book.deletedAt, LocalDateTime.now())
+                .where(book.bookId.in(bookIds).and(notDeletedBook()))
                 .execute();
+    }
+
+    private BooleanExpression notDeletableBook() {
+        return book.canBorrow.isFalse().or(activeBorrowExists());
+    }
+
+    private BooleanExpression activeBorrowExists() {
+        return JPAExpressions
+                .selectOne()
+                .from(borrow)
+                .where(
+                        borrow.book.eq(book),
+                        borrow.status.in(Status.BORROWED, Status.OVERDUE, Status.RETURN_REQUESTED)
+                )
+                .exists();
     }
 
     //같은 카테고리 대출수 순 조회
@@ -276,7 +299,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .leftJoin(borrow).on(borrow.book.eq(book))
                 .where(
                         categoryNameEq(category),
-                        book.bookId.notIn(excludeIds)
+                        book.bookId.notIn(excludeIds),
+                        notDeletedBook()
                 )
                 .groupBy(book.bookId)
                 .orderBy(borrow.count().desc())
@@ -290,7 +314,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .selectFrom(book)
                 .leftJoin(book.participants).fetchJoin()
                 .leftJoin(book.category).fetchJoin()
-                .where(book.bookId.eq(bookId))
+                .where(book.bookId.eq(bookId).and(notDeletedBook()))
                 .fetchOne();
 
         if (result == null) {
@@ -414,6 +438,10 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     private BooleanExpression createAtBetween(LocalDate start, LocalDate end){
         if(start == null || end == null) return null;
         return book.createdAt.between(start.atStartOfDay(), end.atTime(LocalTime.MAX));
+    }
+
+    private BooleanExpression notDeletedBook() {
+        return book.deletedAt.isNull();
     }
 
     private boolean checkWishStatus(Long bookId, Long memberId) {

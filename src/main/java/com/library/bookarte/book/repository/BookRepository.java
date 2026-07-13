@@ -12,10 +12,11 @@ import java.util.Optional;
 
 public interface BookRepository extends JpaRepository<Book, Long>, BookRepositoryCustom {
     boolean existsByBookIsbn(String isbn);
+    Optional<Book> findByBookIdAndDeletedAtIsNull(Long bookId);
 
     //비관적 락
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select b from Book b where b.bookId = :id")
+    @Query("select b from Book b where b.bookId = :id and b.deletedAt is null")
     Optional<Book> findByIdWithPessimisticLock(@Param("id") Long id);
 
     //낙관적 락
