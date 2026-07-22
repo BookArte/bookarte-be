@@ -73,8 +73,10 @@ public class BorrowService {
          * 2. 해당 도서에 대해서 다른 트랜잭션은 이 도서 정보를 수정할 수 없음
          * 3. 트랜잭션이 종료되면 자물쇠가 해제
          */
+/*
           Book book = bookRepository.findByIdWithPessimisticLock(bookId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+*/
 
         /**
          * 1. 낙관적 릭을 적용하여 도서 조회
@@ -83,9 +85,12 @@ public class BorrowService {
          * 4. 버전이 불일치할 경우(동시 수정 발생) 예외를 발생시켜 정합성 유지
          */
 
-/*          Book book = bookRepository.findByIdWithOptimisticLock(bookId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));*/
+          Book book = bookRepository.findByIdWithOptimisticLock(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
 
+        /**
+         * 일반적인 jpa 조회
+         */
 /*        Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));*/
 

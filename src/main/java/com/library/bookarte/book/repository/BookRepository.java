@@ -20,8 +20,8 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
     Optional<Book> findByIdWithPessimisticLock(@Param("id") Long id);
 
     //낙관적 락
-/*    @Query("select b from Book b where b.bookId = :id")
-    Optional<Book> findByIdWithOptimisticLock(@Param("id") Long id);*/
+    @Query("select b from Book b where b.bookId = :id")
+    Optional<Book> findByIdWithOptimisticLock(@Param("id") Long id);
 
     @Query("SELECT MAX(b.createdAt) FROM Book b")
     Optional<LocalDateTime> findLatestCreatedAt();
