@@ -27,4 +27,8 @@ public class BookMonthlyStats {
     public void addCount(long count){
         this.borrowCount += count;
     }
+
+    public void updateCount(long count){
+        this.borrowCount = count;
+    }
 }
