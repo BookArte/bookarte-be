@@ -47,7 +47,7 @@ public class BookMonthlyStatsBatchConfig {
         return new StepBuilder("bookMonthlyStatStep", jobRepository)
                 .<BookIdCountDto, BookMonthlyStats> chunk(CHUNK_SIZE)
                 .transactionManager(transactionManager)
-                .reader(yesterdayBorrowReader())
+                .reader(lastMonthBorrowReader())
                 .processor(statsProcessor())
                 .writer(statsWriter())
                 .build();
@@ -55,15 +55,15 @@ public class BookMonthlyStatsBatchConfig {
 
     @Bean
     @StepScope
-    public JdbcCursorItemReader<BookIdCountDto> yesterdayBorrowReader(){
+    public JdbcCursorItemReader<BookIdCountDto> lastMonthBorrowReader(){
         return new JdbcCursorItemReaderBuilder<BookIdCountDto>()
-                .name("yesterdayBorrowReader")
+                .name("lastMonthBorrowReader")
                 .dataSource(dataSource)
                 .sql("""
                     SELECT book_id, COUNT(*) as borrow_count
                     FROM borrow
-                    WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 DAY)
-                      AND created_at < CURDATE()
+                    WHERE created_at >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01')
+                      AND created_at < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')
                     GROUP BY book_id
                 """)
                 .rowMapper((rs, rowNum) -> new BookIdCountDto(
@@ -77,13 +77,13 @@ public class BookMonthlyStatsBatchConfig {
     @Bean
     public ItemProcessor<BookIdCountDto, BookMonthlyStats> statsProcessor() {
         return dto -> {
-            LocalDate yesterday = LocalDate.now().minusDays(1);
-            int year = yesterday.getYear();
-            int month = yesterday.getMonthValue();
+            LocalDate lastMonth = LocalDate.now().minusMonths(1);
+            int year = lastMonth.getYear();
+            int month = lastMonth.getMonthValue();
 
             return bookMonthlyStatsRepository.findByBookIdAndStatYearAndStatMonth(dto.getBookId(), year, month)
                     .map(existing -> {
-                        existing.addCount(dto.getBorrowCount());
+                        existing.updateCount(dto.getBorrowCount());
                         return existing;
                     })
                     .orElse(BookMonthlyStats.builder()

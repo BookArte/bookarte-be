@@ -132,11 +132,11 @@ public class BookStatServiceTest {
     @Test
     @DisplayName("신규 코드: 대출 통계에 대한 사전집계 테스트")
     void getRollingYearHistory_New() throws Exception {
-        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
+        LocalDateTime lastMonth = LocalDateTime.now().minusMonths(1);
 
         transactionTemplate.execute(status -> {
             for (int i = 0 ; i < 3; i++){
-                saveBorrowWithDate(savedBookId, yesterday);
+                saveBorrowWithDate(savedBookId, lastMonth);
             }
            return null;
         });
@@ -158,7 +158,7 @@ public class BookStatServiceTest {
         }
 
         Optional<BookMonthlyStats> stats = bookMonthlyStatsRepository.findByBookIdAndStatYearAndStatMonth(
-                savedBookId, yesterday.getYear(), yesterday.getMonthValue());
+                savedBookId, lastMonth.getYear(), lastMonth.getMonthValue());
 
         assertThat(stats.isPresent()).isTrue();
 
@@ -187,7 +187,7 @@ public class BookStatServiceTest {
 
     @Test
     @DisplayName("신규 코드: 배치 집계 후 캐싱된 12개월 통계 조회 확인")
-    void getRollingYearHistroy_New_Inergration() throws Exception {
+    void getRollingYearHistory_New_Integration() throws Exception {
 
         LocalDate lastMonth = LocalDate.now().minusMonths(1);
         bookMonthlyStatsRepository.save(BookMonthlyStats.builder()
@@ -197,9 +197,9 @@ public class BookStatServiceTest {
                 .borrowCount(2L)
                 .build());
 
-        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
+        LocalDateTime lastMonthTime = LocalDateTime.now().minusMonths(1);
         transactionTemplate.execute(status -> {
-            saveBorrowWithDate(savedBookId, yesterday);
+            saveBorrowWithDate(savedBookId, lastMonthTime);
             return null;
         });
 
