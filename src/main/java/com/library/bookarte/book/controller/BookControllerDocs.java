@@ -1,6 +1,6 @@
 package com.library.bookarte.book.controller;
 
-import com.library.bookarte.book.dto.request.BookDelReqDto;
+import com.library.bookarte.book.dto.request.BulkBookDelReqDto;
 import com.library.bookarte.book.dto.request.BookReqDto;
 import com.library.bookarte.book.dto.response.BestsellerResponse;
 import com.library.bookarte.book.dto.response.BookResDto;
@@ -83,7 +83,7 @@ public interface BookControllerDocs {
             @ApiResponse(responseCode = "500", description = "서버 에러"),
     })
     @DeleteMapping("/admin")
-    ResponseEntity<GlobalResponseDto<BulkDeleteResponse>> deleteBooks(@RequestBody BookDelReqDto bookDelReqDto);
+    ResponseEntity<GlobalResponseDto<BulkDeleteResponse>> deleteBooks(@RequestBody BulkBookDelReqDto bulkBookDelReqDto);
 
     /*Read: 외부 api에서 도서 정보 검색*/
     @Operation(summary = "외부 api 도서 정보 검색", description = "**성공 응답 데이터:** 해당되는 도서 목록")

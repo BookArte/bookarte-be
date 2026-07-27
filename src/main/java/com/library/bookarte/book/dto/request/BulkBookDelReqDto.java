@@ -6,6 +6,6 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class BookDelReqDto {
+public class BulkBookDelReqDto {
     List<Long> bookIds;
 }

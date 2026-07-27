@@ -1,6 +1,6 @@
 package com.library.bookarte.book.service;
 
-import com.library.bookarte.book.dto.request.BookDelReqDto;
+import com.library.bookarte.book.dto.request.BulkBookDelReqDto;
 import com.library.bookarte.book.dto.request.BookReqDto;
 import com.library.bookarte.book.dto.response.BestsellerResponse;
 import com.library.bookarte.book.dto.response.BookResDto;
@@ -169,8 +169,8 @@ public class BookService {
     }
 
     /*도서 삭제 api*/
-    public BulkDeleteResponse bulkDeleteBooks(BookDelReqDto bookDelReqDto){
-        List<Long> delTargetBookIds = bookDelReqDto.getBookIds();
+    public BulkDeleteResponse bulkDeleteBooks(BulkBookDelReqDto bulkBookDelReqDto){
+        List<Long> delTargetBookIds = bulkBookDelReqDto.getBookIds();
 
         List<String> skippedTitles = bookRepository.skippedTitles(delTargetBookIds);
         List<Long> deletableIds = bookRepository.deletableBookIds(delTargetBookIds);
