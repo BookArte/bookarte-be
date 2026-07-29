@@ -78,6 +78,9 @@ public class Book extends BaseEntity {
     @Column
     private LocalDateTime deletedAt;
 
+    @Column
+    private String delReason;
+
     //도서 카테고리
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
@@ -194,8 +197,9 @@ public class Book extends BaseEntity {
         this.canBorrow = canBorrow;
     }
 
-    public void delete() {
+    public void delete(String reason) {
         this.deletedAt = LocalDateTime.now();
+        this.delReason = reason;
     }
 
     /**

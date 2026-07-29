@@ -1,5 +1,6 @@
 package com.library.bookarte.book.controller;
 
+import com.library.bookarte.book.dto.request.BookDelReqDto;
 import com.library.bookarte.book.dto.request.BulkBookDelReqDto;
 import com.library.bookarte.book.dto.request.BookReqDto;
 import com.library.bookarte.book.dto.response.BestsellerResponse;
@@ -61,9 +62,18 @@ public class BookController implements BookControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
-    //도서 삭제
+    //도서 단일 삭제
     @Override
-    public ResponseEntity<GlobalResponseDto<BulkDeleteResponse>> deleteBooks(BulkBookDelReqDto bulkBookDelReqDto){
+    public ResponseEntity<GlobalResponseDto<String>> deleteBook(@PathVariable("bookId") Long bookId,
+                                                                @Valid @RequestBody BookDelReqDto bookDelReqDto){
+        bookService.deleteBook(bookId, bookDelReqDto);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, "도서 삭제 성공"));
+    }
+
+    //도서 다중 삭제
+    @Override
+    public ResponseEntity<GlobalResponseDto<BulkDeleteResponse>> deleteBooks(@RequestBody BulkBookDelReqDto bulkBookDelReqDto){
 
         BulkDeleteResponse result = bookService.bulkDeleteBooks(bulkBookDelReqDto);
 

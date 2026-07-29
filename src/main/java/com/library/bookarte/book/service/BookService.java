@@ -1,5 +1,6 @@
 package com.library.bookarte.book.service;
 
+import com.library.bookarte.book.dto.request.BookDelReqDto;
 import com.library.bookarte.book.dto.request.BulkBookDelReqDto;
 import com.library.bookarte.book.dto.request.BookReqDto;
 import com.library.bookarte.book.dto.response.BestsellerResponse;
@@ -168,7 +169,23 @@ public class BookService {
         return bookId;
     }
 
-    /*도서 삭제 api*/
+    /* 도서 삭제 api*/
+    public void deleteBook(Long bookId, BookDelReqDto bookDelReqDto){
+
+        Book delTargetBook = bookRepository.findByBookIdAndDeletedAtIsNull(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+        if(!delTargetBook.isCanBorrow()){
+            throw new CustomException(CustomErrorCode.BOOK_ALREADY_BORROWED);
+        }
+
+        delTargetBook.delete(bookDelReqDto.getDelReason());
+        
+        // cascade 삭제 대상 수동 제거 (또는 엔티티 Cascade 옵션에 의존)
+        recommendationRepository.deleteRecommendationsByBookIds(List.of(bookId));
+        wishRepository.deleteByBook_BookIdIn(List.of(bookId));
+    }
+
+    /*도서 벌크 삭제 api*/
     public BulkDeleteResponse bulkDeleteBooks(BulkBookDelReqDto bulkBookDelReqDto){
         List<Long> delTargetBookIds = bulkBookDelReqDto.getBookIds();
 
