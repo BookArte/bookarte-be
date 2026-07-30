@@ -87,8 +87,6 @@ public interface BookControllerDocs {
     ResponseEntity<GlobalResponseDto<String>> deleteBook(@PathVariable("bookId") Long bookId,
                                                          @Valid @RequestBody BookDelReqDto bookDelReqDto);
 
-
-
     /*Delete: 도서 정보 다중 삭제*/
     @Operation(summary = "도서 다중 삭제 요청", description = "**성공 응답 데이터:** 도서 삭제 성공")
     @ApiResponses(value = {
@@ -99,6 +97,19 @@ public interface BookControllerDocs {
     })
     @DeleteMapping("/admin/bulk")
     ResponseEntity<GlobalResponseDto<BulkDeleteResponse>> deleteBooks(@RequestBody BulkBookDelReqDto bulkBookDelReqDto);
+
+    /*Restore: 도서 복구*/
+    @Operation(summary = "도서 복구 요청", description = "**성공 응답 데이터:** 도서 복구 성공")
+    @Parameter(name = "bookId", description = "복구할 도서 id", example = "1")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "도서 복구 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "해당 도서가 존재하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @PatchMapping("/admin/restore/{bookId}")
+    ResponseEntity<GlobalResponseDto<String>> restoreBook(@PathVariable("bookId") Long bookId);
+
 
     /*Read: 외부 api에서 도서 정보 검색*/
     @Operation(summary = "외부 api 도서 정보 검색", description = "**성공 응답 데이터:** 해당되는 도서 목록")

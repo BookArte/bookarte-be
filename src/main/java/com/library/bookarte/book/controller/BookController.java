@@ -82,6 +82,14 @@ public class BookController implements BookControllerDocs {
 
     }
 
+    //도서 복구
+    @Override
+    public ResponseEntity<GlobalResponseDto<String>> restoreBook(@PathVariable("bookId") Long bookId){
+        bookService.restoreBook(bookId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, "도서 복구 성공"));
+    }
+
     //도서 리스트 조회
     @Override
     public ResponseEntity<GlobalResponseDto<Page<BookResDto>>> listBook(@ModelAttribute SearchFilterDto searchFilterDto,

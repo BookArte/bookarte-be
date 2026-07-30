@@ -207,6 +207,18 @@ public class BookService {
                 .build();
     }
 
+    /* 도서 복구 api */
+    public void restoreBook(Long bookId){
+        Book restoreTargetBook = bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+
+        if (restoreTargetBook.getDeletedAt() == null) {
+            throw new CustomException(CustomErrorCode.BOOK_ALREADY_EXISTS); // 예: 이미 존재하는/삭제되지 않은 도서
+        }
+
+        restoreTargetBook.restore();
+    }
+
     /*도서 조건부 및 전체 조회 api*/
     @Transactional(readOnly = true)
     public Page<BookResDto> findBooksWithFilter(SearchFilterDto searchFilterDto,Pageable pageable){
