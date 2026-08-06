@@ -57,6 +57,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         LocalDate end = searchFilterDto.getPublicationDateEnd();
         LocalDate createAtStart = searchFilterDto.getCreatedAtStart();
         LocalDate createAtEnd = searchFilterDto.getCreatedAtEnd();
+        boolean isDeleted = searchFilterDto.isDeleted();
 
         //조건 메서드들 분리
         BooleanExpression[] predicates = {
@@ -67,7 +68,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 authorContains(author),
                 publicationDateBetween(start,end),
                 createAtBetween(createAtStart,createAtEnd),
-                notDeletedBook()
+                isDeletedBook(isDeleted)
         };
 
         //도서 id만 선 조회
@@ -93,7 +94,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .selectFrom(book)
                 .join(book.category, category).fetchJoin()
                 .leftJoin(book.participants).fetchJoin()
-                .where(book.bookId.in(ids).and(notDeletedBook()))
+                .where(book.bookId.in(ids).and(isDeletedBook(isDeleted)))
                 .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .fetch();
 
@@ -132,6 +133,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         LocalDate end = searchFilterDto.getPublicationDateEnd();
         LocalDate createAtStart = searchFilterDto.getCreatedAtStart();
         LocalDate createAtEnd = searchFilterDto.getCreatedAtEnd();
+        boolean isDeleted = searchFilterDto.isDeleted();
+
+        System.out.println("삭제 도서 조회 여부 : " + isDeleted);
 
         //조건 메서드들 분리
         BooleanExpression[] predicates = {
@@ -142,7 +146,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 authorFullText(author),
                 publicationDateBetween(start,end),
                 createAtBetween(createAtStart,createAtEnd),
-                notDeletedBook()
+                isDeletedBook(isDeleted)
         };
 
         //도서 id만 선 조회
@@ -169,7 +173,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .selectFrom(book)
                 .join(book.category, category).fetchJoin()
                 .leftJoin(book.participants).fetchJoin()
-                .where(book.bookId.in(ids).and(notDeletedBook()))
+                .where(book.bookId.in(ids).and(isDeletedBook(isDeleted)))
                 .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .fetch();
 
@@ -240,7 +244,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .where(
                         authorContains(authorName),
                         book.bookId.notIn(excludeIds),
-                        notDeletedBook()
+                        isDeletedBook(false)
                 )
                 .groupBy(book.bookId)
                 .orderBy(borrow.count().desc())
@@ -253,7 +257,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return jpaQueryFactory
                 .select(book.bookTitle)
                 .from(book)
-                .where(book.bookId.in(bookIds).and(notDeletedBook()).and(notDeletableBook()))
+                .where(book.bookId.in(bookIds).and(isDeletedBook(false)).and(notDeletableBook()))
                 .fetch();
     }
 
@@ -262,7 +266,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return jpaQueryFactory
                 .select(book.bookId)
                 .from(book)
-                .where(book.bookId.in(bookIds).and(notDeletedBook()).and(notDeletableBook().not()))
+                .where(book.bookId.in(bookIds).and(isDeletedBook(false)).and(notDeletableBook().not()))
                 .fetch();
     }
 
@@ -271,7 +275,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return jpaQueryFactory
                 .update(book)
                 .set(book.deletedAt, LocalDateTime.now())
-                .where(book.bookId.in(bookIds).and(notDeletedBook()))
+                .where(book.bookId.in(bookIds).and(isDeletedBook(false)))
                 .execute();
     }
 
@@ -300,7 +304,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .where(
                         categoryNameEq(category),
                         book.bookId.notIn(excludeIds),
-                        notDeletedBook()
+                        isDeletedBook(false)
                 )
                 .groupBy(book.bookId)
                 .orderBy(borrow.count().desc())
@@ -314,7 +318,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .selectFrom(book)
                 .leftJoin(book.participants).fetchJoin()
                 .leftJoin(book.category).fetchJoin()
-                .where(book.bookId.eq(bookId).and(notDeletedBook()))
+                .where(book.bookId.eq(bookId).and(isDeletedBook(false)))
                 .fetchOne();
 
         if (result == null) {
@@ -440,8 +444,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return book.createdAt.between(start.atStartOfDay(), end.atTime(LocalTime.MAX));
     }
 
-    private BooleanExpression notDeletedBook() {
-        return book.deletedAt.isNull();
+    private BooleanExpression isDeletedBook (boolean isDeleted) {
+        return isDeleted ? book.deletedAt.isNotNull() : book.deletedAt.isNull();
     }
 
     private boolean checkWishStatus(Long bookId, Long memberId) {

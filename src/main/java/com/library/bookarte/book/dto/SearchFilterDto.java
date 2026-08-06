@@ -18,6 +18,7 @@ public class SearchFilterDto {
     private String bookIsbn;
     private String publisherName;
     private String bookAuthor;
+    private boolean deleted;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate publicationDateStart;
