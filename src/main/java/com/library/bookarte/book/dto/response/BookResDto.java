@@ -38,6 +38,8 @@ public class BookResDto {
 
     private String bookCategory;
 
+    private String delReason;
+
     private boolean canBorrow;
 
     private boolean isWish;

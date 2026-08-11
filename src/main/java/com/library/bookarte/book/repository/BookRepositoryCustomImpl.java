@@ -318,7 +318,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .selectFrom(book)
                 .leftJoin(book.participants).fetchJoin()
                 .leftJoin(book.category).fetchJoin()
-                .where(book.bookId.eq(bookId).and(isDeletedBook(false)))
+                .where(book.bookId.eq(bookId))
                 .fetchOne();
 
         if (result == null) {
@@ -343,6 +343,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                         .bookThumbnail(result.getBookThumbnail())
                         .bookCallNumber(result.getBookCallNumber())
                         .bookCategory(result.getCategory().getCategoryName())
+                        .delReason(result.getDelReason())
                         .canBorrow(result.isCanBorrow())
                         .isWish(isWish)
                 .build()
