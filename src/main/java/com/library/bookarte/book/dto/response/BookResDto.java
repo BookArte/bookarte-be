@@ -50,6 +50,10 @@ public class BookResDto {
 
     private LocalDateTime lastUpdatedAt;
 
+    private LocalDateTime deletedAt;
+
+    private boolean deleted;
+
     public BookResDto(Long bookId,
                       String bookTitle,
                       List<Book.Participant> participants,

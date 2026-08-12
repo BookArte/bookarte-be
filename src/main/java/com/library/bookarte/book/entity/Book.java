@@ -203,6 +203,11 @@ public class Book extends BaseEntity {
         this.delReason = reason;
     }
 
+    /*도서 삭제 사유 업데이트*/
+    public void updateDelReason (String reason) {
+        this.delReason = reason;
+    }
+
     /*도서 복구 시 업데이트*/
     public void restore() {
         this.deletedAt = null;

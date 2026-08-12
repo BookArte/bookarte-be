@@ -344,6 +344,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                         .bookCallNumber(result.getBookCallNumber())
                         .bookCategory(result.getCategory().getCategoryName())
                         .delReason(result.getDelReason())
+                        .deletedAt(result.getDeletedAt())
+                        .deleted(result.getDeletedAt() != null)
                         .canBorrow(result.isCanBorrow())
                         .isWish(isWish)
                 .build()

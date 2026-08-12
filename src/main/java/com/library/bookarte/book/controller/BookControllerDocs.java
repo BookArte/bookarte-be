@@ -87,6 +87,19 @@ public interface BookControllerDocs {
     ResponseEntity<GlobalResponseDto<String>> deleteBook(@PathVariable("bookId") Long bookId,
                                                          @Valid @RequestBody BookDelReqDto bookDelReqDto);
 
+    /*PATCH: 도서 정보 삭제 사유 변경*/
+    @Operation(summary = "단일 도서 삭제 요청", description = "**성공 응답 데이터:** 도서 삭제 성공")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "도서 삭제 성공"),
+            @ApiResponse(responseCode = "401", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "해당 도서가 존재하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 에러"),
+    })
+    @PatchMapping("/admin/delreason-update/{bookId}")
+    ResponseEntity<GlobalResponseDto<String>> updatetBookDelReason(@PathVariable("bookId") Long bookId,
+                                                         @Valid @RequestBody BookDelReqDto bookDelReqDto);
+
+
     /*Delete: 도서 정보 다중 삭제*/
     @Operation(summary = "도서 다중 삭제 요청", description = "**성공 응답 데이터:** 도서 삭제 성공")
     @ApiResponses(value = {

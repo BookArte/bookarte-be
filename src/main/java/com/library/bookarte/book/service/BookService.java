@@ -185,6 +185,19 @@ public class BookService {
         wishRepository.deleteByBook_BookIdIn(List.of(bookId));
     }
 
+    /**/
+    public void updateDelReason(Long bookId, BookDelReqDto bookDelReqDto){
+        Book targetBook = bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+
+        if(targetBook.getDeletedAt() == null){
+            throw new CustomException(CustomErrorCode.BOOK_DEL_INVALID_REQUEST);
+        }
+
+        targetBook.updateDelReason(bookDelReqDto.getDelReason());
+
+    }
+
     /*도서 벌크 삭제 api*/
     public BulkDeleteResponse bulkDeleteBooks(BulkBookDelReqDto bulkBookDelReqDto){
         List<Long> delTargetBookIds = bulkBookDelReqDto.getBookIds();

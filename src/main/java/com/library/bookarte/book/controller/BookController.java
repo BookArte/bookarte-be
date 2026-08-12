@@ -71,6 +71,14 @@ public class BookController implements BookControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK, "도서 삭제 성공"));
     }
 
+    @Override
+    public ResponseEntity<GlobalResponseDto<String>> updatetBookDelReason(@PathVariable("bookId") Long bookId,
+                                                                          @Valid @RequestBody BookDelReqDto bookDelReqDto) {
+        bookService.updateDelReason(bookId, bookDelReqDto);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, "삭제 사유 변경 성공"));
+    }
+
     //도서 다중 삭제
     @Override
     public ResponseEntity<GlobalResponseDto<BulkDeleteResponse>> deleteBooks(@RequestBody BulkBookDelReqDto bulkBookDelReqDto){
