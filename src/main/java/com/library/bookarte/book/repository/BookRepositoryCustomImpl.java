@@ -184,23 +184,14 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 /*        long afterFetch = System.currentTimeMillis();
         System.out.println("Step 2 (Fetch Join) 소요 시간: " + (afterFetch - afterIds) + "ms");*/
 
-        String filterHash = generateFilterHash(searchFilterDto);
-
-        long total = searchCacheService.getCachedTotalCount(
-                filterHash,
-                5,
-                () -> {
-                    return (long) jpaQueryFactory
-                            .select(book.bookId)
-                            .from(book)
-                            .where(predicates)
-                            .limit(10000)
-                            .fetch().size();
-                }
-        );
-
-/*        System.out.println("Step 3 (Count 조회) 소요 시간: " + (System.currentTimeMillis() - afterFetch) + "ms");*/
-
+        long total = Optional.ofNullable(
+                jpaQueryFactory
+                        .select(book.count())
+                        .from(book)
+                        .join(book.category, category)
+                        .where(predicates)
+                        .fetchOne()
+        ).orElse(0L);
 
         // 아래 상황일 때 카운트 쿼리 x
         // - 첫 페이지이면서 콘텐츠가 pageSize보다 작을 때 (전체 개수를 안 세어도 됨)
@@ -369,7 +360,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
     //isbn 조건 메서드
     private BooleanExpression isbnContains(String isbn) {
-        return isbn != null
+        return StringUtils.hasText(isbn)
                 ? book.bookIsbn.contains(isbn)
                 : null;
     }
@@ -495,6 +486,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         String bookIsbn = searchFilterDto.getBookIsbn();
         String pulisherName = searchFilterDto.getPublisherName();
         String bookAuthor = searchFilterDto.getBookAuthor();
+        boolean deleted = searchFilterDto.isDeleted();
 
         LocalDate publicationDateStart = searchFilterDto.getPublicationDateStart();
         LocalDate publicationDateEnd = searchFilterDto.getPublicationDateEnd();
@@ -506,6 +498,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                         bookIsbn +
                         pulisherName +
                         bookAuthor +
+                        deleted +
                         publicationDateStart +
                         publicationDateEnd +
                         createdAtStart +
