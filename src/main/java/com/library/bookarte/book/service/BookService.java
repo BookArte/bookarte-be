@@ -49,6 +49,7 @@ public class BookService {
 
     private final S3Service s3Service;
     private final XssUtils xssUtils;
+    private final SearchCacheService searchCacheService;
 
     /*도서 등록 api*/
     public void registerBook(BookReqDto bookReqDto){
@@ -83,6 +84,8 @@ public class BookService {
             s3Service.uploadAndSave(savedBook.getBookId(), refType,bookThumbnailFile, FileType.THUMBNAIL);
             savedBook.updateThumbnail(uploadUrl);
         }
+
+        searchCacheService.clearCountCache();
     }
 
     /*도서 상세 조회 api*/
@@ -183,6 +186,8 @@ public class BookService {
         // cascade 삭제 대상 수동 제거 (또는 엔티티 Cascade 옵션에 의존)
         recommendationRepository.deleteRecommendationsByBookIds(List.of(bookId));
         wishRepository.deleteByBook_BookIdIn(List.of(bookId));
+
+        searchCacheService.clearCountCache();
     }
 
     /**/
@@ -230,6 +235,7 @@ public class BookService {
         }
 
         restoreTargetBook.restore();
+        searchCacheService.clearCountCache();
     }
 
     /*도서 조건부 및 전체 조회 api*/
