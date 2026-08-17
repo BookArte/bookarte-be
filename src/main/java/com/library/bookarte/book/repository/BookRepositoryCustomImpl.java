@@ -57,6 +57,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         LocalDate end = searchFilterDto.getPublicationDateEnd();
         LocalDate createAtStart = searchFilterDto.getCreatedAtStart();
         LocalDate createAtEnd = searchFilterDto.getCreatedAtEnd();
+        boolean isDeleted = searchFilterDto.isDeleted();
 
         //조건 메서드들 분리
         BooleanExpression[] predicates = {
@@ -67,7 +68,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 authorContains(author),
                 publicationDateBetween(start,end),
                 createAtBetween(createAtStart,createAtEnd),
-                notDeletedBook()
+                isDeletedBook(isDeleted)
         };
 
         //도서 id만 선 조회
@@ -93,7 +94,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .selectFrom(book)
                 .join(book.category, category).fetchJoin()
                 .leftJoin(book.participants).fetchJoin()
-                .where(book.bookId.in(ids).and(notDeletedBook()))
+                .where(book.bookId.in(ids).and(isDeletedBook(isDeleted)))
                 .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .fetch();
 
@@ -132,6 +133,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         LocalDate end = searchFilterDto.getPublicationDateEnd();
         LocalDate createAtStart = searchFilterDto.getCreatedAtStart();
         LocalDate createAtEnd = searchFilterDto.getCreatedAtEnd();
+        boolean isDeleted = searchFilterDto.isDeleted();
+
+        System.out.println("삭제 도서 조회 여부 : " + isDeleted);
 
         //조건 메서드들 분리
         BooleanExpression[] predicates = {
@@ -142,7 +146,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 authorFullText(author),
                 publicationDateBetween(start,end),
                 createAtBetween(createAtStart,createAtEnd),
-                notDeletedBook()
+                isDeletedBook(isDeleted)
         };
 
         //도서 id만 선 조회
@@ -169,7 +173,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .selectFrom(book)
                 .join(book.category, category).fetchJoin()
                 .leftJoin(book.participants).fetchJoin()
-                .where(book.bookId.in(ids).and(notDeletedBook()))
+                .where(book.bookId.in(ids).and(isDeletedBook(isDeleted)))
                 .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .fetch();
 
@@ -180,23 +184,14 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 /*        long afterFetch = System.currentTimeMillis();
         System.out.println("Step 2 (Fetch Join) 소요 시간: " + (afterFetch - afterIds) + "ms");*/
 
-        String filterHash = generateFilterHash(searchFilterDto);
-
-        long total = searchCacheService.getCachedTotalCount(
-                filterHash,
-                5,
-                () -> {
-                    return (long) jpaQueryFactory
-                            .select(book.bookId)
-                            .from(book)
-                            .where(predicates)
-                            .limit(10000)
-                            .fetch().size();
-                }
-        );
-
-/*        System.out.println("Step 3 (Count 조회) 소요 시간: " + (System.currentTimeMillis() - afterFetch) + "ms");*/
-
+        long total = Optional.ofNullable(
+                jpaQueryFactory
+                        .select(book.count())
+                        .from(book)
+                        .join(book.category, category)
+                        .where(predicates)
+                        .fetchOne()
+        ).orElse(0L);
 
         // 아래 상황일 때 카운트 쿼리 x
         // - 첫 페이지이면서 콘텐츠가 pageSize보다 작을 때 (전체 개수를 안 세어도 됨)
@@ -240,7 +235,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .where(
                         authorContains(authorName),
                         book.bookId.notIn(excludeIds),
-                        notDeletedBook()
+                        isDeletedBook(false)
                 )
                 .groupBy(book.bookId)
                 .orderBy(borrow.count().desc())
@@ -253,7 +248,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return jpaQueryFactory
                 .select(book.bookTitle)
                 .from(book)
-                .where(book.bookId.in(bookIds).and(notDeletedBook()).and(notDeletableBook()))
+                .where(book.bookId.in(bookIds).and(isDeletedBook(false)).and(notDeletableBook()))
                 .fetch();
     }
 
@@ -262,7 +257,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return jpaQueryFactory
                 .select(book.bookId)
                 .from(book)
-                .where(book.bookId.in(bookIds).and(notDeletedBook()).and(notDeletableBook().not()))
+                .where(book.bookId.in(bookIds).and(isDeletedBook(false)).and(notDeletableBook().not()))
                 .fetch();
     }
 
@@ -271,7 +266,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return jpaQueryFactory
                 .update(book)
                 .set(book.deletedAt, LocalDateTime.now())
-                .where(book.bookId.in(bookIds).and(notDeletedBook()))
+                .where(book.bookId.in(bookIds).and(isDeletedBook(false)))
                 .execute();
     }
 
@@ -300,7 +295,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .where(
                         categoryNameEq(category),
                         book.bookId.notIn(excludeIds),
-                        notDeletedBook()
+                        isDeletedBook(false)
                 )
                 .groupBy(book.bookId)
                 .orderBy(borrow.count().desc())
@@ -314,7 +309,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .selectFrom(book)
                 .leftJoin(book.participants).fetchJoin()
                 .leftJoin(book.category).fetchJoin()
-                .where(book.bookId.eq(bookId).and(notDeletedBook()))
+                .where(book.bookId.eq(bookId))
                 .fetchOne();
 
         if (result == null) {
@@ -339,6 +334,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                         .bookThumbnail(result.getBookThumbnail())
                         .bookCallNumber(result.getBookCallNumber())
                         .bookCategory(result.getCategory().getCategoryName())
+                        .delReason(result.getDelReason())
+                        .deletedAt(result.getDeletedAt())
+                        .deleted(result.getDeletedAt() != null)
                         .canBorrow(result.isCanBorrow())
                         .isWish(isWish)
                 .build()
@@ -362,7 +360,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
     //isbn 조건 메서드
     private BooleanExpression isbnContains(String isbn) {
-        return isbn != null
+        return StringUtils.hasText(isbn)
                 ? book.bookIsbn.contains(isbn)
                 : null;
     }
@@ -440,8 +438,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return book.createdAt.between(start.atStartOfDay(), end.atTime(LocalTime.MAX));
     }
 
-    private BooleanExpression notDeletedBook() {
-        return book.deletedAt.isNull();
+    private BooleanExpression isDeletedBook (boolean isDeleted) {
+        return isDeleted ? book.deletedAt.isNotNull() : book.deletedAt.isNull();
     }
 
     private boolean checkWishStatus(Long bookId, Long memberId) {
@@ -488,6 +486,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         String bookIsbn = searchFilterDto.getBookIsbn();
         String pulisherName = searchFilterDto.getPublisherName();
         String bookAuthor = searchFilterDto.getBookAuthor();
+        boolean deleted = searchFilterDto.isDeleted();
 
         LocalDate publicationDateStart = searchFilterDto.getPublicationDateStart();
         LocalDate publicationDateEnd = searchFilterDto.getPublicationDateEnd();
@@ -499,6 +498,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                         bookIsbn +
                         pulisherName +
                         bookAuthor +
+                        deleted +
                         publicationDateStart +
                         publicationDateEnd +
                         createdAtStart +
