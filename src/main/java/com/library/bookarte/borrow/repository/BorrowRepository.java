@@ -13,4 +13,5 @@ public interface BorrowRepository extends JpaRepository<Borrow, Long>, BorrowRep
     long countBorrowByMember_MemberIdAndStatus(Long memberId, Status status);
     List<Borrow> findByMember_MemberId(Long memberId);
     long countByMember_MemberIdAndReturnDateIsNull(Long memberId);
+    long countByBook_BookIdAndReturnDateIsNull(Long bookId);
 }

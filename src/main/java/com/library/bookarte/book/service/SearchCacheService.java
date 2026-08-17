@@ -1,14 +1,17 @@
 package com.library.bookarte.book.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SearchCacheService {
     private final RedisTemplate<String, Object> redisTemplate;
     private static final String SEARCH_RANK_KEY = "search:frequency";
@@ -34,5 +37,18 @@ public class SearchCacheService {
         return dbCountSupplier.get();
     }
 
-
+    /**
+     * 도서 데이터 변동(등록, 삭제, 복구 등) 시 Redis에 저장된 도서 카운트 캐시 일괄 삭제
+     */
+    public void clearCountCache() {
+        try {
+            Set<String> keys = redisTemplate.keys(COUNT_CACHE_PREFIX + "*");
+            if (keys != null && !keys.isEmpty()) {
+                redisTemplate.delete(keys);
+                log.info("도서 카운트 캐시 {}건 일괄 삭제 완료", keys.size());
+            }
+        } catch (Exception e) {
+            log.warn("도서 카운트 캐시 일괄 삭제 중 오류 발생: {}", e.getMessage());
+        }
+    }
 }

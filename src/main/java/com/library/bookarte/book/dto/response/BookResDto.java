@@ -38,6 +38,8 @@ public class BookResDto {
 
     private String bookCategory;
 
+    private String delReason;
+
     private boolean canBorrow;
 
     private boolean isWish;
@@ -47,6 +49,10 @@ public class BookResDto {
     private LocalDateTime createdAt;
 
     private LocalDateTime lastUpdatedAt;
+
+    private LocalDateTime deletedAt;
+
+    private boolean deleted;
 
     public BookResDto(Long bookId,
                       String bookTitle,

@@ -1,6 +1,7 @@
 package com.library.bookarte.book.controller;
 
 import com.library.bookarte.book.dto.request.BookDelReqDto;
+import com.library.bookarte.book.dto.request.BulkBookDelReqDto;
 import com.library.bookarte.book.dto.request.BookReqDto;
 import com.library.bookarte.book.dto.response.BestsellerResponse;
 import com.library.bookarte.book.dto.response.BookResDto;
@@ -61,15 +62,40 @@ public class BookController implements BookControllerDocs {
                 .body(GlobalResponseDto.success(HttpStatus.OK, result));
     }
 
-    //도서 삭제
+    //도서 단일 삭제
     @Override
-    public ResponseEntity<GlobalResponseDto<BulkDeleteResponse>> deleteBooks(BookDelReqDto bookDelReqDto){
+    public ResponseEntity<GlobalResponseDto<String>> deleteBook(@PathVariable("bookId") Long bookId,
+                                                                @Valid @RequestBody BookDelReqDto bookDelReqDto){
+        bookService.deleteBook(bookId, bookDelReqDto);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, "도서 삭제 성공"));
+    }
 
-        BulkDeleteResponse result = bookService.bulkDeleteBooks(bookDelReqDto);
+    @Override
+    public ResponseEntity<GlobalResponseDto<String>> updatetBookDelReason(@PathVariable("bookId") Long bookId,
+                                                                          @Valid @RequestBody BookDelReqDto bookDelReqDto) {
+        bookService.updateDelReason(bookId, bookDelReqDto);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, "삭제 사유 변경 성공"));
+    }
+
+    //도서 다중 삭제
+    @Override
+    public ResponseEntity<GlobalResponseDto<BulkDeleteResponse>> deleteBooks(@RequestBody BulkBookDelReqDto bulkBookDelReqDto){
+
+        BulkDeleteResponse result = bookService.bulkDeleteBooks(bulkBookDelReqDto);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GlobalResponseDto.success(HttpStatus.OK,result));
 
+    }
+
+    //도서 복구
+    @Override
+    public ResponseEntity<GlobalResponseDto<String>> restoreBook(@PathVariable("bookId") Long bookId){
+        bookService.restoreBook(bookId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GlobalResponseDto.success(HttpStatus.OK, "도서 복구 성공"));
     }
 
     //도서 리스트 조회

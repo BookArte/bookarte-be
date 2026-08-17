@@ -1,6 +1,7 @@
 package com.library.bookarte.book.service;
 
 import com.library.bookarte.book.dto.request.BookDelReqDto;
+import com.library.bookarte.book.dto.request.BulkBookDelReqDto;
 import com.library.bookarte.book.dto.request.BookReqDto;
 import com.library.bookarte.book.dto.response.BestsellerResponse;
 import com.library.bookarte.book.dto.response.BookResDto;
@@ -48,6 +49,7 @@ public class BookService {
 
     private final S3Service s3Service;
     private final XssUtils xssUtils;
+    private final SearchCacheService searchCacheService;
 
     /*도서 등록 api*/
     public void registerBook(BookReqDto bookReqDto){
@@ -82,6 +84,8 @@ public class BookService {
             s3Service.uploadAndSave(savedBook.getBookId(), refType,bookThumbnailFile, FileType.THUMBNAIL);
             savedBook.updateThumbnail(uploadUrl);
         }
+
+        searchCacheService.clearCountCache();
     }
 
     /*도서 상세 조회 api*/
@@ -168,9 +172,40 @@ public class BookService {
         return bookId;
     }
 
-    /*도서 삭제 api*/
-    public BulkDeleteResponse bulkDeleteBooks(BookDelReqDto bookDelReqDto){
-        List<Long> delTargetBookIds = bookDelReqDto.getBookIds();
+    /* 도서 삭제 api*/
+    public void deleteBook(Long bookId, BookDelReqDto bookDelReqDto){
+
+        Book delTargetBook = bookRepository.findByBookIdAndDeletedAtIsNull(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+        if(!delTargetBook.isCanBorrow()){
+            throw new CustomException(CustomErrorCode.BOOK_ALREADY_BORROWED);
+        }
+
+        delTargetBook.delete(bookDelReqDto.getDelReason());
+        
+        // cascade 삭제 대상 수동 제거 (또는 엔티티 Cascade 옵션에 의존)
+        recommendationRepository.deleteRecommendationsByBookIds(List.of(bookId));
+        wishRepository.deleteByBook_BookIdIn(List.of(bookId));
+
+        searchCacheService.clearCountCache();
+    }
+
+    /**/
+    public void updateDelReason(Long bookId, BookDelReqDto bookDelReqDto){
+        Book targetBook = bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+
+        if(targetBook.getDeletedAt() == null){
+            throw new CustomException(CustomErrorCode.BOOK_DEL_INVALID_REQUEST);
+        }
+
+        targetBook.updateDelReason(bookDelReqDto.getDelReason());
+
+    }
+
+    /*도서 벌크 삭제 api*/
+    public BulkDeleteResponse bulkDeleteBooks(BulkBookDelReqDto bulkBookDelReqDto){
+        List<Long> delTargetBookIds = bulkBookDelReqDto.getBookIds();
 
         List<String> skippedTitles = bookRepository.skippedTitles(delTargetBookIds);
         List<Long> deletableIds = bookRepository.deletableBookIds(delTargetBookIds);
@@ -188,6 +223,19 @@ public class BookService {
                 .deletedCount(deletedCount)
                 .skippedTitles(skippedTitles)
                 .build();
+    }
+
+    /* 도서 복구 api */
+    public void restoreBook(Long bookId){
+        Book restoreTargetBook = bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.BOOK_NOT_FOUND));
+
+        if (restoreTargetBook.getDeletedAt() == null) {
+            throw new CustomException(CustomErrorCode.BOOK_ALREADY_EXISTS); // 예: 이미 존재하는/삭제되지 않은 도서
+        }
+
+        restoreTargetBook.restore();
+        searchCacheService.clearCountCache();
     }
 
     /*도서 조건부 및 전체 조회 api*/

@@ -5,6 +5,8 @@ import com.library.bookarte.book.repository.BookRepository;
 import com.library.bookarte.borrow.repository.BorrowRepository;
 import com.library.bookarte.category.entity.Category;
 import com.library.bookarte.category.reposiotry.CategoryRepository;
+import com.library.bookarte.global.exception.CustomErrorCode;
+import com.library.bookarte.global.exception.CustomException;
 import com.library.bookarte.member.entity.Member;
 import com.library.bookarte.member.repository.MemberRepository;
 import com.library.bookarte.support.FixtureFactory;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -50,7 +53,8 @@ public class BorrowServiceTest {
 
     @BeforeEach
     void setUp(){
-        savedCategory = new Category("002","문학");
+        String testRunId = String.valueOf(System.nanoTime());
+        savedCategory = new Category("TEST-" + testRunId,"문학");
         categoryRepository.save(savedCategory);
 
         Book book = FixtureFactory.createBook("테스트",savedCategory);
@@ -58,7 +62,7 @@ public class BorrowServiceTest {
         savedBookId = book.getBookId();
 
         for (int i = 1; i <= testCount; i++) {
-            Member member = FixtureFactory.createMember("user" + i);
+            Member member = FixtureFactory.createMember("user" + testRunId + "-" + i);
             memberRepository.save(member);
         }
 
@@ -161,6 +165,123 @@ public class BorrowServiceTest {
 
         // 도서 상태가 여전히 '대출 가능(true)'이어야 함
         assertTrue(bookAfter.isCanBorrow(), "에러 발생 시 도서 상태가 false로 변하면 안 됨");
+    }
+
+    @Test
+    @DisplayName("동시에 같은 도서를 대출하면 단 1건만 성공한다")
+    void concurrentBorrow_onlyOneSuccess() throws InterruptedException {
+        int threadCount = 100;
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+
+        CountDownLatch readyLatch = new CountDownLatch(threadCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
+
+        AtomicInteger successCount = new AtomicInteger();
+        AtomicInteger borrowForbiddenCount = new AtomicInteger();
+        AtomicInteger unexpectedFailCount = new AtomicInteger();
+
+        for (int i = 0; i < threadCount; i++) {
+            Long memberId = memberIds.get(i);
+
+            executor.submit(() -> {
+                readyLatch.countDown();
+
+                try {
+                    startLatch.await();
+
+                    borrowService.borrowBook(savedBookId, memberId);
+                    successCount.incrementAndGet();
+                } catch (CustomException e) {
+                    if (e.getCustomErrorCode() == CustomErrorCode.BOOK_BORROW_FORBIDDEN) {
+                        borrowForbiddenCount.incrementAndGet();
+                    } else {
+                        unexpectedFailCount.incrementAndGet();
+                    }
+                } catch (Exception e) {
+                    unexpectedFailCount.incrementAndGet();
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        boolean allWorkersReady = readyLatch.await(10, TimeUnit.SECONDS);
+        startLatch.countDown();
+        boolean allAttemptsFinished = doneLatch.await(30, TimeUnit.SECONDS);
+
+        executor.shutdownNow();
+        assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS), "Executor should terminate");
+        assertTrue(allWorkersReady, "All workers should be ready before starting");
+        assertTrue(allAttemptsFinished, "All borrow attempts should finish");
+
+        assertEquals(1, successCount.get());
+        assertEquals(99, borrowForbiddenCount.get());
+        assertEquals(0, unexpectedFailCount.get());
+
+        Book book = bookRepository.findById(savedBookId).orElseThrow();
+        assertFalse(book.isCanBorrow());
+
+        long activeBorrowCount = borrowRepository.countByBook_BookIdAndReturnDateIsNull(savedBookId);
+        assertEquals(1, activeBorrowCount);
+    }
+
+    @Test
+    @DisplayName("비관적 락 적용 대출 경합 성능 측정")
+    void concurrentBorrow_performanceMeasure() throws InterruptedException {
+        int threadCount = 100;
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch readyLatch = new CountDownLatch(threadCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
+
+        List<Long> latencies = Collections.synchronizedList(new ArrayList<>());
+
+        for (int i = 0; i < threadCount; i++) {
+            Long memberId = memberIds.get(i);
+
+            executor.submit(() -> {
+                readyLatch.countDown();
+
+                try {
+                    startLatch.await();
+
+                    long start = System.nanoTime();
+                    try {
+                        borrowService.borrowBook(savedBookId, memberId);
+                    } catch (Exception ignored) {
+                    } finally {
+                        long end = System.nanoTime();
+                        latencies.add(TimeUnit.NANOSECONDS.toMillis(end - start));
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        boolean allWorkersReady = readyLatch.await(10, TimeUnit.SECONDS);
+        long totalStart = System.nanoTime();
+
+        startLatch.countDown();
+        boolean allAttemptsFinished = doneLatch.await(30, TimeUnit.SECONDS);
+
+        long totalMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - totalStart);
+        double avgLatency = latencies.stream().mapToLong(Long::longValue).average().orElse(0);
+        long maxLatency = latencies.stream().mapToLong(Long::longValue).max().orElse(0);
+        double tps = threadCount / (totalMillis / 1000.0);
+
+        log.info("totalMillis={}", totalMillis);
+        log.info("avgLatency={}", avgLatency);
+        log.info("maxLatency={}", maxLatency);
+        log.info("tps={}", tps);
+
+        executor.shutdownNow();
+        assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS), "Executor should terminate");
+        assertTrue(allWorkersReady, "All workers should be ready before starting");
+        assertTrue(allAttemptsFinished, "All borrow attempts should finish");
     }
 
 }
